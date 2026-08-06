@@ -242,9 +242,11 @@ body.allow-scroll {
   text-align: center;
   padding: 2rem;
 }
-/* Solo mostrar en móvil portrait */
+/* Solo mostrar en móvil portrait, y SOLO durante la partida
+   (screen-game). Antes se mostraba siempre en portrait sin
+   importar la pantalla, y tapaba el botón JUGAR en el inicio. */
 @media (max-width: 900px) and (orientation: portrait) {
-  #rotate-overlay { display: flex; }
+  body[data-screen="game"] #rotate-overlay { display: flex; }
 }
 
 .rotate-icon {

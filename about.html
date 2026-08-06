@@ -22,6 +22,15 @@
     });
   </script>
     <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=P&background=10b981&color=000&size=180&bold=true">
+    <meta name="theme-color" content="#10b981">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+      }
+    </script>
     <meta name="theme-color" content="#10b981">
 </head>
 <body>

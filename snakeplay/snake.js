@@ -66,6 +66,10 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $('screen-'+id).classList.add('active');
   state.screen=id;
+  // El aviso de "gira tu dispositivo" solo debe bloquear la pantalla
+  // durante el JUEGO en sí, nunca en inicio/niveles/fin (si no, tapa
+  // botones como JUGAR y el juego parece "no funcionar" en móvil).
+  document.body.setAttribute('data-screen', id);
 }
 function showKofiModal(){const m=$('kofi-modal');if(m){m.style.display='flex';document.body.style.overflow='hidden';}}
 function closeKofiModal(){const m=$('kofi-modal');if(m){m.style.display='none';document.body.style.overflow='';}}
