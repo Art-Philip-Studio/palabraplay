@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>HILARIO — Sopa de Letras Temática</title>
+  <link rel="stylesheet" href="hilario.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       PANTALLA: BIENVENIDA
+  ══════════════════════════════════════ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="welcome-bg"></div>
+    <div class="welcome-content">
+
+      <div class="logo-block">
+        <span class="family-badge">PalabraPlay</span>
+        <h1 class="logo">HILARIO</h1>
+        <p class="tagline">Sopa de letras temática</p>
+      </div>
+
+      <div class="how-to">
+        <div class="how-row">
+          <span class="how-icon blue-dot"></span>
+          <span>Encuentra todas las palabras del tema en la cuadrícula</span>
+        </div>
+        <div class="how-row">
+          <span class="how-icon yellow-dot"></span>
+          <span>El <strong>PANGRAMA</strong> une dos lados opuestos del tablero</span>
+        </div>
+        <div class="how-row">
+          <span class="how-icon gray-dot"></span>
+          <span>Las letras se conectan en cualquier dirección</span>
+        </div>
+        <div class="how-row">
+          <span class="how-icon hint-dot">💡</span>
+          <span>Encuentra 3 palabras no-tema para ganar una pista</span>
+        </div>
+      </div>
+
+      <div class="puzzle-select-label">Elige un puzzle:</div>
+      <div class="puzzle-list" id="puzzle-list"></div>
+
+      <button class="btn-primary" id="btn-start">JUGAR</button>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PANTALLA: JUEGO
+  ══════════════════════════════════════ -->
+  <div id="screen-game" class="screen">
+
+    <header class="game-header">
+      <button class="icon-btn" id="btn-back-game" aria-label="Volver al menú">←</button>
+      <div class="header-center">
+        <span class="game-logo">HILARIO</span>
+        <div class="theme-display">
+          <span class="theme-label">TEMA:</span>
+          <span class="theme-value" id="theme-display">—</span>
+        </div>
+      </div>
+      <button class="icon-btn hint-btn" id="btn-hint-game" aria-label="Usar pista">
+        💡 <span id="hint-count">0</span>
+      </button>
+    </header>
+
+    <div class="words-needed">
+      <span id="words-found-count">0</span>/<span id="words-total-count">0</span>
+      <span class="words-label"> palabras</span>
+      <div class="word-chips" id="word-chips"></div>
+    </div>
+
+    <!-- CUADRÍCULA PRINCIPAL -->
+    <div class="grid-wrapper">
+      <div id="game-grid" class="game-grid"
+           ontouchstart="gridTouchStart(event)"
+           ontouchmove="gridTouchMove(event)"
+           ontouchend="gridTouchEnd(event)">
+      </div>
+    </div>
+
+    <!-- MENSAJE DE ESTADO -->
+    <div id="status-msg" class="status-msg hidden"></div>
+
+    <!-- PALABRAS NO-TEMA ENCONTRADAS (para pistas) -->
+    <div class="bonus-bar">
+      <span class="bonus-label">Palabras extra:</span>
+      <div class="bonus-progress">
+        <div class="bonus-pip" id="pip-0"></div>
+        <div class="bonus-pip" id="pip-1"></div>
+        <div class="bonus-pip" id="pip-2"></div>
+        <span class="bonus-arrow">→ 💡</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PANTALLA: VICTORIA
+  ══════════════════════════════════════ -->
+  <div id="screen-win" class="screen">
+    <div class="win-content">
+      <div class="win-emoji" id="win-emoji">🎉</div>
+      <h2 class="win-title">¡RESUELTO!</h2>
+      <p class="win-subtitle" id="win-subtitle">Encontraste todas las palabras</p>
+
+      <div class="win-stats">
+        <div class="wstat">
+          <span class="wstat-num" id="ws-time">0:00</span>
+          <span class="wstat-label">Tiempo</span>
+        </div>
+        <div class="wstat">
+          <span class="wstat-num" id="ws-hints">0</span>
+          <span class="wstat-label">Pistas usadas</span>
+        </div>
+        <div class="wstat">
+          <span class="wstat-num" id="ws-bonus">0</span>
+          <span class="wstat-label">Palabras extra</span>
+        </div>
+        <div class="wstat">
+          <span class="wstat-num" id="ws-score">0</span>
+          <span class="wstat-label">Puntos</span>
+        </div>
+      </div>
+
+      <!-- Repasar palabras encontradas -->
+      <div class="found-words-review" id="found-review"></div>
+
+      <div class="win-share">
+        <!-- Panel de redes sociales -->
+        <div class="social-share-label">📤 COMPARTIR LOGRO</div>
+        <div class="social-share-btns">
+          <button class="soc-btn soc-wa"  id="soc-wa">💬<span>WhatsApp</span></button>
+          <button class="soc-btn soc-tw"  id="soc-tw">✖<span>Twitter</span></button>
+          <button class="soc-btn soc-tg"  id="soc-tg">✈️<span>Telegram</span></button>
+          <button class="soc-btn soc-cp"  id="soc-cp">📋<span>Copiar</span></button>
+        </div>
+        <div id="share-text-area" class="share-area hidden"></div>
+      </div>
+
+      <div class="win-btns">
+        <button class="btn-primary" id="btn-next-puzzle">SIGUIENTE PUZZLE →</button>
+        <button class="btn-secondary" id="btn-win-menu">MENÚ</button>
+        <button class="btn-danger" id="btn-reset-progress" title="Borrar progreso guardado">🗑️ Borrar progreso</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <p class="disclaimer">HILARIO es un juego original de PalabraPlay. No afiliado al New York Times.</p>
+
+  <!-- ══════════════════════════════════════
+       TUTORIAL OVERLAY — primera vez
+  ══════════════════════════════════════ -->
+  <div id="tutorial-overlay" style="
+    display:none;position:fixed;inset:0;z-index:900;
+    background:rgba(15,15,25,0.92);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;
+  ">
+    <div id="tutorial-card" style="
+      background:linear-gradient(160deg,#0f1520,#1a2540 60%,#0d1018);
+      border:2px solid #3a8fff;border-radius:22px;
+      padding:28px 22px 22px;width:min(360px,94vw);text-align:center;
+      box-shadow:0 0 50px rgba(58,143,255,0.25),0 20px 50px rgba(0,0,0,0.7);
+      font-family:'Space Mono',monospace;
+    ">
+      <div id="tut-emoji" style="font-size:50px;margin-bottom:6px">🔍</div>
+      <h2 style="font-size:18px;font-weight:700;color:#3a8fff;letter-spacing:2px;margin:0 0 4px">¿CÓMO SE JUEGA?</h2>
+      <p style="font-size:11px;color:#6a9fff;margin:0 0 16px;letter-spacing:.5px">HILARIO — Sopa de letras temática</p>
+
+      <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(58,143,255,0.2);border-radius:14px;padding:14px 10px;margin-bottom:14px;">
+        <div id="tut-steps" style="display:flex;flex-direction:column;gap:9px;">
+          <div class="htut-row" id="htut-0">
+            <span class="htut-icon">👆</span>
+            <span class="htut-desc"><strong>Arrastra</strong> el dedo (o ratón) por las letras adyacentes para formar palabras</span>
+          </div>
+          <div class="htut-row" id="htut-1">
+            <span class="htut-icon">🔵</span>
+            <span class="htut-desc"><strong>Palabras del tema</strong> se marcan en azul — encuéntralas todas para ganar</span>
+          </div>
+          <div class="htut-row" id="htut-2">
+            <span class="htut-icon">⭐</span>
+            <span class="htut-desc">El <strong>PANGRAMA</strong> (dorado) cruza el tablero de lado a lado — ¡la más larga!</span>
+          </div>
+          <div class="htut-row" id="htut-3">
+            <span class="htut-icon">💡</span>
+            <span class="htut-desc">Encuentra <strong>3 palabras extra</strong> (no del tema) para ganar una pista</span>
+          </div>
+          <div class="htut-row" id="htut-4">
+            <span class="htut-icon">🔗</span>
+            <span class="htut-desc">Las letras se conectan en <strong>cualquier dirección</strong> — horizontal, vertical o diagonal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini demo visual de cuadrícula -->
+      <div id="tut-grid-demo" style="
+        display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+        margin:0 auto 14px;width:160px;
+      ">
+      </div>
+
+      <!-- Barra de progreso del tutorial -->
+      <div style="background:rgba(58,143,255,0.15);border-radius:999px;height:5px;margin-bottom:16px;overflow:hidden;">
+        <div id="htut-progress" style="height:100%;width:20%;background:#3a8fff;border-radius:999px;transition:width .5s;box-shadow:0 0 8px #3a8fff;"></div>
+      </div>
+
+      <button id="tut-jugar-btn" style="
+        width:100%;padding:14px;border-radius:14px;
+        background:linear-gradient(180deg,#3a8fff,#1a5fcc 50%,#0d3a99);
+        color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:2px;
+        border:2px solid #0a2a70;cursor:pointer;
+        box-shadow:0 0 20px rgba(58,143,255,0.4),0 5px 0 #091d55;
+        transition:.12s;
+      ">¡ENTENDIDO! JUGAR 🔍</button>
+      <button id="tut-skip-btn" style="
+        background:none;border:none;color:rgba(255,255,255,0.35);
+        font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;
+        margin-top:10px;text-decoration:underline;letter-spacing:.5px;
+      ">Saltar tutorial</button>
+    </div>
+  </div>
+
+  <style>
+  /* ── Tutorial rows ── */
+  .htut-row{
+    display:flex;align-items:flex-start;gap:10px;text-align:left;
+    background:rgba(58,143,255,0.06);border:1px solid rgba(58,143,255,0.12);
+    border-radius:10px;padding:8px 10px;opacity:.3;transition:opacity .4s,background .4s,border-color .4s;
+  }
+  .htut-row.active{
+    opacity:1!important;background:rgba(58,143,255,0.15)!important;
+    border-color:rgba(58,143,255,0.4)!important;
+  }
+  .htut-icon{ font-size:20px;flex-shrink:0;margin-top:1px; }
+  .htut-desc{ font-size:11.5px;color:#b0d0ff;font-family:'Space Mono',monospace;line-height:1.5; }
+  .htut-desc strong{ color:#fff; }
+
+  /* Mini celdas de demo */
+  .demo-cell{
+    aspect-ratio:1;border-radius:6px;display:grid;place-items:center;
+    font-size:13px;font-weight:700;font-family:'Space Mono',monospace;
+    background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+    color:#aaa;transition:background .3s,color .3s,transform .3s;
+  }
+  .demo-cell.demo-active{
+    background:#3a8fff!important;color:#fff!important;
+    border-color:#5aafff!important;transform:scale(1.12);
+    box-shadow:0 0 10px rgba(58,143,255,0.6);
+  }
+  .demo-cell.demo-pangram{
+    background:#ffd700!important;color:#1a1a00!important;
+    border-color:#ffa500!important;transform:scale(1.12);
+    box-shadow:0 0 10px rgba(255,215,0,0.6);
+  }
+
+  /* ── Social share en pantalla de victoria ── */
+  .social-share-label{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:11px;
+    letter-spacing:2px;color:rgba(255,255,255,0.5);margin-bottom:8px;text-align:center;
+  }
+  .social-share-btns{
+    display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;
+  }
+  .soc-btn{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    border-radius:11px;padding:8px 13px;cursor:pointer;
+    font-family:'Space Mono',monospace;font-weight:700;font-size:14px;
+    color:#fff;min-width:60px;border:2px solid rgba(0,0,0,0.4);
+    transition:.12s;box-shadow:0 4px 0 rgba(0,0,0,0.35);
+  }
+  .soc-btn:active{ transform:translateY(3px);box-shadow:none; }
+  .soc-btn span{ font-size:9px;opacity:.85;letter-spacing:.3px; }
+  .soc-wa{ background:linear-gradient(180deg,#25d366,#128c7e); }
+  .soc-tw{ background:linear-gradient(180deg,#222,#000); }
+  .soc-tg{ background:linear-gradient(180deg,#2aabee,#1a7cc0); }
+  .soc-cp{ background:linear-gradient(180deg,#7c3aed,#4c1d95); }
+
+  /* ── Botón peligro (borrar progreso) ── */
+  .btn-danger{
+    background:linear-gradient(180deg,#991b1b,#7f1d1d);
+    color:#fff;border:2px solid #450a0a;border-radius:10px;
+    font-family:'Syne',sans-serif;font-weight:800;font-size:12px;
+    letter-spacing:1px;padding:9px 14px;cursor:pointer;
+    box-shadow:0 4px 0 #2d0606,0 6px 14px rgba(0,0,0,0.3);
+    transition:.12s;
+  }
+  .btn-danger:active{ transform:translateY(3px);box-shadow:none; }
+  </style>
+
+  <script src="hilario.js"></script>
+
+  <script>
+  /* ══════════════════════════════════════
+     TUTORIAL ANIMADO — primera vez
+  ══════════════════════════════════════ */
+  (function(){
+    const KEY = 'hilario_tut_v1';
+    if(localStorage.getItem(KEY)) return;
+
+    const overlay  = document.getElementById('tutorial-overlay');
+    const rows     = document.querySelectorAll('.htut-row');
+    const progress = document.getElementById('htut-progress');
+    const steps    = rows.length;
+    let current    = 0;
+    let interval   = null;
+
+    // Mini demo — cuadrícula 5×2 de letras de ejemplo
+    const demoLetters = ['H','I','L','A','R','I','O','!','🔍','⭐'];
+    const grid = document.getElementById('tut-grid-demo');
+    if(grid){
+      demoLetters.forEach((l,i)=>{
+        const c = document.createElement('div');
+        c.className='demo-cell';
+        c.textContent=l;
+        c.id='dc-'+i;
+        grid.appendChild(c);
+      });
+    }
+
+    // Patrones de animación por paso
+    const patterns = [
+      [0,1,2,3,4],          // arrastra — HILAR
+      [0,1,2,3,4,5,6],      // tema — HILARIO
+      [0,5,6,7,8,9],        // pangrama — dorado
+      [7,8,9],              // extras
+      [0,2,4,6,8],          // diagonal
+    ];
+    const isPangram = [false,false,true,false,false];
+    const emojis    = ['👆','🔵','⭐','💡','🔗'];
+
+    function showStep(i){
+      rows.forEach((r,idx)=> r.classList.toggle('active', idx===i));
+      progress.style.width = ((i+1)/steps*100)+'%';
+      document.getElementById('tut-emoji').textContent = emojis[i]||'🔍';
+      // animación de celdas demo
+      document.querySelectorAll('.demo-cell').forEach(c=>{
+        c.classList.remove('demo-active','demo-pangram');
+      });
+      const pat = patterns[i] || [];
+      const usePangram = isPangram[i];
+      pat.forEach((idx,order)=>{
+        const cell = document.getElementById('dc-'+idx);
+        if(!cell) return;
+        setTimeout(()=>{
+          cell.classList.add(usePangram ? 'demo-pangram' : 'demo-active');
+        }, order*120);
+      });
+    }
+
+    function closeTutorial(){
+      localStorage.setItem(KEY,'1');
+      clearInterval(interval);
+      overlay.style.opacity='0';
+      overlay.style.transition='opacity .4s';
+      setTimeout(()=>{ overlay.style.display='none'; overlay.style.opacity=''; },420);
+    }
+
+    setTimeout(()=>{
+      overlay.style.display='flex';
+      showStep(0);
+      interval = setInterval(()=>{
+        current=(current+1)%steps;
+        showStep(current);
+      }, 2200);
+    }, 600);
+
+    document.getElementById('tut-jugar-btn').addEventListener('click', closeTutorial);
+    document.getElementById('tut-skip-btn').addEventListener('click', ()=>{
+      localStorage.setItem(KEY,'1');
+      clearInterval(interval);
+      overlay.style.display='none';
+    });
+  })();
+
+  /* ══════════════════════════════════════
+     COMPARTIR EN REDES SOCIALES
+  ══════════════════════════════════════ */
+  function setupSocialShare(){
+    const area = document.getElementById('share-text-area');
+    const text = area ? area.textContent.trim() : '';
+    if(!text) return;
+    const enc = encodeURIComponent(text);
+
+    const wa = document.getElementById('soc-wa');
+    const tw = document.getElementById('soc-tw');
+    const tg = document.getElementById('soc-tg');
+    const cp = document.getElementById('soc-cp');
+
+    if(wa) wa.onclick = ()=> window.open(`https://wa.me/?text=${enc}`,'_blank');
+    if(tw) tw.onclick = ()=> window.open(`https://twitter.com/intent/tweet?text=${enc}`,'_blank');
+    if(tg) tg.onclick = ()=> window.open(`https://t.me/share/url?url=https://palabraplay.com&text=${enc}`,'_blank');
+    if(cp) cp.onclick = ()=>{
+      navigator.clipboard.writeText(text).then(()=>{
+        cp.innerHTML='✅<span>¡Copiado!</span>';
+        setTimeout(()=>{ cp.innerHTML='📋<span>Copiar</span>'; },2200);
+      }).catch(()=>{
+        const ta=document.createElement('textarea');
+        ta.value=text;ta.style.cssText='position:fixed;opacity:0';
+        document.body.appendChild(ta);ta.select();document.execCommand('copy');
+        document.body.removeChild(ta);
+        cp.innerHTML='✅<span>¡Copiado!</span>';
+        setTimeout(()=>{ cp.innerHTML='📋<span>Copiar</span>'; },2200);
+      });
+    };
+  }
+
+  // Detectar cuando aparece la pantalla de victoria
+  const winScreen = document.getElementById('screen-win');
+  if(winScreen){
+    new MutationObserver(()=>{
+      if(winScreen.classList.contains('active')) setTimeout(setupSocialShare, 200);
+    }).observe(winScreen,{attributes:true,attributeFilter:['class']});
+  }
+
+  /* ══════════════════════════════════════
+     BORRAR PROGRESO
+  ══════════════════════════════════════ */
+  const btnReset = document.getElementById('btn-reset-progress');
+  if(btnReset){
+    btnReset.addEventListener('click', ()=>{
+      if(!confirm('⚠️ ¿Borrar TODO el progreso guardado?\n\nSe eliminarán los puzzles completados.\n\n¡Esta acción no se puede deshacer!')) return;
+      localStorage.removeItem('hilario_done');
+      localStorage.removeItem('hilario_tut_v1');
+      // Resetear estado en memoria
+      if(typeof G !== 'undefined') G.completedIds = [];
+      // Volver al menú y refrescar lista
+      if(typeof buildPuzzleList === 'function') buildPuzzleList();
+      if(typeof showScreen === 'function') showScreen('screen-welcome');
+      alert('✅ Progreso borrado. ¡Empieza de nuevo!');
+    });
+  }
+  </script>
+</body>
+</html>

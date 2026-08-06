@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEXO — Adivina la Palabra</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== PANTALLA DE BIENVENIDA ===== -->
+  <div id="screen-welcome" class="screen active">
+    <div class="welcome-bg"></div>
+    <div class="welcome-content">
+      <div class="logo-wrap">
+        <span class="logo-badge">v2.0</span>
+        <h1 class="logo">LEXO</h1>
+        <p class="tagline">Adivina la palabra oculta</p>
+      </div>
+      <div class="rules-box">
+        <div class="rule-item"><span class="rule-tile correct-demo">A</span><span>Letra correcta en posición correcta</span></div>
+        <div class="rule-item"><span class="rule-tile present-demo">B</span><span>Letra correcta en posición incorrecta</span></div>
+        <div class="rule-item"><span class="rule-tile absent-demo">C</span><span>Letra no está en la palabra</span></div>
+      </div>
+      <div class="difficulty-wrap">
+        <p class="label">Elige dificultad:</p>
+        <div class="diff-btns">
+          <button class="diff-btn" data-diff="facil">🌱 FÁCIL<br><small>6 intentos · 4 letras</small></button>
+          <button class="diff-btn active" data-diff="normal">⚡ NORMAL<br><small>6 intentos · 5 letras</small></button>
+          <button class="diff-btn" data-diff="dificil">🔥 DIFÍCIL<br><small>5 intentos · 6 letras</small></button>
+          <button class="diff-btn" data-diff="extremo">💀 EXTREMO<br><small>4 intentos · 7 letras</small></button>
+        </div>
+      </div>
+      <div class="welcome-actions">
+        <button class="btn-start" id="btn-start">JUGAR AHORA</button>
+        <button class="btn-records-welcome" id="btn-show-records">🏆 VER RÉCORDS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANTALLA DE JUEGO ===== -->
+  <div id="screen-game" class="screen">
+    <header class="game-header">
+      <button class="icon-btn" id="btn-back" title="Menú">←</button>
+      <div class="header-center">
+        <span class="game-title">LEXO</span>
+        <div class="stats-inline">
+          <span id="hdr-level">Nivel 1</span>
+          <span class="sep">·</span>
+          <span id="hdr-score">0 pts</span>
+          <span class="sep">·</span>
+          <span id="hdr-streak">🔥 0</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="btn-hint" title="Pista">💡</button>
+    </header>
+
+    <div class="game-area">
+      <div id="attempts-left-bar">
+        <span id="attempts-text">6 intentos</span>
+        <div class="attempt-dots" id="attempt-dots"></div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+      <div id="message" class="message hidden"></div>
+
+      <div id="keyboard" class="keyboard">
+        <div class="kb-row" id="kb-row-1"></div>
+        <div class="kb-row" id="kb-row-2"></div>
+        <div class="kb-row" id="kb-row-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANTALLA DE RESULTADO ===== -->
+  <div id="screen-result" class="screen">
+    <div class="result-content">
+      <div id="result-emoji" class="result-emoji">🎉</div>
+      <div id="result-level-badge" class="result-level-badge">⚡ NORMAL</div>
+      <h2 id="result-title">¡GANASTE!</h2>
+      <p id="result-subtitle">Increíble vocabulario</p>
+
+      <div class="result-stats">
+        <div class="stat-card">
+          <span class="stat-num" id="res-score">0</span>
+          <span class="stat-label">Puntos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="res-attempts">0</span>
+          <span class="stat-label">Intentos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="res-level">1</span>
+          <span class="stat-label">Nivel</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="res-streak">0</span>
+          <span class="stat-label">Racha 🔥</span>
+        </div>
+      </div>
+
+      <div id="res-word-reveal" class="word-reveal"></div>
+
+      <!-- COMPARTIR -->
+      <div class="share-section">
+        <p class="share-label">COMPARTIR RESULTADO</p>
+        <div class="share-btns">
+          <button class="share-btn share-wa" id="share-wa"><span class="share-icon">📱</span><span>WhatsApp</span></button>
+          <button class="share-btn share-tw" id="share-tw"><span class="share-icon">𝕏</span><span>Twitter</span></button>
+          <button class="share-btn share-tg" id="share-tg"><span class="share-icon">✈️</span><span>Telegram</span></button>
+          <button class="share-btn share-cp" id="share-cp"><span class="share-icon">📋</span><span>Copiar</span></button>
+        </div>
+      </div>
+
+      <div class="result-btns">
+        <button class="btn-next" id="btn-next-word">SIGUIENTE PALABRA →</button>
+        <button class="btn-menu" id="btn-menu">MENÚ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL RÉCORDS ===== -->
+  <div id="records-modal" class="modal-overlay" style="display:none">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🏆 RÉCORDS</h3>
+        <button class="modal-close" id="records-close">✕</button>
+      </div>
+      <div id="records-content" class="records-content"></div>
+      <button class="btn-clear-records" id="btn-clear-records">Borrar récords</button>
+    </div>
+  </div>
+
+  <!-- ===== TUTORIAL OVERLAY ===== -->
+  <div id="tutorial-overlay" class="tutorial-overlay" style="display:none">
+    <div class="tutorial-backdrop"></div>
+    <div class="tutorial-card">
+      <div class="tutorial-header">
+        <div id="tut-emoji" class="tut-emoji">🔤</div>
+        <div class="tut-progress">
+          <div class="tut-progress-track">
+            <div class="tut-progress-fill" id="tut-progress-fill"></div>
+          </div>
+          <span class="tut-step-count" id="tut-step-count">1 / 7</span>
+        </div>
+      </div>
+      <h3 id="tut-title" class="tut-title">¡Bienvenido a LEXO!</h3>
+      <p id="tut-desc" class="tut-desc">Adivina la palabra oculta.</p>
+      <div id="tut-demo" class="tut-demo"></div>
+      <div class="tut-actions">
+        <button class="tut-skip" id="tut-skip-btn">SALTAR</button>
+        <button class="tut-next" id="tut-next-btn">SIGUIENTE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANO FANTASMA -->
+  <div id="ghost-hand" class="ghost-hand" style="display:none">👆</div>
+
+  <script src="game.js"></script>
+</body>
+</html>

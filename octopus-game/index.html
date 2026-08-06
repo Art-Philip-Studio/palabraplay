@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>OCTOPUS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- WRAPPER: contiene todo, centrado en pantalla -->
+  <div id="game-wrap">
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-block">
+        <span class="hud-label">SCORE</span>
+        <span id="score-val">00000</span>
+      </div>
+      <div class="hud-block center">
+        <span id="clock-display">00:00</span>
+        <span id="mode-badge">GAME A</span>
+      </div>
+      <div class="hud-block right">
+        <span class="hud-label">HI-SCORE</span>
+        <span id="hi-val">00000</span>
+      </div>
+    </div>
+
+    <!-- Canvas del juego -->
+    <div id="canvas-wrap">
+      <canvas id="game"></canvas>
+
+      <!-- Overlay inicio / game over — dentro del canvas-wrap -->
+      <div id="overlay">
+        <div id="overlay-box">
+          <div id="overlay-title">OCTOPUS</div>
+          <div id="overlay-sub">Presiona LEFT o RIGHT para iniciar</div>
+          <div id="overlay-score"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vidas + nivel (bajo el canvas) -->
+    <div id="lives-bar">
+      <span class="heart active" id="h1">♥</span>
+      <span class="heart active" id="h2">♥</span>
+      <span class="heart active" id="h3">♥</span>
+      <span id="level-badge">LV 1</span>
+    </div>
+
+    <!-- Controles -->
+    <div id="controls">
+      <button class="btn" id="btn-left"
+        ontouchstart="btnDown('left',event)" ontouchend="btnUp('left',event)"
+        onmousedown="btnDown('left',event)"  onmouseup="btnUp('left',event)">
+        <span class="btn-icon">◀</span>
+        <span class="btn-lbl">LEFT</span>
+      </button>
+
+      <div id="ctrl-center">
+        <button class="mini-btn" id="mb-a">GAME A</button>
+        <button class="mini-btn" id="mb-b">GAME B</button>
+        <button class="mini-btn" id="mb-time">TIME</button>
+      </div>
+
+      <button class="btn" id="btn-right"
+        ontouchstart="btnDown('right',event)" ontouchend="btnUp('right',event)"
+        onmousedown="btnDown('right',event)"  onmouseup="btnUp('right',event)">
+        <span class="btn-icon">▶</span>
+        <span class="btn-lbl">RIGHT</span>
+      </button>
+    </div>
+
+  </div><!-- /game-wrap -->
+
+  <!-- Botón pausa (fuera del wrap, posición fixed) -->
+  <button id="btn-settings" title="Pausa">⚙️</button>
+
+  <!-- Panel pausa -->
+  <div id="pause-overlay">
+    <div id="pause-box">
+      <div id="pause-title">PAUSA</div>
+      <div class="pause-volume">
+        <button id="btn-mute">🔊</button>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.7">
+      </div>
+      <button class="pause-btn" id="pause-resume">▶ CONTINUAR</button>
+      <button class="pause-btn" id="btn-home">🏠 INICIO</button>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <p id="disclaimer">OCTOPUS es un juego original. No afiliado a Nintendo.</p>
+
+  <script src="game.js"></script>
+</body>
+</html>

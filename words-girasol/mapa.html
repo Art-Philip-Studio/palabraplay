@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mapa de Aventura — Word Girasol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Nunito',Arial,sans-serif;
+  background:#0a3d1a;overflow:hidden;
+  height:100vh;display:flex;align-items:center;justify-content:center;
+}
+
+/* ── Contenedor principal ── */
+.map-wrap{
+  position:relative;width:100%;max-width:460px;
+  height:100dvh;overflow:hidden;
+  background-image:url('img/girasol-fondo.webp');
+  background-size:cover;background-position:center;
+}
+.map-wrap::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.25) 40%,rgba(0,0,0,0.4) 100%);
+  z-index:1;pointer-events:none;
+}
+
+/* ── Header ── */
+.map-header{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  background:linear-gradient(180deg,rgba(0,0,0,0.85),transparent);
+  padding:16px 16px 30px;text-align:center;
+}
+.map-header h1{
+  color:#fde047;font-size:22px;font-weight:900;
+  text-shadow:0 2px 6px #000;letter-spacing:1px;
+}
+.map-header p{color:#fef3c7;font-size:12px;opacity:.9;margin-top:3px}
+.back-btn{
+  position:absolute;top:12px;left:12px;z-index:30;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(0,0,0,0.65);border:2px solid #fde047;
+  color:#fde047;font-size:22px;display:grid;place-items:center;
+  cursor:pointer;text-decoration:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* ── Área scrollable del mapa ── */
+.map-scroll{
+  position:absolute;inset:0;z-index:10;
+  overflow-y:auto;overflow-x:hidden;
+  padding:80px 20px 120px;
+  scrollbar-width:none;
+}
+.map-scroll::-webkit-scrollbar{display:none}
+
+/* ── SVG camino ── */
+.map-path-svg{
+  position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:5;
+}
+
+/* ── Nodo de nivel ── */
+.level-node{
+  position:relative;width:72px;height:88px;
+  transform:translateX(-50%);
+  cursor:pointer;z-index:15;
+  transition:transform .18s;display:inline-block;
+  margin-left:0;
+}
+.level-node:active{transform:translateX(-50%) scale(.9)}
+.level-bubble{
+  width:62px;height:62px;border-radius:50%;
+  background:linear-gradient(180deg,#d1d5db,#9ca3af);
+  border:4px solid #6b7280;
+  box-shadow:0 4px 14px rgba(0,0,0,.7),inset 0 3px 4px rgba(255,255,255,.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:10px;font-weight:900;color:#374151;margin:0 auto;
+  position:relative;overflow:hidden;
+}
+.bubble-num{font-size:20px;font-weight:900;line-height:1}
+.bubble-emoji{font-size:13px;line-height:1;margin-top:1px}
+.level-name{
+  font-size:9px;font-weight:900;color:#fffbe8;
+  text-align:center;margin-top:4px;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:80px;transform:translateX(-4px);
+}
+
+/* Estados */
+.level-node.completed .level-bubble{
+  background:linear-gradient(180deg,#fde047,#facc15 60%,#eab308);
+  border-color:#92400e;color:#78350f;
+  box-shadow:0 4px 18px rgba(250,204,21,.8),0 0 22px rgba(250,204,21,.4),inset 0 3px 4px rgba(255,255,255,.5);
+}
+.level-node.current .level-bubble{
+  background:linear-gradient(180deg,#fff8c6,#fde047);
+  border-color:#d97706;color:#78350f;
+  box-shadow:0 0 0 0 rgba(250,204,21,.7);
+  animation:pulseCurrent 1.6s infinite;
+}
+.level-node.locked .level-bubble{
+  background:linear-gradient(180deg,#4b5563,#374151);
+  border-color:#1f2937;color:#9ca3af;opacity:.7;
+}
+.lock-icon{
+  position:absolute;top:2px;right:2px;
+  font-size:13px;filter:drop-shadow(0 1px 2px #000);
+}
+@keyframes pulseCurrent{
+  0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7),0 4px 14px rgba(0,0,0,.6)}
+  50%{box-shadow:0 0 0 14px rgba(250,204,21,0),0 4px 14px rgba(0,0,0,.6)}
+}
+
+/* Estrellas bajo el nodo */
+.level-stars{display:flex;gap:2px;justify-content:center;margin-top:3px}
+.star{font-size:12px;color:rgba(255,255,255,.25);filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))}
+.star.lit{color:#fde047}
+
+/* Pulso "JUGAR" sobre nivel actual */
+.play-badge{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  background:#16a34a;color:#fff;font-size:9px;font-weight:900;
+  padding:2px 8px;border-radius:999px;border:2px solid #14532d;
+  white-space:nowrap;letter-spacing:.5px;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  animation:badgeBounce 1s infinite;
+}
+@keyframes badgeBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+
+/* ── Footer ── */
+.map-footer{
+  position:absolute;bottom:0;left:0;right:0;z-index:20;
+  background:linear-gradient(0deg,rgba(0,0,0,0.85),transparent);
+  padding:30px 20px 20px;text-align:center;
+}
+.play-current-btn{
+  background:linear-gradient(180deg,#6edd40,#4ab020 40%,#2d7a10 75%,#1a5008 100%);
+  color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;
+  border:4px solid #104008;border-radius:16px;
+  padding:14px 36px;cursor:pointer;
+  box-shadow:inset 0 4px 0 rgba(150,255,80,.4),0 6px 0 #0a2a04,0 8px 18px rgba(0,0,0,.4);
+  letter-spacing:.5px;
+}
+.map-progress-text{color:#fef3c7;font-size:11px;font-weight:900;margin-top:8px;opacity:.85}
+
+/* ── Tutorial overlay ── */
+.tut-overlay{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+.tut-overlay.show{display:flex}
+.tut-card{
+  width:min(340px,92vw);
+  background:linear-gradient(160deg,#f8eecb,#e8d090 50%,#d4b060);
+  border:4px solid #7a4e10;border-radius:22px;
+  padding:24px 20px 20px;text-align:center;
+  box-shadow:0 28px 56px rgba(0,0,0,.7),inset 0 4px 0 rgba(255,245,180,.7);
+  animation:cardIn .5s cubic-bezier(.17,.89,.32,1.4);
+}
+@keyframes cardIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.tut-card h2{font-size:20px;color:#4a2800;margin-bottom:12px}
+.tut-step-card{
+  background:rgba(255,255,255,.5);border:2px solid #c89030;border-radius:12px;
+  padding:10px 12px;margin-bottom:8px;text-align:left;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.tut-step-icon{font-size:24px;flex-shrink:0;margin-top:1px}
+.tut-step-text{font-size:12px;font-weight:800;color:#4a2800;line-height:1.5}
+.tut-step-text strong{color:#78350f}
+.tut-ok-btn{
+  margin-top:10px;width:100%;padding:14px;
+  background:linear-gradient(180deg,#6edd40,#4ab020 40%,#2d7a10 75%,#1a5008 100%);
+  color:#fff;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;
+  border:4px solid #104008;border-radius:14px;cursor:pointer;
+  box-shadow:inset 0 4px 0 rgba(150,255,80,.4),0 5px 0 #0a2a04;
+}
+</style>
+</head>
+<body>
+<div class="map-wrap">
+  <div class="map-header">
+    <h1>🗺️ MAPA DE AVENTURA</h1>
+    <p id="mapProgressText">Tu progreso se guarda automáticamente</p>
+  </div>
+  <a class="back-btn" href="index.html">‹</a>
+
+  <!-- Niveles se generan por JS -->
+  <div class="map-scroll" id="mapScroll"></div>
+
+  <div class="map-footer">
+    <button class="play-current-btn" id="playCurrentBtn">🌻 Jugar nivel actual</button>
+    <div class="map-progress-text" id="mapProgressLabel"></div>
+  </div>
+</div>
+
+<!-- Tutorial de cómo jugar -->
+<div class="tut-overlay" id="tutOverlay">
+  <div class="tut-card">
+    <div style="font-size:52px;margin-bottom:8px">🌻</div>
+    <h2>¿Cómo se juega?</h2>
+    <div class="tut-step-card">
+      <div class="tut-step-icon">👆</div>
+      <div class="tut-step-text"><strong>Toca o arrastra</strong> las letras del panal para conectarlas y formar palabras.</div>
+    </div>
+    <div class="tut-step-card">
+      <div class="tut-step-icon">✅</div>
+      <div class="tut-step-text">Pulsa <strong>ENVIAR</strong> (o suelta) para confirmar. Si la palabra existe, ¡suma puntos!</div>
+    </div>
+    <div class="tut-step-card">
+      <div class="tut-step-icon">🌟</div>
+      <div class="tut-step-text">Encuentra la <strong>Palabra Clave</strong> (la más larga) para completar el nivel.</div>
+    </div>
+    <div class="tut-step-card">
+      <div class="tut-step-icon">💡</div>
+      <div class="tut-step-text">Si tardas 30 seg, aparece una <strong>pista automática</strong> en la barra superior.</div>
+    </div>
+    <div class="tut-step-card">
+      <div class="tut-step-icon">🪙</div>
+      <div class="tut-step-text">Usa <strong>monedas</strong> para pedir más pistas con el botón 💡 (−15 🪙 cada vez).</div>
+    </div>
+    <button class="tut-ok-btn" id="tutOkBtn">¡Entendido! 🌻</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const STORAGE_KEY = 'wg_progress_v1';
+const LEVEL_COUNT = 12;
+
+const LEVEL_DATA = [
+  {name:'Girasoles',  emoji:'🌻', color:'#f59e0b'},
+  {name:'Abejas',     emoji:'🐝', color:'#eab308'},
+  {name:'Rosa Té',    emoji:'🌹', color:'#f43f5e'},
+  {name:'Floribunda', emoji:'🌸', color:'#ec4899'},
+  {name:'Trepadora',  emoji:'🌿', color:'#22c55e'},
+  {name:'Miniatura',  emoji:'🌺', color:'#fb7185'},
+  {name:'Silvestre',  emoji:'🌱', color:'#16a34a'},
+  {name:'Polen',      emoji:'🌼', color:'#facc15'},
+  {name:'Jardín',     emoji:'🍃', color:'#4ade80'},
+  {name:'Miel',       emoji:'🍯', color:'#d97706'},
+  {name:'Raíces',     emoji:'🌾', color:'#84cc16'},
+  {name:'Fotosíntesis',emoji:'☀️',color:'#fbbf24'},
+];
+
+// Posiciones en zigzag para los 12 niveles (% izquierda desde centro)
+const POSITIONS = [
+  {x:62},{x:72},{x:50},{x:30},{x:18},
+  {x:32},{x:60},{x:75},{x:60},{x:40},
+  {x:25},{x:48}
+];
+
+function loadProgress(){
+  try{
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    return { unlocked: d.unlocked||1, stars: d.stars||{}, lastLevel: d.lastLevel||1 };
+  }catch{ return {unlocked:1,stars:{},lastLevel:1}; }
+}
+
+function saveProgress(p){ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+
+function buildMap(){
+  const prog = loadProgress();
+  const scroll = document.getElementById('mapScroll');
+  scroll.innerHTML = '';
+
+  // Contenedor relativo para posicionar nodos
+  const container = document.createElement('div');
+  container.style.cssText = 'position:relative;width:100%;min-height:900px;';
+
+  // Calcular posiciones absolutas (de abajo hacia arriba)
+  const totalH = 900;
+  const nodePositions = LEVEL_DATA.map((_,i)=>{
+    const stepH = totalH / (LEVEL_COUNT + 1);
+    const y = totalH - stepH * (i + 1);
+    const x = POSITIONS[i].x;
+    return {x, y};
+  });
+
+  // Dibujar camino SVG
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','900');
+  svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:5';
+
+  // Línea del camino
+  for(let i=0; i<nodePositions.length-1; i++){
+    const a = nodePositions[i];
+    const b = nodePositions[i+1];
+    const ax = a.x/100, bx = b.x/100;
+    // Curva cuadrática
+    const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const mx = (ax+bx)/2;
+    const d = `M ${a.x}% ${a.y+31} Q ${mx*100+5}% ${(a.y+b.y)/2} ${b.x}% ${b.y+31}`;
+    const lvNum = i+1;
+    const isUnlocked = lvNum <= prog.unlocked;
+    line.setAttribute('d', d);
+    line.setAttribute('stroke', isUnlocked ? '#fde047' : 'rgba(255,255,255,0.2)');
+    line.setAttribute('stroke-width','5');
+    line.setAttribute('fill','none');
+    line.setAttribute('stroke-dasharray', isUnlocked ? 'none' : '8 6');
+    line.setAttribute('stroke-linecap','round');
+    if(isUnlocked){
+      line.setAttribute('filter','drop-shadow(0 0 6px rgba(253,224,71,0.7))');
+    }
+    svg.appendChild(line);
+  }
+  container.appendChild(svg);
+
+  // Nodos
+  nodePositions.forEach((pos, i)=>{
+    const lvNum = i + 1;
+    const ld = LEVEL_DATA[i];
+    const stars = prog.stars[lvNum] || 0;
+    const isCompleted = lvNum < prog.unlocked;
+    const isCurrent   = lvNum === prog.unlocked;
+    const isLocked    = lvNum > prog.unlocked;
+
+    const node = document.createElement('div');
+    node.className = 'level-node' + (isCompleted?' completed':isCurrent?' current':' locked');
+    node.dataset.level = lvNum;
+    node.style.cssText = `position:absolute;left:${pos.x}%;top:${pos.y}px`;
+
+    // Badge "JUGAR" sobre nivel actual
+    if(isCurrent){
+      node.innerHTML = `<div class="play-badge">▶ JUGAR</div>`;
+    }
+
+    node.innerHTML += `
+      <div class="level-bubble" style="${isCompleted||isCurrent?'border-color:'+ld.color:''}">
+        ${isLocked ? `<div class="lock-icon">🔒</div>` : ''}
+        <div class="bubble-num">${lvNum}</div>
+        <div class="bubble-emoji">${ld.emoji}</div>
+      </div>
+      <div class="level-name">${ld.name}</div>
+      <div class="level-stars">
+        ${'★★★'.split('').map((_,si)=>`<span class="star${si<stars?' lit':''}">${si<stars?'★':'☆'}</span>`).join('')}
+      </div>
+    `;
+
+    node.onclick = ()=>{
+      if(isLocked){
+        if(navigator.vibrate) navigator.vibrate(40);
+        // Pequeño shake
+        node.style.transform='translateX(-50%) rotate(-4deg)';
+        setTimeout(()=>node.style.transform='translateX(-50%)',200);
+        return;
+      }
+      const p = loadProgress();
+      p.lastLevel = lvNum;
+      saveProgress(p);
+      // Guardar índice de nivel para game.js
+      localStorage.setItem('wg_level', lvNum-1);
+      window.location.href = 'index.html';
+    };
+
+    container.appendChild(node);
+  });
+
+  scroll.appendChild(container);
+
+  // Scroll al nivel actual
+  const currentNode = container.querySelector('.level-node.current');
+  if(currentNode){
+    setTimeout(()=>{
+      const nodeTop = parseInt(currentNode.style.top)||0;
+      scroll.scrollTop = Math.max(0, nodeTop - 200);
+    },100);
+  }
+
+  // Actualizar textos
+  const completed = prog.unlocked - 1;
+  document.getElementById('mapProgressLabel').textContent =
+    `${completed} de ${LEVEL_COUNT} niveles completados`;
+  document.getElementById('mapProgressText').textContent =
+    `Nivel ${prog.unlocked} de ${LEVEL_COUNT} — ¡Sigue avanzando! 🌻`;
+}
+
+// Botón jugar nivel actual
+document.getElementById('playCurrentBtn').onclick = ()=>{
+  const p = loadProgress();
+  localStorage.setItem('wg_level', p.unlocked - 1);
+  window.location.href = 'index.html';
+};
+
+// Tutorial
+const tutSeen = localStorage.getItem('wg_tut_map_seen');
+if(!tutSeen){
+  document.getElementById('tutOverlay').classList.add('show');
+}
+document.getElementById('tutOkBtn').onclick = ()=>{
+  localStorage.setItem('wg_tut_map_seen','1');
+  document.getElementById('tutOverlay').classList.remove('show');
+};
+
+buildMap();
+window.addEventListener('storage', buildMap);
+</script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+/* ═══════════════════════════════════════════════════
+   OCTOPUS — style.css
+   Layout fijo centrado: funciona en PC y Android
+═══════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --accent:    #00ffe0;
+  --gold:      #ffd700;
+  --red:       #e8001e;
+  --dark:      #04080f;
+  --hud-bg:    rgba(0,0,0,0.80);
+  --btn-c:     #e8001e;
+  --btn-p:     #9b0015;
+  --font:      'Press Start 2P', monospace;
+  --safe-b:    env(safe-area-inset-bottom, 0px);
+  /* Aspect ratio del canvas lógico: 480/200 = 2.4 */
+  --canvas-ratio: 2.4;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: var(--font);
+  touch-action: none;
+  -webkit-user-select: none; user-select: none;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ══════════════════════════════════════════
+   WRAPPER PRINCIPAL
+   Ocupa todo el ancho disponible con altura
+   suficiente para HUD + canvas + controles.
+   En escritorio queda centrado.
+══════════════════════════════════════════ */
+#game-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 900px;           /* límite en pantallas muy anchas */
+  height: 100%;
+  max-height: 700px;
+  background: var(--dark);
+  box-shadow: 0 0 60px rgba(0,255,224,0.08);
+}
+
+/* ── HUD ── */
+#hud {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--hud-bg);
+  border-bottom: 1px solid var(--accent);
+  padding: 4px 14px;
+  height: 34px;
+  box-shadow: 0 2px 14px rgba(0,255,224,0.1);
+}
+.hud-block { display:flex; flex-direction:column; align-items:flex-start; gap:1px; }
+.hud-block.center { align-items:center; }
+.hud-block.right  { align-items:flex-end; }
+.hud-label   { font-size:5px; color:var(--accent); letter-spacing:2px; opacity:.7; }
+#score-val, #hi-val { font-size:9px; color:#fff; letter-spacing:2px; }
+#clock-display { font-size:8px; color:var(--accent); letter-spacing:3px; }
+#mode-badge {
+  font-size:5px; color:var(--gold); letter-spacing:1px;
+  background:rgba(255,215,0,.12); padding:1px 4px;
+  border:1px solid var(--gold); border-radius:2px;
+}
+
+/* ── CANVAS WRAP ── */
+/* El canvas ocupa TODO el espacio restante,
+   manteniendo el aspect ratio 2.4:1 con object-fit */
+#canvas-wrap {
+  position: relative;
+  flex: 1 1 0;
+  overflow: hidden;
+  background: #020b1a;
+  /* Centra canvas si hay barras negras */
+  display: flex; align-items: center; justify-content: center;
+}
+
+#game {
+  display: block;
+  /* El canvas se escala a contener en el área disponible */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  /* Aspect ratio = 480:200 */
+  aspect-ratio: 480 / 200;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ── OVERLAY (dentro de canvas-wrap) ── */
+#overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,8,0.72);
+  backdrop-filter: blur(2px);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  z-index: 50;
+  transition: opacity .3s;
+}
+#overlay.hidden { opacity:0; pointer-events:none; }
+#overlay-box {
+  width:100%; max-width:500px; margin:auto;
+  padding: 1rem 1rem 2rem;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+#overlay-title {
+  font-size: clamp(14px,5vw,28px);
+  color:var(--accent); letter-spacing:6px;
+  text-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,255,224,.4);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+#overlay-sub {
+  font-size: clamp(5px,1.8vw,8px);
+  color:rgba(255,255,255,.75); letter-spacing:2px;
+  text-align:center; line-height:2;
+}
+#overlay-score {
+  font-size: clamp(6px,2vw,9px);
+  color:var(--gold); letter-spacing:3px;
+}
+
+/* ── LIVES BAR ── */
+#lives-bar {
+  flex-shrink: 0;
+  display:flex; align-items:center; gap:6px;
+  padding: 3px 12px;
+  background: rgba(0,0,0,0.55);
+  border-top: 1px solid rgba(0,255,224,0.08);
+}
+.heart { font-size:14px; color:#333; transition:color .15s, text-shadow .15s; }
+.heart.active { color:var(--red); text-shadow:0 0 8px rgba(232,0,30,.8); }
+#level-badge { margin-left:auto; font-size:6px; color:var(--gold); letter-spacing:2px; }
+
+/* ── CONTROLES ── */
+#controls {
+  flex-shrink: 0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 16px calc(8px + var(--safe-b)) 16px;
+  background: var(--hud-bg);
+  border-top: 1px solid var(--accent);
+  box-shadow: 0 -2px 14px rgba(0,255,224,0.1);
+  gap: 12px;
+}
+
+/* ── BOTONES PRINCIPALES ── */
+.btn {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+  /* Tamaño: mínimo 56px, escala con viewport, máximo 88px */
+  width:  clamp(56px, 13vw, 88px);
+  height: clamp(56px, 13vw, 88px);
+  border-radius:50%;
+  background: radial-gradient(circle at 38% 32%, #ff5566, var(--btn-c) 55%, var(--btn-p));
+  border:none; outline:none;
+  box-shadow: 0 6px 18px rgba(232,0,30,.55), 0 0 0 3px rgba(232,0,30,.15), inset 0 2px 4px rgba(255,150,150,.3);
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  pointer-events:auto;
+  transition:transform .08s, box-shadow .08s;
+}
+.btn:active, .btn.pressed {
+  transform:scale(0.9) translateY(3px);
+  box-shadow:0 2px 8px rgba(232,0,30,.4), inset 0 3px 8px rgba(0,0,0,.5);
+  background:radial-gradient(circle at 38% 32%, #cc2233, var(--btn-p));
+}
+.btn-icon { font-size:clamp(14px,4vw,20px); color:rgba(255,255,255,.9); line-height:1; }
+.btn-lbl  { font-size:clamp(4px,1.2vw,6px); color:rgba(255,255,255,.7); letter-spacing:2px; }
+
+/* ── MINI BOTONES ── */
+#ctrl-center { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.mini-btn {
+  font-family:var(--font);
+  font-size:clamp(4px,1.2vw,6px);
+  color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(0,255,224,.25);
+  border-radius:3px; padding:4px 10px;
+  cursor:pointer; letter-spacing:1px; outline:none;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  pointer-events:auto;
+  transition:background .1s, border-color .1s;
+  min-width: 70px; text-align:center;
+}
+.mini-btn:active, .mini-btn.active {
+  background:rgba(0,255,224,.14);
+  border-color:var(--accent); color:var(--accent);
+}
+
+/* ── BOTÓN PAUSA (fixed, encima de todo) ── */
+#btn-settings {
+  position:fixed; top:10px; right:10px;
+  z-index:9000;
+  width:44px; height:44px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.3);
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  font-size:1.2rem; color:#fff; cursor:pointer;
+  opacity:.7;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  pointer-events:auto;
+  transition:opacity .15s, transform .2s;
+}
+#btn-settings:active { opacity:1; transform:rotate(60deg); }
+
+/* ── PANEL PAUSA ── */
+#pause-overlay {
+  position:fixed; inset:0;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(5px);
+  z-index:8000; pointer-events:auto;
+}
+#pause-overlay.visible { display:flex; }
+#pause-box {
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  background:rgba(8,18,38,.96);
+  border:1px solid var(--accent); border-radius:12px;
+  padding:28px 36px;
+  box-shadow:0 0 30px rgba(0,255,224,.2);
+  min-width:220px;
+}
+#pause-title { font-size:14px; color:var(--accent); letter-spacing:5px; text-shadow:0 0 14px var(--accent); }
+.pause-volume { display:flex; align-items:center; gap:10px; width:100%; }
+#btn-mute {
+  font-size:1.2rem; background:none; border:none; cursor:pointer; color:#fff;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent; padding:4px;
+}
+#volume-slider { flex:1; height:4px; accent-color:var(--accent); touch-action:manipulation; }
+.pause-btn {
+  font-family:var(--font); font-size:7px; letter-spacing:2px; color:#fff;
+  background:rgba(255,255,255,.08); border:1px solid rgba(0,255,224,.3);
+  border-radius:4px; padding:10px 20px; cursor:pointer; width:100%;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent; pointer-events:auto;
+  transition:background .1s;
+}
+.pause-btn:active { background:rgba(0,255,224,.18); }
+
+/* ── DISCLAIMER ── */
+#disclaimer {
+  position:fixed; bottom:4px; left:50%; transform:translateX(-50%);
+  font-size:10px; opacity:.2; color:#fff;
+  pointer-events:none; white-space:nowrap;
+  z-index:5; font-family:sans-serif;
+}
+
+/* ── MISS SHAKE ── */
+@keyframes miss-shake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}   60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+}
+#game-wrap.miss { animation:miss-shake .3s; }
+
+/* ── SCANLINES ── */
+body::after {
+  content:''; position:fixed; inset:0;
+  background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);
+  pointer-events:none; z-index:200;
+}
+
+/* ════════════════════════════════
+   RESPONSIVE: PC escritorio
+   En pantallas anchas el wrap
+   queda centrado con sombra
+════════════════════════════════ */
+@media (min-width: 640px) {
+  body { background: #000 url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300ffe0' fill-opacity='0.03'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/svg%3E"); }
+  #game-wrap {
+    border-radius: 12px;
+    border: 1px solid rgba(0,255,224,0.15);
+    box-shadow: 0 0 80px rgba(0,255,224,0.12), 0 0 200px rgba(0,0,0,0.8);
+    max-height: 640px;
+  }
+}
+
+/* ════════════════════════════════
+   RESPONSIVE: Móvil portrait
+   El canvas se encoge, los
+   controles siguen siendo grandes
+════════════════════════════════ */
+@media (max-width: 480px) and (orientation: portrait) {
+  #game-wrap { max-height: 100%; border-radius: 0; }
+  .btn { width: clamp(64px,18vw,80px); height: clamp(64px,18vw,80px); }
+}
+
+/* ════════════════════════════════
+   Landscape móvil: controles más
+   compactos para dar más espacio
+   al canvas
+════════════════════════════════ */
+@media (max-height: 420px) and (orientation: landscape) {
+  #hud    { height: 28px; padding: 2px 10px; }
+  #lives-bar { padding: 2px 10px; }
+  #lives-bar .heart { font-size: 11px; }
+  #controls { padding: 4px 12px calc(4px + var(--safe-b)) 12px; }
+  .btn { width:52px; height:52px; }
+  .btn-icon { font-size:13px; }
+  .btn-lbl  { display:none; }
+  .mini-btn { padding:3px 7px; min-width:60px; }
+}

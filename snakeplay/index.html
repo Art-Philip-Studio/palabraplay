@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnakePlay — .io</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="snake.css">
+</head>
+<body>
+
+  <!-- ===== ROTAR DISPOSITIVO ===== -->
+  <div id="rotate-overlay">
+    <div class="rotate-icon">📱</div>
+    <div class="rotate-title">Gira el dispositivo</div>
+    <div class="rotate-sub">SnakePlay funciona en horizontal</div>
+  </div>
+
+  <!-- ===== INICIO ===== -->
+  <div id="screen-start" class="screen active">
+    <canvas id="bg-canvas"></canvas>
+    <div class="start-content">
+      <div class="logo-wrap">
+        <div class="logo-snake">🐍</div>
+        <h1 class="logo-title">Snake<span>Play</span></h1>
+        <p class="logo-sub">.io — Sobrevive y domina</p>
+      </div>
+      <div class="start-panel">
+        <label class="name-label">Tu nombre</label>
+        <input type="text" id="player-name" class="name-input" placeholder="Jugador" maxlength="16" autocomplete="off">
+        <button id="btn-play" class="btn-play">JUGAR 🐍</button>
+
+        <!-- Skin selector -->
+        <div class="skin-section">
+          <div class="skin-section-label">COLOR DE SERPIENTE</div>
+          <div id="skin-selector" class="skin-grid"></div>
+          <div id="skin-name-label" class="skin-name-label">Víbora</div>
+        </div>
+
+        <div class="hint-row">
+          <span>🖱️ Ratón para dirigir</span>
+          <span>⚡ Clic = Boost (pierdes masa)</span>
+          <span>⏸ P para pausar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SELECCIÓN DE NIVEL ===== -->
+  <div id="screen-level" class="screen">
+    <canvas id="level-bg-canvas"></canvas>
+    <div class="level-content">
+      <button class="level-back-btn" id="btn-level-back">← Volver</button>
+      <div class="level-header">
+        <div class="level-snake-icon">🐍</div>
+        <h2 class="level-title">Elige tu <span>Nivel</span></h2>
+        <p class="level-sub">¿Qué tan difícil lo quieres?</p>
+      </div>
+      <div class="level-grid" id="level-grid">
+        <button class="level-card" data-level="1">
+          <div class="level-card-glow"></div>
+          <div class="level-emoji">🌱</div>
+          <div class="level-name">FÁCIL</div>
+          <div class="level-desc">Pocos bots, lentos y torpes. Perfecta para aprender.</div>
+          <div class="level-tags">
+            <span class="ltag">8 bots</span>
+            <span class="ltag">Lentos</span>
+            <span class="ltag">+Orbes</span>
+          </div>
+          <div class="level-rec" id="lrec-1"></div>
+        </button>
+        <button class="level-card" data-level="2">
+          <div class="level-card-glow"></div>
+          <div class="level-emoji">⚡</div>
+          <div class="level-name">NORMAL</div>
+          <div class="level-desc">La experiencia clásica. Bots equilibrados.</div>
+          <div class="level-tags">
+            <span class="ltag">14 bots</span>
+            <span class="ltag">Normal</span>
+            <span class="ltag">Clásico</span>
+          </div>
+          <div class="level-rec" id="lrec-2"></div>
+        </button>
+        <button class="level-card" data-level="3">
+          <div class="level-card-glow"></div>
+          <div class="level-emoji">🔥</div>
+          <div class="level-name">DIFÍCIL</div>
+          <div class="level-desc">Bots agresivos y rápidos. ¿Estás listo?</div>
+          <div class="level-tags">
+            <span class="ltag">20 bots</span>
+            <span class="ltag">Rápidos</span>
+            <span class="ltag">Agresivos</span>
+          </div>
+          <div class="level-rec" id="lrec-3"></div>
+        </button>
+        <button class="level-card level-card-elite" data-level="4">
+          <div class="level-card-glow"></div>
+          <div class="level-emoji">💀</div>
+          <div class="level-name">INFIERNO</div>
+          <div class="level-desc">Bots implacables. Mundo pequeño. Solo los mejores sobreviven.</div>
+          <div class="level-tags">
+            <span class="ltag">28 bots</span>
+            <span class="ltag">Brutales</span>
+            <span class="ltag">Sin piedad</span>
+          </div>
+          <div class="level-rec" id="lrec-4"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== JUEGO ===== -->
+  <div id="screen-game" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD superior -->
+    <div class="hud-top">
+      <div class="hud-box">
+        <span class="hud-label">PUNTOS</span>
+        <span class="hud-val" id="hud-score">0</span>
+      </div>
+      <div class="hud-box">
+        <span class="hud-label">RANKING</span>
+        <span class="hud-val" id="hud-rank">#1</span>
+      </div>
+      <div class="hud-box">
+        <span class="hud-label">TAMAÑO</span>
+        <span class="hud-val" id="hud-length">20</span>
+      </div>
+      <div class="hud-box">
+        <span class="hud-label">NIVEL</span>
+        <span class="hud-val" id="hud-level">–</span>
+      </div>
+      <!-- Barra de boost -->
+      <div class="hud-box hud-boost-box" id="boost-bar-wrap">
+        <span class="hud-label">BOOST ⚡</span>
+        <div class="boost-bar-bg">
+          <div class="boost-bar-fill" id="boost-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Botón ⚙️ FUERA del hud-top, independiente, z-index alto -->
+    <button class="hud-btn-settings" id="btn-settings" title="Pausa / Ajustes">⚙️</button>
+
+    <!-- Minimap -->
+    <div id="minimap-wrap">
+      <canvas id="minimap-canvas"></canvas>
+      <div id="minimap-label">MAPA</div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="leaderboard">
+      <div class="lb-title">🏆 Ranking</div>
+      <div id="lb-rows"></div>
+    </div>
+
+    <!-- Zoom indicator -->
+    <div id="zoom-indicator" id="zoom-indicator">ZOOM ×1.0</div>
+
+    <!-- Panel de pausa / ajustes -->
+    <div class="pause-overlay" id="pause-overlay" style="display:none">
+      <div class="pause-box">
+        <div class="pause-icon">⏸</div>
+        <h2 class="pause-title">Pausa</h2>
+
+        <!-- Control de volumen -->
+        <div class="pause-volume">
+          <button class="hud-btn" id="btn-mute" title="Silenciar">🔊</button>
+          <input type="range" id="volume-slider" class="volume-slider volume-slider-pause"
+                 min="0" max="1" step="0.05" value="0.7" title="Volumen">
+        </div>
+
+        <button class="pause-btn" id="pause-resume">▶ Continuar</button>
+        <button class="pause-btn pause-btn-home" id="btn-menu-game">🏠 Inicio PalabraPlay</button>
+      </div>
+    </div>
+
+    <!-- BOOST btn (doble tap en canvas o este botón) -->
+    <button class="btn-boost" id="btn-boost">⚡ BOOST</button>
+  </div>
+
+  <!-- ===== FIN ===== -->
+  <div id="screen-end" class="screen">
+    <div class="end-content">
+      <div class="end-emoji" id="end-emoji">💀</div>
+      <h2 class="end-title" id="end-title">¡Eliminado!</h2>
+      <div id="end-level-badge" style="display:none;font-family:'Orbitron',sans-serif;font-size:0.75rem;color:rgba(57,255,20,0.7);letter-spacing:1px;margin-bottom:4px;text-align:center;"></div>
+
+      <!-- Badge nuevo récord -->
+      <div id="new-record-badge" style="display:none">
+        🏆 ¡NUEVO RÉCORD!
+      </div>
+
+      <!-- Stats de esta partida -->
+      <div class="end-section-label">ESTA PARTIDA</div>
+      <div class="end-stats">
+        <div class="end-stat">
+          <span class="end-stat-label">Puntuación</span>
+          <span class="end-stat-val" id="end-score">0</span>
+        </div>
+        <div class="end-stat">
+          <span class="end-stat-label">Tamaño máx.</span>
+          <span class="end-stat-val" id="end-length">0</span>
+        </div>
+        <div class="end-stat">
+          <span class="end-stat-label">Tiempo</span>
+          <span class="end-stat-val" id="end-time">0:00</span>
+        </div>
+        <div class="end-stat end-stat-kills">
+          <span class="end-stat-label">Eliminaciones</span>
+          <span class="end-stat-val end-kills-val" id="end-kills">0</span>
+        </div>
+      </div>
+
+      <!-- Récords históricos -->
+      <div class="end-section-label">🏆 RÉCORDS</div>
+      <div class="end-stats end-records">
+        <div class="end-stat rec-stat">
+          <span class="end-stat-label">Puntuación</span>
+          <span class="end-stat-val rec-val" id="rec-score">0</span>
+        </div>
+        <div class="end-stat rec-stat">
+          <span class="end-stat-label">Tamaño máx.</span>
+          <span class="end-stat-val rec-val" id="rec-length">0</span>
+        </div>
+        <div class="end-stat rec-stat">
+          <span class="end-stat-label">Tiempo</span>
+          <span class="end-stat-val rec-val" id="rec-time">0:00</span>
+        </div>
+        <div class="end-stat rec-stat">
+          <span class="end-stat-label">Eliminaciones</span>
+          <span class="end-stat-val rec-val" id="rec-kills">0</span>
+        </div>
+      </div>
+
+      <div class="end-btns">
+        <button class="btn-end" id="btn-retry">🔄 Reintentar</button>
+        <button class="btn-end btn-menu" id="btn-menu">🏠 Menú</button>
+        <button class="btn-end btn-clear-rec" id="btn-clear-rec" title="Borrar récords">🗑️</button>
+      </div>
+
+      <!-- Compartir en redes sociales -->
+      <div class="share-section" id="share-section">
+        <div class="share-label">📤 RETAR EN REDES</div>
+        <div class="share-btns">
+          <button class="share-btn share-wa"  id="share-wa"  title="WhatsApp">💬<span>WhatsApp</span></button>
+          <button class="share-btn share-tw"  id="share-tw"  title="X / Twitter">✖<span>Twitter</span></button>
+          <button class="share-btn share-tg"  id="share-tg"  title="Telegram">✈️<span>Telegram</span></button>
+          <button class="share-btn share-cp"  id="share-cp"  title="Copiar">📋<span>Copiar</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL KO-FI ===== -->
+  <div id="kofi-modal" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+    <div class="kofi-backdrop" onclick="closeKofiModal()"></div>
+    <div class="kofi-box">
+      <button class="kofi-close" onclick="closeKofiModal()">✕</button>
+      <div class="kofi-chest">
+        <svg viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="54" rx="22" ry="5" fill="rgba(0,0,0,0.18)"/>
+          <rect x="14" y="28" width="52" height="26" rx="5" fill="#c8832a"/>
+          <rect x="14" y="28" width="52" height="9" rx="5" fill="#e8a83a" id="km-lid"/>
+          <rect x="14" y="38" width="52" height="2" fill="#a86820"/>
+          <rect x="33" y="37" width="14" height="10" rx="2" fill="#daa520"/>
+          <path d="M36 37 Q40 30 44 37" stroke="#daa520" stroke-width="2.5" fill="none"/>
+          <circle cx="40" cy="42" r="2.5" fill="#b8860b"/>
+          <circle cx="28" cy="18" r="5" fill="#ffdd57" class="km-coin1"/>
+          <text x="28" y="22" font-size="6" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin1">$</text>
+          <circle cx="40" cy="12" r="5" fill="#ffdd57" class="km-coin2"/>
+          <text x="40" y="16" font-size="7" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin2">★</text>
+          <circle cx="52" cy="18" r="5" fill="#ffdd57" class="km-coin3"/>
+          <text x="52" y="22" font-size="6" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin3">$</text>
+        </svg>
+      </div>
+      <h2 class="kofi-title">¡Buen juego! 🎉</h2>
+      <p class="kofi-text">SnakePlay es 100% gratis.<br>Si te divirtiste, <strong>un cafecito nos ayuda</strong> a seguir creando. ☕</p>
+      <a href="https://ko-fi.com/TU_USUARIO" target="_blank" rel="noopener" class="kofi-btn" onclick="closeKofiModal()">
+        ☕ Apoyar en Ko-fi
+      </a>
+      <button class="kofi-skip" onclick="closeKofiModal()">No, gracias — Seguir jugando</button>
+    </div>
+  </div>
+
+  <!-- ===== TUTORIAL DEMO ===== -->
+  <div id="tutorial-overlay" style="
+    display:none;position:fixed;inset:0;z-index:800;
+    background:rgba(0,0,0,0.82);backdrop-filter:blur(3px);
+    align-items:center;justify-content:center;flex-direction:column;gap:0;
+  ">
+    <div id="tutorial-card" style="
+      background:linear-gradient(160deg,#0d1f0a,#132b10 60%,#0a1808);
+      border:3px solid #39ff14;border-radius:20px;
+      padding:28px 24px 22px;width:min(380px,92vw);text-align:center;
+      box-shadow:0 0 40px rgba(57,255,20,0.3),0 20px 50px rgba(0,0,0,0.7);
+      font-family:'Nunito',sans-serif;
+    ">
+      <div style="font-size:52px;margin-bottom:6px" id="tut-emoji">🐍</div>
+      <h2 style="font-size:20px;font-weight:900;color:#39ff14;letter-spacing:1px;margin:0 0 4px">¡Cómo jugar!</h2>
+      <p style="font-size:12px;color:#7fff7f;margin:0 0 16px;opacity:.8">Observa la demostración</p>
+
+      <!-- Demo animada de controles -->
+      <div style="background:rgba(0,0,0,0.4);border:1px solid #2a4a1a;border-radius:14px;padding:14px 10px;margin-bottom:14px;">
+        <div id="tut-steps" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="tut-row" id="tut-row-0" style="opacity:.3;transition:opacity .4s">
+            <span class="tut-icon">🖱️</span>
+            <span class="tut-desc"><strong>Mueve el ratón</strong> (o dedo en móvil) para dirigir la serpiente</span>
+          </div>
+          <div class="tut-row" id="tut-row-1" style="opacity:.3;transition:opacity .4s">
+            <span class="tut-icon">🍎</span>
+            <span class="tut-desc"><strong>Come orbes</strong> de colores para crecer y ganar puntos</span>
+          </div>
+          <div class="tut-row" id="tut-row-2" style="opacity:.3;transition:opacity .4s">
+            <span class="tut-icon">⚡</span>
+            <span class="tut-desc"><strong>Clic o toca</strong> para activar BOOST — ¡más rápido pero gastas masa!</span>
+          </div>
+          <div class="tut-row" id="tut-row-3" style="opacity:.3;transition:opacity .4s">
+            <span class="tut-icon">💀</span>
+            <span class="tut-desc"><strong>Rodea</strong> a rivales para eliminarlos y ganar bonus masivo</span>
+          </div>
+          <div class="tut-row" id="tut-row-4" style="opacity:.3;transition:opacity .4s">
+            <span class="tut-icon">🚫</span>
+            <span class="tut-desc"><strong>No choques</strong> contra otras serpientes — ¡morirás al instante!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso del tutorial -->
+      <div style="background:rgba(0,0,0,0.3);border-radius:999px;height:6px;margin-bottom:16px;overflow:hidden;">
+        <div id="tut-progress" style="height:100%;width:0%;background:#39ff14;border-radius:999px;transition:width .5s;box-shadow:0 0 8px #39ff14;"></div>
+      </div>
+
+      <button id="tut-play-btn" style="
+        width:100%;padding:14px;border-radius:14px;
+        background:linear-gradient(180deg,#39ff14,#1caa00 50%,#0d6600);
+        color:#fff;font-family:'Orbitron',sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;
+        border:3px solid #0a4400;cursor:pointer;
+        box-shadow:0 0 20px rgba(57,255,20,0.5),0 5px 0 #063300;
+        transition:.12s;
+      ">¡JUGAR AHORA! 🐍</button>
+      <button id="tut-skip-btn" style="
+        background:none;border:none;color:rgba(255,255,255,0.4);
+        font-family:'Nunito',sans-serif;font-size:11px;cursor:pointer;
+        margin-top:10px;text-decoration:underline;
+      ">Saltar tutorial</button>
+    </div>
+  </div>
+
+  <style>
+  /* Tutorial rows */
+  .tut-row{
+    display:flex;align-items:center;gap:10px;text-align:left;
+    background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.1);
+    border-radius:10px;padding:8px 10px;
+  }
+  .tut-row.active{ opacity:1!important; background:rgba(57,255,20,0.12)!important; border-color:rgba(57,255,20,0.3)!important; }
+  .tut-icon{ font-size:22px;flex-shrink:0; }
+  .tut-desc{ font-size:12px;color:#cff;font-weight:700;line-height:1.4; }
+  .tut-desc strong{ color:#39ff14; }
+
+  /* Share section */
+  .share-section{
+    margin-top:10px;padding:10px 0 4px;
+    border-top:1px solid rgba(57,255,20,0.15);
+  }
+  .share-label{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;
+    color:rgba(57,255,20,0.6);margin-bottom:8px;
+  }
+  .share-btns{
+    display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+  }
+  .share-btn{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    border:2px solid rgba(255,255,255,0.2);border-radius:10px;
+    padding:7px 12px;cursor:pointer;font-family:'Nunito',sans-serif;
+    font-weight:900;font-size:11px;color:#fff;min-width:62px;
+    transition:.12s;box-shadow:0 3px 0 rgba(0,0,0,0.4);
+  }
+  .share-btn:active{ transform:translateY(3px);box-shadow:none; }
+  .share-btn span{ font-size:9px;opacity:.85; }
+  .share-wa{ background:linear-gradient(180deg,#25d366,#128c7e);border-color:#075e54; }
+  .share-tw{ background:linear-gradient(180deg,#1a1a1a,#000);border-color:#333; }
+  .share-tg{ background:linear-gradient(180deg,#2aabee,#1a7cc0);border-color:#1060a0; }
+  .share-cp{ background:linear-gradient(180deg,#6b46c1,#4c1d95);border-color:#2e1065; }
+  </style>
+
+  <script>
+  // ── TUTORIAL DEMO ──
+  (function(){
+    const TUT_KEY = 'snakeplay_tut_v1';
+    if(localStorage.getItem(TUT_KEY)) return; // ya vio el tutorial
+
+    const overlay = document.getElementById('tutorial-overlay');
+    const rows    = document.querySelectorAll('.tut-row');
+    const progress= document.getElementById('tut-progress');
+    const steps   = rows.length;
+    let current   = 0;
+    let timer     = null;
+    let interval  = null;
+
+    function showStep(i){
+      rows.forEach((r,idx)=>{
+        r.classList.toggle('active', idx===i);
+      });
+      progress.style.width = ((i+1)/steps*100)+'%';
+      const emojis=['🐍','🍎','⚡','💀','🚫'];
+      document.getElementById('tut-emoji').textContent = emojis[i]||'🐍';
+    }
+
+    function startLoop(){
+      showStep(0);
+      interval = setInterval(()=>{
+        current = (current+1)%steps;
+        showStep(current);
+      }, 2000);
+    }
+
+    function closeTutorial(){
+      localStorage.setItem(TUT_KEY,'1');
+      clearInterval(interval);
+      overlay.style.opacity='0';
+      overlay.style.transition='opacity .4s';
+      setTimeout(()=>{ overlay.style.display='none'; overlay.style.opacity=''; },420);
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      // Mostrar tutorial después de 0.8s en la pantalla de inicio
+      timer = setTimeout(()=>{
+        overlay.style.display='flex';
+        startLoop();
+      }, 800);
+
+      document.getElementById('tut-play-btn').addEventListener('click', closeTutorial);
+      document.getElementById('tut-skip-btn').addEventListener('click', ()=>{
+        localStorage.setItem(TUT_KEY,'1');
+        clearInterval(interval);
+        overlay.style.display='none';
+      });
+    });
+  })();
+
+  // ── COMPARTIR EN REDES — pantalla de fin ──
+  function setupShareButtons(){
+    const score  = document.getElementById('end-score')?.textContent  || '0';
+    const length = document.getElementById('end-length')?.textContent || '0';
+    const time   = document.getElementById('end-time')?.textContent   || '0:00';
+    const kills  = document.getElementById('end-kills')?.textContent  || '0';
+    const name   = (typeof state !== 'undefined' && state.playerName) ? state.playerName : 'Jugador';
+
+    const text =
+`🐍 ¡Jugué SnakePlay! ¿Puedes superarme?
+👤 ${name}
+📊 Puntos: ${score} | Tamaño: ${length} | Tiempo: ${time} | Kills: ${kills}
+⚡ ¡Atrévete tú también — sobrevive y domina!`;
+
+    const enc = encodeURIComponent(text);
+
+    const wa = document.getElementById('share-wa');
+    const tw = document.getElementById('share-tw');
+    const tg = document.getElementById('share-tg');
+    const cp = document.getElementById('share-cp');
+
+    if(wa) wa.onclick = ()=> window.open(`https://wa.me/?text=${enc}`,'_blank');
+    if(tw) tw.onclick = ()=> window.open(`https://twitter.com/intent/tweet?text=${enc}`,'_blank');
+    if(tg) tg.onclick = ()=> window.open(`https://t.me/share/url?url=https://snakeplay.io&text=${enc}`,'_blank');
+    if(cp) cp.onclick = ()=>{
+      navigator.clipboard.writeText(text).then(()=>{
+        cp.innerHTML = '✅<span>¡Copiado!</span>';
+        setTimeout(()=>{ cp.innerHTML = '📋<span>Copiar</span>'; },2200);
+      }).catch(()=>{
+        const ta=document.createElement('textarea');
+        ta.value=text;ta.style.cssText='position:fixed;opacity:0';
+        document.body.appendChild(ta);ta.select();document.execCommand('copy');
+        document.body.removeChild(ta);
+        cp.innerHTML = '✅<span>¡Copiado!</span>';
+        setTimeout(()=>{ cp.innerHTML = '📋<span>Copiar</span>'; },2200);
+      });
+    };
+  }
+
+  // Llamar setupShareButtons cuando aparezca la pantalla de fin
+  const _origShowScreen = typeof showScreen === 'function' ? showScreen : null;
+  // Observar cambios en screen-end
+  document.addEventListener('DOMContentLoaded',()=>{
+    const endScreen = document.getElementById('screen-end');
+    if(!endScreen) return;
+    const obs = new MutationObserver(()=>{
+      if(endScreen.classList.contains('active')) setupShareButtons();
+    });
+    obs.observe(endScreen, {attributes:true, attributeFilter:['class']});
+  });
+  </script>
+
+  <script src="snake.js"></script>
+
+  <script>
+    // Botones pausa overlay
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnResume = document.getElementById('pause-resume');
+      const btnPauseMenu = document.getElementById('pause-menu');
+      if(btnResume) btnResume.addEventListener('click', () => { if(game) game.togglePause(); });
+      if(btnPauseMenu) btnPauseMenu.addEventListener('click', () => {
+        if(game) game.destroy();
+        document.getElementById('pause-overlay').style.display = 'none';
+        showScreen('start');
+      });
+
+      // Borrar récords
+      const btnClear = document.getElementById('btn-clear-rec');
+      if(btnClear) btnClear.addEventListener('click', () => {
+        if(confirm('¿Borrar todos los récords?')) {
+          Records.clear();
+          ['rec-score','rec-length','rec-time','rec-kills'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.textContent = id === 'rec-time' ? '0:00' : '0';
+            el?.parentElement?.classList.remove('is-record');
+          });
+          document.getElementById('new-record-badge').style.display = 'none';
+        }
+      });
+    });
+  </script>  <p style="position:fixed;bottom:4px;left:50%;transform:translateX(-50%);font-size:10px;opacity:.25;color:white;pointer-events:none;white-space:nowrap;z-index:5">
+    SnakePlay es un juego original inspirado en el género .io. No está afiliado a Slither.io ni a Lowtech Studios.
+  </p>
+
+</body>
+</html>

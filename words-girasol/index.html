@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>WORD GIRASOL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Versión ligera sin JPG -->
+</head>
+<body>
+
+<!-- SVG girasol reutilizable (oculto) -->
+<svg id="sfTpl" style="display:none" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+  <rect x="46" y="80" width="8" height="28" rx="4" fill="#16a34a"/>
+  <ellipse cx="36" cy="95" rx="13" ry="7" fill="#22c55e" transform="rotate(-30 36 95)"/>
+  <ellipse cx="64" cy="98" rx="13" ry="7" fill="#22c55e" transform="rotate(30 64 98)"/>
+  <g>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(0 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(30 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(60 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(90 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(120 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(180 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(210 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(240 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(270 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#fde047" transform="rotate(300 50 50)"/>
+    <ellipse cx="50" cy="18" rx="7" ry="14" fill="#facc15" transform="rotate(330 50 50)"/>
+  </g>
+  <circle cx="50" cy="50" r="19" fill="#92400e"/>
+  <circle cx="50" cy="50" r="16" fill="#78350f"/>
+  <circle cx="50" cy="38" r="2.2" fill="#b45309"/>
+  <circle cx="59" cy="42" r="2.2" fill="#b45309"/>
+  <circle cx="62" cy="52" r="2.2" fill="#b45309"/>
+  <circle cx="57" cy="61" r="2.2" fill="#b45309"/>
+  <circle cx="50" cy="64" r="2.2" fill="#b45309"/>
+  <circle cx="41" cy="61" r="2.2" fill="#b45309"/>
+  <circle cx="38" cy="52" r="2.2" fill="#b45309"/>
+  <circle cx="41" cy="42" r="2.2" fill="#b45309"/>
+  <circle cx="50" cy="44" r="2" fill="#a16207"/>
+  <circle cx="56" cy="47" r="2" fill="#a16207"/>
+  <circle cx="58" cy="54" r="2" fill="#a16207"/>
+  <circle cx="54" cy="60" r="2" fill="#a16207"/>
+  <circle cx="50" cy="62" r="2" fill="#a16207"/>
+  <circle cx="44" cy="59" r="2" fill="#a16207"/>
+  <circle cx="42" cy="53" r="2" fill="#a16207"/>
+  <circle cx="44" cy="47" r="2" fill="#a16207"/>
+  <circle cx="50" cy="50" r="2.5" fill="#92400e"/>
+  <ellipse cx="43" cy="43" rx="5" ry="3" fill="#fde68a" opacity=".18" transform="rotate(-20 43 43)"/>
+</svg>
+
+<!-- Fondo: imagen girasol-fondo.webp (via CSS) -->
+<svg id="sceneBg" style="display:none" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Cielo atardecer dorado -->
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#8baabf"/>
+      <stop offset="18%"  stop-color="#6a8fa8"/>
+      <stop offset="36%"  stop-color="#3a7030"/>
+      <stop offset="52%"  stop-color="#2a5820"/>
+      <stop offset="65%"  stop-color="#1a3c10"/>
+      <stop offset="74%"  stop-color="#6a8fa8"/>
+      <stop offset="82%"  stop-color="#1e4010"/>
+      <stop offset="90%"  stop-color="#143008"/>
+      <stop offset="100%" stop-color="#0c2004"/>
+    </linearGradient>
+    <!-- Franja naranja del horizonte -->
+    <radialGradient id="horizonGlow" cx="50%" cy="100%" r="60%">
+      <stop offset="0%"   stop-color="#ffe87a" stop-opacity=".85"/>
+      <stop offset="40%"  stop-color="#fde68a" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Sol central -->
+    <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ffffff"/>
+      <stop offset="15%"  stop-color="#fffde0"/>
+      <stop offset="40%"  stop-color="#ffe050"/>
+      <stop offset="70%"  stop-color="#fbbf24" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Montaña nevada izquierda -->
+    <linearGradient id="mtSnow1" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%"   stop-color="#dbeafe"/>
+      <stop offset="25%"  stop-color="#93c5fd"/>
+      <stop offset="55%"  stop-color="#1e4d3a"/>
+      <stop offset="100%" stop-color="#0d2a1d"/>
+    </linearGradient>
+    <!-- Montaña derecha -->
+    <linearGradient id="mtSnow2" x1="0.7" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#e0f2fe"/>
+      <stop offset="20%"  stop-color="#7dd3fc"/>
+      <stop offset="50%"  stop-color="#166534"/>
+      <stop offset="100%" stop-color="#0d2a1d"/>
+    </linearGradient>
+    <!-- Colinas verdes -->
+    <linearGradient id="hillGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#15803d"/>
+      <stop offset="100%" stop-color="#052e16"/>
+    </linearGradient>
+    <!-- Campo girasoles fondo -->
+    <linearGradient id="fieldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1a5c0a"/>
+      <stop offset="100%" stop-color="#071a03"/>
+    </linearGradient>
+    <!-- Primer plano oscuro -->
+    <linearGradient id="fgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0e3806"/>
+      <stop offset="100%" stop-color="#030d01"/>
+    </linearGradient>
+    <!-- Brillo sol en suelo -->
+    <radialGradient id="groundGlow" cx="50%" cy="0%" r="80%">
+      <stop offset="0%"   stop-color="#fde68a" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Nube blur -->
+    <filter id="cf" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <filter id="cfSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+    <!-- Sombra suave girasol -->
+    <filter id="sfShadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#00000066"/>
+    </filter>
+  </defs>
+
+  <!-- ═══ CIELO ═══ -->
+  <rect width="1000" height="620" fill="url(#skyGrad)"/>
+
+  <!-- Brillo horizonte -->
+  <ellipse cx="500" cy="390" rx="500" ry="200" fill="url(#horizonGlow)"/>
+
+  <!-- ═══ SOL ═══ -->
+  <!-- Halo exterior muy suave -->
+  <ellipse cx="500" cy="365" rx="280" ry="180" fill="url(#sunCore)" opacity=".28"/>
+  <!-- Halo medio -->
+  <circle cx="500" cy="365" r="130" fill="#ffe050" opacity=".22"/>
+  <!-- Corona del sol -->
+  <circle cx="500" cy="365" r="75" fill="#fff8c0" opacity=".5"/>
+  <!-- Sol núcleo -->
+  <circle cx="500" cy="365" r="50" fill="#fffbe8" opacity=".95"/>
+  <circle cx="500" cy="365" r="36" fill="#ffffff"/>
+  <!-- Rayos largos sutiles -->
+  <g opacity=".35" stroke="#ffe050" stroke-linecap="round">
+    <line x1="500" y1="310" x2="500" y2="288" stroke-width="3"/>
+    <line x1="500" y1="420" x2="500" y2="442" stroke-width="3"/>
+    <line x1="445" y1="365" x2="423" y2="365" stroke-width="3"/>
+    <line x1="555" y1="365" x2="577" y2="365" stroke-width="3"/>
+    <line x1="461" y1="326" x2="446" y2="311" stroke-width="2"/>
+    <line x1="539" y1="326" x2="554" y2="311" stroke-width="2"/>
+    <line x1="461" y1="404" x2="446" y2="419" stroke-width="2"/>
+    <line x1="539" y1="404" x2="554" y2="419" stroke-width="2"/>
+    <line x1="470" y1="316" x2="460" y2="296" stroke-width="1.5"/>
+    <line x1="530" y1="316" x2="540" y2="296" stroke-width="1.5"/>
+  </g>
+
+  <!-- ═══ NUBES voluminosas ═══ -->
+  <!-- Nube grande izquierda -->
+  <g opacity=".78">
+    <ellipse cx="155" cy="108" rx="100" ry="32" fill="white" filter="url(#cf)"/>
+    <ellipse cx="195" cy="90"  rx="72"  ry="28" fill="white" filter="url(#cf)"/>
+    <ellipse cx="115" cy="118" rx="58"  ry="22" fill="white" filter="url(#cf)"/>
+    <ellipse cx="240" cy="100" rx="50"  ry="20" fill="white" filter="url(#cf)"/>
+    <!-- Capa nítida encima -->
+    <ellipse cx="165" cy="100" rx="88"  ry="26" fill="#f8f8ff" opacity=".6" filter="url(#cfSoft)"/>
+    <!-- Sombra inferior -->
+    <ellipse cx="155" cy="124" rx="85"  ry="14" fill="#c8d8e8" opacity=".35" filter="url(#cf)"/>
+  </g>
+  <!-- Nube pequeña centro -->
+  <g opacity=".55">
+    <ellipse cx="370" cy="78"  rx="65"  ry="22" fill="white" filter="url(#cf)"/>
+    <ellipse cx="400" cy="65"  rx="48"  ry="18" fill="white" filter="url(#cf)"/>
+    <ellipse cx="340" cy="86"  rx="40"  ry="16" fill="white" filter="url(#cf)"/>
+    <ellipse cx="370" cy="95"  rx="58"  ry="12" fill="#d4e8f0" opacity=".4" filter="url(#cf)"/>
+  </g>
+  <!-- Nube grande derecha -->
+  <g opacity=".72">
+    <ellipse cx="810" cy="88"  rx="110" ry="34" fill="white" filter="url(#cf)"/>
+    <ellipse cx="860" cy="72"  rx="78"  ry="26" fill="white" filter="url(#cf)"/>
+    <ellipse cx="760" cy="98"  rx="62"  ry="24" fill="white" filter="url(#cf)"/>
+    <ellipse cx="820" cy="108" rx="95"  ry="15" fill="#c0d8e8" opacity=".35" filter="url(#cf)"/>
+  </g>
+  <!-- Nube lejana tenue -->
+  <g opacity=".3">
+    <ellipse cx="580" cy="52"  rx="80"  ry="18" fill="white" filter="url(#cf)"/>
+    <ellipse cx="610" cy="42"  rx="55"  ry="14" fill="white" filter="url(#cf)"/>
+  </g>
+
+  <!-- ═══ MONTAÑAS NEVADAS ═══ -->
+  <!-- Montaña lejana izquierda (más azulada) -->
+  <path d="M-40,420 L130,210 L230,310 L290,240 L360,320 L360,450 L-40,450Z"
+        fill="#2a5e8a" opacity=".45"/>
+  <!-- Nieve pico izquierdo -->
+  <path d="M130,210 L105,265 L158,265Z" fill="#dbeafe" opacity=".7"/>
+
+  <!-- Montaña grande izquierda -->
+  <path d="M-20,500 L170,240 L310,380 L310,520 L-20,520Z" fill="url(#mtSnow1)"/>
+  <!-- Nieve -->
+  <path d="M170,240 L138,298 L203,298Z" fill="white" opacity=".85"/>
+  <path d="M170,240 L148,278 L193,278Z" fill="#f0f8ff"/>
+  <!-- Sombra lateral montaña -->
+  <path d="M170,240 L170,380 L310,380Z" fill="#0a2a18" opacity=".3"/>
+
+  <!-- Montaña lejana derecha -->
+  <path d="M640,430 L760,220 L860,320 L920,260 L1040,400 L1040,450 L640,450Z"
+        fill="#2a5e8a" opacity=".42"/>
+  <path d="M760,220 L735,272 L785,272Z" fill="#dbeafe" opacity=".68"/>
+
+  <!-- Montaña grande derecha -->
+  <path d="M690,520 L830,235 L970,390 L1020,520Z" fill="url(#mtSnow2)"/>
+  <path d="M830,235 L802,295 L858,295Z" fill="white" opacity=".85"/>
+  <path d="M830,235 L810,275 L850,275Z" fill="#f0f8ff"/>
+  <path d="M830,235 L830,390 L690,520Z" fill="#0a2a18" opacity=".28"/>
+
+  <!-- ═══ COLINAS VERDES ═══ -->
+  <path d="M0,460 Q120,390 260,420 Q380,445 480,400 Q580,355 700,410 Q820,458 1000,430 L1000,520 L0,520Z"
+        fill="url(#hillGrad)" opacity=".9"/>
+  <!-- Segunda capa colinas más oscura -->
+  <path d="M0,490 Q150,455 300,468 Q450,482 550,455 Q680,425 850,465 Q950,488 1000,470 L1000,530 L0,530Z"
+        fill="#0f4a22" opacity=".8"/>
+
+  <!-- ═══ CAMPO (horizonte) ═══ -->
+  <rect x="0" y="488" width="1000" height="132" fill="url(#fieldGrad)"/>
+  <!-- Brillo dorado del sol en el campo -->
+  <ellipse cx="500" cy="490" rx="340" ry="70" fill="url(#groundGlow)"/>
+
+  <!-- ═══ GIRASOLES LEJANOS (pequeños, campo medio) ═══ -->
+  <g opacity=".6" filter="url(#cfSoft)">
+    <!-- fila de girasoles pequeños en el horizonte -->
+    <g transform="translate(120,468) scale(0.55)">
+      <rect x="-3" y="0" width="6" height="55" rx="3" fill="#15803d"/>
+      <circle cy="-4" r="14" fill="#78350f"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#fde047"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#facc15" transform="rotate(45 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#fde047" transform="rotate(90 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#facc15" transform="rotate(135 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#fde047" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#facc15" transform="rotate(225 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#fde047" transform="rotate(270 0 -4)"/>
+      <ellipse cy="-17" rx="6" ry="11" fill="#facc15" transform="rotate(315 0 -4)"/>
+    </g>
+    <g transform="translate(220,472) scale(0.48)">
+      <rect x="-3" y="0" width="5" height="48" rx="2.5" fill="#16a34a"/>
+      <circle cy="-4" r="12" fill="#78350f"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(60 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047" transform="rotate(120 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047" transform="rotate(240 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(300 0 -4)"/>
+    </g>
+    <g transform="translate(355,465) scale(0.52)">
+      <rect x="-3" y="0" width="5" height="52" rx="2.5" fill="#15803d"/>
+      <circle cy="-4" r="13" fill="#92400e"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#fde047"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#facc15" transform="rotate(45 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#fde047" transform="rotate(90 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#facc15" transform="rotate(135 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#fde047" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#facc15" transform="rotate(225 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#fde047" transform="rotate(270 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="10" fill="#facc15" transform="rotate(315 0 -4)"/>
+    </g>
+    <g transform="translate(620,470) scale(0.5)">
+      <rect x="-3" y="0" width="5" height="50" rx="2.5" fill="#16a34a"/>
+      <circle cy="-4" r="12" fill="#78350f"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(60 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047" transform="rotate(120 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#fde047" transform="rotate(240 0 -4)"/>
+      <ellipse cy="-15" rx="5" ry="10" fill="#facc15" transform="rotate(300 0 -4)"/>
+    </g>
+    <g transform="translate(750,466) scale(0.54)">
+      <rect x="-3" y="0" width="6" height="53" rx="3" fill="#15803d"/>
+      <circle cy="-4" r="13" fill="#78350f"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#fde047"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#facc15" transform="rotate(45 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#fde047" transform="rotate(90 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#facc15" transform="rotate(135 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#fde047" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#facc15" transform="rotate(225 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#fde047" transform="rotate(270 0 -4)"/>
+      <ellipse cy="-16" rx="6" ry="11" fill="#facc15" transform="rotate(315 0 -4)"/>
+    </g>
+    <g transform="translate(880,469) scale(0.47)">
+      <rect x="-3" y="0" width="5" height="46" rx="2.5" fill="#16a34a"/>
+      <circle cy="-4" r="11" fill="#92400e"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#fde047"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#facc15" transform="rotate(60 0 -4)"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#fde047" transform="rotate(120 0 -4)"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#facc15" transform="rotate(180 0 -4)"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#fde047" transform="rotate(240 0 -4)"/>
+      <ellipse cy="-14" rx="5" ry="9" fill="#facc15" transform="rotate(300 0 -4)"/>
+    </g>
+  </g>
+
+  <!-- ═══ PRIMER PLANO oscuro ═══ -->
+  <path d="M0,555 Q250,530 500,540 Q750,550 1000,528 L1000,620 L0,620Z" fill="url(#fgGrad)"/>
+
+  <!-- ═══ GIRASOLES GRANDES izquierda ═══ -->
+  <g filter="url(#sfShadow)">
+    <!-- Girasol 1 izquierda grande -->
+    <g transform="translate(42,530)">
+      <rect x="-5" y="-140" width="10" height="170" rx="5" fill="#16a34a"/>
+      <!-- Hojas -->
+      <ellipse cx="-18" cy="-55" rx="28" ry="11" fill="#22c55e" transform="rotate(-30 -18 -55)"/>
+      <ellipse cx="22"  cy="-80" rx="26" ry="10" fill="#22c55e" transform="rotate(25 22 -80)"/>
+      <ellipse cx="-20" cy="-100" rx="22" ry="9"  fill="#16a34a" transform="rotate(-25 -20 -100)"/>
+      <!-- Pétalos -->
+      <circle cy="-143" r="30" fill="#92400e"/>
+      <circle cy="-143" r="25" fill="#78350f"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(30 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047" transform="rotate(60 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(90 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047" transform="rotate(120 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(150 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047" transform="rotate(180 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(210 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047" transform="rotate(240 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(270 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#fde047" transform="rotate(300 0 -143)"/>
+      <ellipse cy="-170" rx="12" ry="22" fill="#facc15" transform="rotate(330 0 -143)"/>
+      <!-- Brillo flor -->
+      <ellipse cx="-8" cy="-150" rx="8" ry="5" fill="#c07030" opacity=".3" transform="rotate(-20 -8 -150)"/>
+    </g>
+    <!-- Girasol 2 izquierda mediano -->
+    <g transform="translate(98,540)">
+      <rect x="-4" y="-110" width="8" height="150" rx="4" fill="#15803d"/>
+      <ellipse cx="-14" cy="-50" rx="22" ry="9" fill="#22c55e" transform="rotate(-28 -14 -50)"/>
+      <ellipse cx="18"  cy="-70" rx="20" ry="8" fill="#22c55e" transform="rotate(22 18 -70)"/>
+      <circle cy="-113" r="24" fill="#92400e"/>
+      <circle cy="-113" r="20" fill="#78350f"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#fde047"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#facc15" transform="rotate(36 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#fde047" transform="rotate(72 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#facc15" transform="rotate(108 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#fde047" transform="rotate(144 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#facc15" transform="rotate(180 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#fde047" transform="rotate(216 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#facc15" transform="rotate(252 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#fde047" transform="rotate(288 0 -113)"/>
+      <ellipse cy="-132" rx="9" ry="17" fill="#facc15" transform="rotate(324 0 -113)"/>
+    </g>
+  </g>
+
+  <!-- ═══ GIRASOLES GRANDES derecha ═══ -->
+  <g filter="url(#sfShadow)">
+    <!-- Girasol 1 derecha grande -->
+    <g transform="translate(948,528)">
+      <rect x="-5" y="-148" width="10" height="178" rx="5" fill="#16a34a"/>
+      <ellipse cx="-20" cy="-60" rx="30" ry="11" fill="#22c55e" transform="rotate(-28 -20 -60)"/>
+      <ellipse cx="24"  cy="-88" rx="27" ry="10" fill="#22c55e" transform="rotate(24 24 -88)"/>
+      <ellipse cx="-22" cy="-108" rx="24" ry="9"  fill="#16a34a" transform="rotate(-22 -22 -108)"/>
+      <circle cy="-151" r="32" fill="#92400e"/>
+      <circle cy="-151" r="27" fill="#78350f"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(30 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047" transform="rotate(60 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(90 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047" transform="rotate(120 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(150 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047" transform="rotate(180 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(210 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047" transform="rotate(240 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(270 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#fde047" transform="rotate(300 0 -151)"/>
+      <ellipse cy="-180" rx="13" ry="24" fill="#facc15" transform="rotate(330 0 -151)"/>
+      <ellipse cx="-9" cy="-158" rx="9" ry="5" fill="#c07030" opacity=".28" transform="rotate(-18 -9 -158)"/>
+    </g>
+    <!-- Girasol 2 derecha mediano -->
+    <g transform="translate(895,542)">
+      <rect x="-4" y="-115" width="8" height="158" rx="4" fill="#15803d"/>
+      <ellipse cx="-15" cy="-52" rx="23" ry="9" fill="#22c55e" transform="rotate(-26 -15 -52)"/>
+      <ellipse cx="19"  cy="-75" rx="21" ry="8" fill="#22c55e" transform="rotate(20 19 -75)"/>
+      <circle cy="-118" r="26" fill="#92400e"/>
+      <circle cy="-118" r="21" fill="#78350f"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#fde047"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#facc15" transform="rotate(36 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#fde047" transform="rotate(72 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#facc15" transform="rotate(108 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#fde047" transform="rotate(144 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#facc15" transform="rotate(180 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#fde047" transform="rotate(216 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#facc15" transform="rotate(252 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#fde047" transform="rotate(288 0 -118)"/>
+      <ellipse cy="-138" rx="10" ry="18" fill="#facc15" transform="rotate(324 0 -118)"/>
+    </g>
+  </g>
+
+  <!-- ═══ Plantas del suelo (siluetas) ═══ -->
+  <g fill="#0a2e06" opacity=".85">
+    <ellipse cx="30"  cy="610" rx="30" ry="12"/>
+    <ellipse cx="180" cy="615" rx="22" ry="9"/>
+    <ellipse cx="320" cy="612" rx="28" ry="11"/>
+    <ellipse cx="500" cy="618" rx="20" ry="8"/>
+    <ellipse cx="670" cy="613" rx="26" ry="10"/>
+    <ellipse cx="820" cy="616" rx="24" ry="9"/>
+    <ellipse cx="970" cy="611" rx="32" ry="12"/>
+  </g>
+</svg>
+
+<!-- Fondo -->
+<div class="bg-leaves"></div>
+<div class="petals" id="petals"></div>
+
+<!-- ═══════════════════════════════════════
+     MODAL MAPA DE NIVELES
+═══════════════════════════════════════ -->
+<div class="levels-modal" id="levelsModal">
+  <div class="levels-card">
+    <h2>🗺️ MIS NIVELES</h2>
+    <div class="levels-subtitle">Toca un nivel para saltar a él</div>
+    <div class="levels-path" id="levelsPath"></div>
+    <button class="levels-close-btn" id="levelsCloseBtn">✕ Volver al juego</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL BIENVENIDA
+═══════════════════════════════════════ -->
+<div class="welcome-modal" id="welcomeModal">
+  <div class="welcome-card">
+    <div class="welcome-sunflower-row" id="welcomeFlowers"></div>
+    <h1>🌻 WORD GIRASOL</h1>
+    <p class="welcome-sub">¡El juego de palabras de flores y naturaleza!</p>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon">👆</div>
+        <div class="step-text"><strong>Toca o arrastra</strong> las letras del panal para formar palabras</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">✅</div>
+        <div class="step-text">Pulsa <strong>ENVIAR</strong> (o suelta) para confirmar tu palabra</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">🌻</div>
+        <div class="step-text">Encuentra la <strong>Palabra Clave</strong> más larga para ganar el nivel</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">💡</div>
+        <div class="step-text">Si te atascas, usa <strong>PISTA</strong> (−15 🪙) o espera y aparece una ayuda</div>
+      </div>
+    </div>
+
+    <button class="welcome-play-btn" id="welcomePlayBtn">¡ JUGAR AHORA ! 🌻</button>
+    <div class="welcome-hint-tip">💡 Si tardas en jugar, ¡el juego te dará una pista!</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL TUTORIAL
+═══════════════════════════════════════ -->
+<div class="tutorial-modal" id="tutorialModal">
+  <div class="tutorial-card">
+    <div class="tutorial-steps" id="tutorialSteps">
+      <div class="tut-step active" id="tut1">
+        <div class="tut-big-icon">🌻</div>
+        <h2>¡Bienvenido a Word Girasol!</h2>
+        <p>Conecta letras del panal para formar palabras de <strong>flores y naturaleza</strong>.</p>
+        <div class="tut-demo">
+          <div class="tut-hex">G</div>
+          <div class="tut-arrow">→</div>
+          <div class="tut-hex tut-active">I</div>
+          <div class="tut-arrow">→</div>
+          <div class="tut-hex">R</div>
+        </div>
+        <p class="tut-small">Toca o arrastra de letra en letra</p>
+      </div>
+      <div class="tut-step" id="tut2">
+        <div class="tut-big-icon">👆</div>
+        <h2>¿Cómo se juega?</h2>
+        <div class="tut-list">
+          <div class="tut-item">🔤 <span><strong>Toca</strong> letras una por una <em>o</em> <strong>arrastra</strong> el dedo por encima</span></div>
+          <div class="tut-item">✅ <span>Suelta o pulsa <strong>ENVIAR</strong> para confirmar</span></div>
+          <div class="tut-item">⌫ <span>Pulsa <strong>BORRAR</strong> si te equivocas</span></div>
+          <div class="tut-item">🔀 <span>Usa <strong>MEZCLAR</strong> para ver las letras de otro ángulo</span></div>
+        </div>
+      </div>
+      <div class="tut-step" id="tut3">
+        <div class="tut-big-icon">🏆</div>
+        <h2>La Palabra Clave</h2>
+        <p>Cada nivel tiene una <strong>palabra clave especial</strong> que usa más letras.</p>
+        <div class="tut-key-demo">
+          <div class="tut-key-word">
+            <span class="tut-key-letter">G</span>
+            <span class="tut-key-letter">I</span>
+            <span class="tut-key-letter">R</span>
+            <span class="tut-key-letter">A</span>
+            <span class="tut-key-letter">S</span>
+            <span class="tut-key-letter">O</span>
+            <span class="tut-key-letter">L</span>
+          </div>
+          <div class="tut-badge">⭐ ¡PALABRA CLAVE!</div>
+        </div>
+        <p class="tut-small">¡Encuéntrala para completar el nivel!</p>
+      </div>
+      <div class="tut-step" id="tut4">
+        <div class="tut-big-icon">💡</div>
+        <h2>Pistas automáticas</h2>
+        <p>Si llevas un rato sin jugar, <strong>aparecerá una pista</strong> con la categoría de la palabra.</p>
+        <div class="tut-clue-demo">
+          <div class="tut-clue-box">💡 La flor que sigue al sol 🌻</div>
+        </div>
+        <p class="tut-small">También puedes pedir pistas con el botón 💡 (−15 🪙)</p>
+      </div>
+    </div>
+    <div class="tut-controls">
+      <div class="tut-dots">
+        <span class="tut-dot active" id="dot0"></span>
+        <span class="tut-dot" id="dot1"></span>
+        <span class="tut-dot" id="dot2"></span>
+        <span class="tut-dot" id="dot3"></span>
+      </div>
+      <button class="tut-next-btn" id="tutNextBtn">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL CELEBRACIÓN — Nivel completado
+═══════════════════════════════════════ -->
+<div class="celebration-modal" id="levelDoneModal">
+  <div class="celebration-card">
+    <div class="celeb-confetti-row" id="celebConfetti">🌸🌻🌺🌼🌷</div>
+    <span class="celeb-big-emoji" id="celebEmoji">🌻</span>
+    <div class="celeb-stars" id="celebStars">⭐⭐⭐</div>
+    <div class="celeb-title">¡Nivel Completado!</div>
+    <div class="celeb-subtitle" id="celebSubtitle">¡Aprendiste algo nuevo sobre las flores! 🎉</div>
+    <div class="celeb-fact-box">
+      <div class="celeb-fact-label">🌿 ¿Sabías esto?</div>
+      <div class="celeb-fact-text" id="doneCuriosityText"></div>
+      <div class="celeb-pills" id="doneCuriosityFacts"></div>
+    </div>
+    <!-- Frase botánica del nivel -->
+    <div id="celebSharePhrase" style="
+      margin:10px 0 6px;
+      font-style:italic;font-size:13px;font-weight:800;
+      color:#4a2800;opacity:.85;line-height:1.55;
+      padding:8px 12px;
+      background:rgba(255,255,255,0.35);
+      border-radius:10px;border-left:3px solid #c49020;
+    "></div>
+    <div class="celeb-btn-row">
+      <button class="celeb-btn celeb-btn-share" id="celebShareBtn" title="Compartir tu logro con amigos">
+        📤 Compartir mi logro
+      </button>
+      <button class="celeb-btn celeb-btn-next" id="nextLevelBtn">Siguiente nivel 🌻</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL PISTA DE PALABRA — aparece al pulsar 💡
+     Muestra la palabra letra a letra con typewriter lento
+═══════════════════════════════════════ -->
+<div id="wordHintPanel" style="
+  display:none;
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  width:min(360px,94vw);
+  background:linear-gradient(180deg,#fffef0,#fef3c7);
+  border:3px solid #c49020;border-radius:18px;
+  padding:14px 16px 12px;
+  box-shadow:0 8px 0 #9a7010,0 10px 28px rgba(0,0,0,0.5);
+  z-index:400;
+  transition:opacity .35s,transform .35s;
+  opacity:0;pointer-events:none;
+">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div id="whpTitle" style="font-size:13px;font-weight:900;color:#4a2800">
+      Pista de palabra 💡
+    </div>
+    <button id="whpCloseBtn" style="
+      background:none;border:none;font-size:18px;cursor:pointer;
+      color:#7a5010;padding:2px 6px;border-radius:6px;
+      font-family:'Nunito',sans-serif;font-weight:900;
+    ">✕</button>
+  </div>
+  <div id="whpCount" style="font-size:11px;color:#9a6020;margin-bottom:10px;font-weight:800"></div>
+  <div id="whpLetters" style="
+    display:flex;gap:5px;flex-wrap:wrap;justify-content:center;
+  "></div>
+</div>
+
+<style>
+/* Panel de pista — animación de entrada */
+#wordHintPanel.show{
+  display:block !important;
+  opacity:1 !important;
+  pointer-events:all !important;
+  animation:whpIn .4s cubic-bezier(.17,.89,.32,1.4);
+}
+@keyframes whpIn{
+  from{ opacity:0; transform:translateX(-50%) translateY(18px) scale(.92); }
+  to  { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+}
+/* Letras de la pista */
+.whp-letter{
+  width:34px;height:38px;
+  background:linear-gradient(180deg,#f8eecb,#e8d090);
+  border:2.5px solid #c09030;border-radius:8px;
+  display:grid;place-items:center;
+  font-weight:900;font-size:16px;color:#3a1800;
+  text-transform:uppercase;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),0 3px 0 #9a6820;
+  transition:background .25s,border-color .25s,transform .25s,color .25s;
+}
+/* Estado misterioso antes de revelar */
+.whp-letter.whp-mystery{
+  background:linear-gradient(180deg,#3a1c6a,#5b2d99) !important;
+  border-color:#9b59d0 !important;
+  color:#ddb8ff !important;
+  font-size:13px !important;
+  box-shadow:0 0 12px rgba(155,89,208,0.6),inset 0 1px 0 rgba(255,255,255,0.15),0 3px 0 #2a0a50 !important;
+  animation:mysteryPulse 1.4s ease-in-out infinite;
+}
+@keyframes mysteryPulse{
+  0%,100%{ box-shadow:0 0 8px rgba(155,89,208,0.5),inset 0 1px 0 rgba(255,255,255,0.15),0 3px 0 #2a0a50; }
+  50%    { box-shadow:0 0 18px rgba(180,120,255,0.85),inset 0 1px 0 rgba(255,255,255,0.2),0 3px 0 #2a0a50; }
+}
+.whp-letter.revealed{
+  background:linear-gradient(180deg,#dcfce7,#86efac) !important;
+  border-color:#22c55e !important;
+  color:#14532d !important;
+  animation:whpReveal .4s cubic-bezier(.17,.89,.32,1.4) forwards;
+}
+@keyframes whpReveal{
+  0%  { transform:scale(0.4) rotateY(90deg); opacity:.2; filter:brightness(2); }
+  55% { transform:scale(1.2) rotateY(0); opacity:1; filter:brightness(1.3); }
+  100%{ transform:scale(1); filter:brightness(1); }
+}
+/* Botón compartir más grande */
+.celeb-btn-share{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  font-size:14px !important;
+  padding:0 14px !important;
+  white-space:nowrap !important;
+}
+</style>
+
+<!-- ═══════════════════════════════════════
+     APP PRINCIPAL
+═══════════════════════════════════════ -->
+<!-- Viñeta atmosférica -->
+<div class="vignette"></div>
+
+<div class="app">
+
+  <!-- Panel lateral escritorio -->
+  <div class="info">
+    <div class="info-card">
+      <p>🌻 <strong>Word Girasol</strong></p>
+      <ul>
+        <li>Arrastra o toca letras en orden</li>
+        <li>Encuentra todas las palabras</li>
+        <li>La <strong>palabra clave</strong> usa más letras</li>
+        <li>Usa monedas para pistas 🌟</li>
+      </ul>
+      <hr style="margin:10px 0;border-color:#fde68a44">
+      <div id="sidebar-level" style="font-size:13px;color:#78350f;font-weight:800">Nivel 1</div>
+      <div id="sidebar-cat" style="font-size:12px;color:#b45309;margin-top:2px">Categoría</div>
+      <div id="sidebar-topic-badge">
+        <div id="sidebar-topic-emoji">🌻</div>
+        <div>
+          <div id="sidebar-topic-name">Girasoles</div>
+          <div id="sidebar-topic-sub">Tema del nivel</div>
+        </div>
+      </div>
+      <div id="sidebar-curiosity-img" style="display:none"><img id="sidebar-curiosity-img-el" src="" alt=""></div>
+      <div id="sidebar-curiosity"></div>
+      <div id="sidebar-facts"></div>
+      <div style="margin-top:14px">
+        <a href="../index.html" class="btn-pagina-principal" style="display:flex;width:100%;justify-content:center">
+          <span class="btn-icon">🏠</span> Página Principal
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Juego -->
+  <div class="game">
+
+    <!-- Logo -->
+    <div class="brand-top">
+      <div class="logo-box">
+        <div id="logoFlower" style="width:46px;flex-shrink:0"></div>
+        <div>
+          <span class="logo-text">WORD GIRASOL</span>
+          <span class="logo-sub">JUEGO DE PALABRAS</span>
+        </div>
+        <!-- Botón Mapa directo -->
+        <button class="map-btn" id="mapQuickBtn" title="Mapa de niveles">🗺️</button>
+        <!-- Botón Inicio juego -->
+        <button class="home-btn" id="homeBtn" title="Menú">🏠</button>
+        <!-- Botón de volumen -->
+        <button class="volume-btn" id="volumeBtn" title="Sonido">🔊</button>
+      </div>
+    </div>
+
+    <!-- Barra superior -->
+    <div class="wood topbar">
+      <div class="top-left">
+        <div class="category" id="category">FLORES</div>
+      </div>
+      <div class="top-center">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-label" id="progressLabel">0 / 0</div>
+      </div>
+      <div class="top-right">
+        <div class="coin-pill">
+          <span class="coin-icon">🪙</span>
+          <span id="coins">150</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablero de juego -->
+    <div class="wood board">
+      <div class="word-display" id="wordDisplay"></div>
+      <div class="hive-wrap" id="hiveWrap">
+        <div class="hive" id="hive"></div>
+        <svg class="lines" id="lines"></svg>
+      </div>
+      <div class="super-popup" id="superPopup">¡BIEN!</div>
+      <div class="clue-note" id="clueNote">
+        <span id="clueText">💡 Pista...</span>
+      </div>
+    </div>
+
+    <!-- Palabras encontradas -->
+    <div class="wood words-container">
+      <div class="words-grid" id="wordsGrid"></div>
+    </div>
+
+    <!-- Controles -->
+    <div class="wood controls">
+      <div class="ctrl-wrap">
+        <div class="ctrl" id="shuffleBtn" title="Mezclar letras">🔀</div>
+        <div class="ctrl-label">MEZCLAR</div>
+      </div>
+      <div class="ctrl-wrap">
+        <div class="ctrl" id="deleteBtn" title="Borrar selección">⌫</div>
+        <div class="ctrl-label">BORRAR</div>
+      </div>
+      <div class="ctrl-wrap">
+        <div class="ctrl submit-ctrl" id="submitBtn" title="Enviar palabra">✓</div>
+        <div class="ctrl-label">ENVIAR</div>
+      </div>
+      <div class="ctrl-wrap">
+        <div class="ctrl hint-ctrl" id="hintBtn" title="Pista (−15 monedas)">
+          💡<span class="cost">−15</span>
+        </div>
+        <div class="ctrl-label">PISTA</div>
+      </div>
+    </div>
+
+    <!-- Botón Página Principal (móvil) -->
+    <div class="main-page-row">
+      <a href="../index.html" class="btn-pagina-principal">
+        <span class="btn-icon">🏠</span> Página Principal
+      </a>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MODAL MENÚ DE INICIO (botón 🏠)
+═══════════════════════════════════════ -->
+<div class="home-menu-modal" id="homeMenuModal">
+  <div class="home-menu-card">
+    <div class="home-menu-flowers" id="homeMenuFlowers"></div>
+    <h2>🌻 WORD GIRASOL</h2>
+    <p class="home-menu-sub">¿Qué quieres hacer?</p>
+    <div class="home-menu-btns">
+      <button class="hm-btn hm-btn-play" id="hmPlayBtn">
+        <span class="hm-icon">🎮</span>
+        <span>Seguir jugando</span>
+      </button>
+      <button class="hm-btn hm-btn-map" id="hmMapBtn">
+        <span class="hm-icon">🗺️</span>
+        <span>Ver mapa de niveles</span>
+      </button>
+      <a href="../index.html" class="hm-btn hm-btn-home" style="text-decoration:none">
+        <span class="hm-icon">🏠</span>
+        <span>Página Principal</span>
+      </a>
+      <button class="hm-btn hm-btn-sound" id="hmSoundBtn">
+        <span class="hm-icon">🔊</span>
+        <span>Sonido activado</span>
+      </button>
+      <button class="hm-btn hm-btn-restart" id="hmRestartBtn">
+        <span class="hm-icon">🔄</span>
+        <span>Empezar de nuevo</span>
+      </button>
+      <button class="hm-btn hm-btn-close" id="hmCloseBtn">
+        <span class="hm-icon">✕</span>
+        <span>Cerrar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/game.js"></script>
+
+
+<!-- ═══════════════════════════════════════
+     DEMO ANIMADA v2 — Usa posiciones REALES del DOM
+     + Ventana de dato curioso + sol mejorado en CSS
+═══════════════════════════════════════ -->
+
+<!--
+  ═══════════════════════════════════════════════════
+  DEMO ANIMADA v4 — mano fantasma SIN oscurecer el juego
+  El usuario ve el juego real + una mano semitransparente
+  que arrastra G→I→R→A→S→O→L letra a letra
+  ═══════════════════════════════════════════════════
+-->
+
+<!-- Burbuja de instrucción flotante — solo texto, sin backdrop -->
+<div id="demoBubble" style="
+  display:none;
+  position:fixed;top:10px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(180deg,#fffef0,#fde68a);
+  border:3px solid #c49020;border-radius:16px;
+  padding:9px 18px;
+  display:none;align-items:center;gap:9px;
+  box-shadow:0 5px 0 #9a7010,0 8px 20px rgba(0,0,0,0.45);
+  white-space:nowrap;z-index:520;
+  pointer-events:none;
+  font-family:'Nunito',sans-serif;
+">
+  <span id="demoBubbleIcon" style="font-size:20px">👆</span>
+  <span id="demoBubbleText" style="font-size:12px;font-weight:900;color:#4a2800;letter-spacing:.3px">
+    Toca y arrastra las letras para formar una palabra
+  </span>
+</div>
+
+<!-- Cursor mano semitransparente — sobre el juego SIN oscurecerlo -->
+<div id="demoCursor" style="
+  display:none;
+  position:fixed;
+  width:52px;height:52px;
+  pointer-events:none;
+  z-index:510;
+  transform:translate(-38%,-80%);
+  opacity:0.82;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.55));
+">
+  <!-- Halo de pulso -->
+  <div id="demoHalo" style="
+    position:absolute;inset:4px;border-radius:50%;
+    background:rgba(255,215,0,0.4);
+    border:2.5px solid rgba(255,200,0,0.7);
+    transform:scale(0);
+    transition:transform .3s cubic-bezier(.17,.89,.32,1.4),opacity .3s;
+    opacity:0;
+  "></div>
+  <!-- Emoji dedo -->
+  <span id="demoHandEmoji" style="
+    position:absolute;bottom:2px;left:4px;
+    font-size:36px;line-height:1;
+    transition:transform .12s;
+  ">☝️</span>
+</div>
+
+<!-- Botón saltar — siempre visible cuando la demo está activa -->
+<button id="demoSkipBtn" style="
+  display:none;
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(20,8,0,0.72);color:#fde68a;
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;letter-spacing:.5px;
+  padding:8px 22px;border-radius:999px;
+  border:2px solid rgba(253,230,138,0.5);
+  cursor:pointer;z-index:530;
+  backdrop-filter:blur(4px);
+  transition:.15s;
+">Saltar demostración →</button>
+
+<!-- Ventana DATO CURIOSO — aparece tras la demo -->
+<div id="curiosityOverlay" style="
+  display:none;
+  position:fixed;inset:0;z-index:600;
+  align-items:center;justify-content:center;flex-direction:column;
+">
+  <div style="position:absolute;inset:0;background:rgba(4,14,2,0.80);backdrop-filter:blur(6px)"></div>
+  <div id="curiosityCard" style="
+    position:relative;z-index:2;
+    width:min(340px,92vw);
+    background:linear-gradient(160deg,#f9efcc,#e9d28a 50%,#d4ae55);
+    border:4px solid #7a4e10;border-radius:22px;
+    padding:24px 20px 20px;
+    text-align:center;
+    box-shadow:
+      inset 0 4px 0 rgba(255,245,180,0.7),
+      inset 0 -5px 0 rgba(80,40,0,0.4),
+      0 24px 48px rgba(0,0,0,0.72);
+  ">
+    <div id="curiosityEmoji" style="font-size:56px;display:block;margin-bottom:4px">🌻</div>
+    <h2 style="font-size:19px;font-weight:900;color:#4a2800;letter-spacing:1px;margin:0 0 10px">
+      ¿Sabías esto?
+    </h2>
+    <div id="curiosityWordHint" style="
+      background:rgba(255,255,255,0.55);
+      border:2px solid #c89030;border-radius:12px;
+      padding:9px 12px;margin-bottom:10px;
+      font-size:13px;font-weight:900;color:#4a2800;line-height:1.5;
+    "></div>
+    <div id="curiosityBody" style="
+      background:rgba(255,255,255,0.42);
+      border:2px solid #c89030;border-radius:12px;
+      padding:11px 13px;margin-bottom:13px;
+      font-size:13px;font-weight:800;color:#6b3a10;line-height:1.65;text-align:left;
+    "></div>
+    <p style="font-size:11px;font-weight:900;color:#4a2800;margin:0 0 13px;opacity:.8">
+      ¡Ahora es tu turno de encontrar la palabra! 🎮
+    </p>
+    <button id="curiosityPlayBtn" style="
+      width:100%;padding:13px;
+      background:linear-gradient(180deg,#6edd40,#4ab020 40%,#2d7a10 75%,#1a5008);
+      color:#fff;font-weight:900;font-size:16px;letter-spacing:1px;
+      border:4px solid #104008;border-radius:14px;cursor:pointer;
+      box-shadow:inset 0 4px 0 rgba(150,255,80,0.4),0 6px 0 #0a2a04,0 8px 16px rgba(0,0,0,0.35);
+      font-family:'Nunito',sans-serif;transition:.12s;
+    ">¡A jugar! 🌻</button>
+  </div>
+</div>
+
+<style>
+/* Líneas de demo animadas en el SVG real */
+.demo-anim-line{
+  stroke:rgba(255,215,0,0.90);
+  stroke-width:5;
+  stroke-linecap:round;
+  filter:drop-shadow(0 0 5px rgba(255,200,0,0.8));
+  stroke-dasharray:400;
+  stroke-dashoffset:400;
+  animation:demoDraw .36s ease-out forwards;
+}
+@keyframes demoDraw{ to{ stroke-dashoffset:0; } }
+@keyframes demoBubbleIn{
+  from{ opacity:0; transform:translateX(-50%) translateY(-12px); }
+  to  { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+@keyframes curiosityIn{
+  from{ opacity:0; transform:scale(.55) translateY(24px); }
+  to  { opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes spinFlower{
+  from{ transform:rotate(-30deg) scale(.3); opacity:0; }
+  to  { transform:rotate(0) scale(1); opacity:1; }
+}
+#curiosityCard{ animation:curiosityIn .55s cubic-bezier(.17,.89,.32,1.4); }
+#curiosityEmoji{ animation:spinFlower .7s cubic-bezier(.17,.89,.32,1.4); }
+</style>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DEMO ANIMADA v4
+   • Mano semitransparente SIN oscurecer el juego
+   • Arrastra GIRASOL completo (7 letras) sobre fichas reales
+   • Líneas doradas animadas en el SVG real
+   • Letras se muestran en word-display real
+   • Halo de pulso al tocar cada letra
+   • Luego curiosidad con dato botánico
+═══════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  const SESSION_KEY = 'wg_demo_done_v6';
+  const DEMO_WORD   = ['G','I','R','A','S','O','L'];
+
+  let demoActive   = false;
+  let demoTimers   = [];
+  let rafId        = null;
+  let curX=0, curY=0, tgtX=0, tgtY=0;
+  let rafRunning   = false;
+
+  /* ── util ── */
+  function later(fn, ms){ const t=setTimeout(fn,ms); demoTimers.push(t); return t; }
+  function killAll(){
+    demoTimers.forEach(clearTimeout); demoTimers=[];
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; rafRunning=false; }
+  }
+
+  /* ── tile helpers ── */
+  function getTile(letter){
+    for(const t of document.querySelectorAll('.hive-letter')){
+      if((t.dataset.letter||'').toUpperCase()===letter.toUpperCase()){
+        const r=t.getBoundingClientRect();
+        return {x:r.left+r.width/2, y:r.top+r.height/2, el:t};
+      }
+    }
+    return null;
+  }
+
+  /* ── cursor suave con rAF ── */
+  function startCursorRAF(){
+    if(rafRunning) return;
+    rafRunning=true;
+    function tick(){
+      curX+=(tgtX-curX)*0.13;
+      curY+=(tgtY-curY)*0.13;
+      const c=document.getElementById('demoCursor');
+      if(c){ c.style.left=curX+'px'; c.style.top=curY+'px'; }
+      rafId=requestAnimationFrame(tick);
+    }
+    rafId=requestAnimationFrame(tick);
+  }
+
+  function showCursor(x,y){
+    const c=document.getElementById('demoCursor'); if(!c) return;
+    curX=x; curY=y; tgtX=x; tgtY=y;
+    c.style.left=x+'px'; c.style.top=y+'px';
+    c.style.display='block'; c.style.opacity='0'; c.style.transition='opacity .35s';
+    requestAnimationFrame(()=>{ c.style.opacity='0.82'; });
+    startCursorRAF();
+  }
+  function moveTo(x,y){ tgtX=x; tgtY=y; }
+  function hideCursor(){
+    const c=document.getElementById('demoCursor');
+    if(c){ c.style.opacity='0'; later(()=>{ c.style.display='none'; },350); }
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; rafRunning=false; }
+  }
+
+  /* pulso al tocar */
+  function doHalo(){
+    const h=document.getElementById('demoHalo'); if(!h) return;
+    h.style.transition='none'; h.style.transform='scale(0)'; h.style.opacity='1';
+    requestAnimationFrame(()=>{
+      h.style.transition='transform .4s cubic-bezier(.17,.89,.32,1.4),opacity .4s';
+      h.style.transform='scale(2.2)'; h.style.opacity='0';
+    });
+  }
+  function handPress(on){
+    const e=document.getElementById('demoHandEmoji'); if(!e) return;
+    e.textContent = on ? '✊' : '☝️';
+    e.style.transform = on ? 'scale(0.82) translateY(3px)' : '';
+  }
+
+  /* word-display */
+  let demoWord=[];
+  function pushLetter(ch){
+    demoWord.push(ch);
+    const wd=document.getElementById('wordDisplay'); if(!wd) return;
+    wd.innerHTML=demoWord.map(c=>`<span class="wd-letter">${c}</span>`).join('');
+  }
+  function clearWord(){
+    demoWord=[];
+    const wd=document.getElementById('wordDisplay'); if(wd) wd.innerHTML='';
+  }
+
+  /* líneas SVG */
+  function drawLine(x1,y1,x2,y2){
+    const wrap=document.getElementById('hiveWrap');
+    const svg=document.getElementById('lines'); if(!svg||!wrap) return;
+    const wr=wrap.getBoundingClientRect();
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    const len=Math.hypot(x2-x1,y2-y1)+8;
+    line.setAttribute('x1',x1-wr.left); line.setAttribute('y1',y1-wr.top);
+    line.setAttribute('x2',x2-wr.left); line.setAttribute('y2',y2-wr.top);
+    line.setAttribute('class','demo-anim-line');
+    line.style.strokeDasharray=len; line.style.strokeDashoffset=len;
+    svg.appendChild(line);
+  }
+  function clearLines(){ document.querySelectorAll('.demo-anim-line').forEach(l=>l.remove()); }
+
+  /* burbuja */
+  function setBubble(icon,txt){
+    const bi=document.getElementById('demoBubbleIcon');
+    const bt=document.getElementById('demoBubbleText');
+    if(bi) bi.textContent=icon;
+    if(bt) bt.textContent=txt;
+  }
+  function showBubble(){
+    const b=document.getElementById('demoBubble'); if(!b) return;
+    b.style.display='flex'; b.style.opacity='0'; b.style.transition='opacity .35s';
+    b.style.animation='demoBubbleIn .45s cubic-bezier(.17,.89,.32,1.4) forwards';
+    requestAnimationFrame(()=>{ b.style.opacity='1'; });
+  }
+  function hideBubble(){
+    const b=document.getElementById('demoBubble'); if(!b) return;
+    b.style.opacity='0'; later(()=>{ b.style.display='none'; },360);
+  }
+
+  /* ── Una pasada completa: arrastra GIRASOL ── */
+  function runPass(onDone){
+    if(!demoActive){ onDone&&onDone(); return; }
+
+    const centers=DEMO_WORD.map(getTile).filter(Boolean);
+    if(centers.length<2){ later(()=>onDone&&onDone(),500); return; }
+
+    clearWord(); clearLines();
+    centers.forEach(c=>c.el.classList.remove('active'));
+
+    setBubble('☝️','Toca y arrastra de letra en letra');
+
+    let t=300;
+
+    /* Aparecer cursor sobre la primera letra */
+    later(()=>{ if(!demoActive) return; showCursor(centers[0].x, centers[0].y); }, t); t+=550;
+
+    /* Presionar primera letra */
+    later(()=>{
+      if(!demoActive) return;
+      handPress(true); doHalo();
+      centers[0].el.classList.add('active');
+      pushLetter(DEMO_WORD[0]);
+      setBubble('✊','¡Mantén presionado y arrastra!');
+    }, t); t+=380;
+
+    /* Arrastrar letra por letra */
+    let prev=centers[0];
+    for(let i=1;i<centers.length;i++){
+      const cur=centers[i], ch=DEMO_WORD[i], prevSnap=prev;
+      later(()=>{ if(!demoActive) return; moveTo(cur.x, cur.y); }, t); t+=420;
+      later(()=>{
+        if(!demoActive) return;
+        cur.el.classList.add('active');
+        pushLetter(ch);
+        drawLine(prevSnap.x, prevSnap.y, cur.x, cur.y);
+        doHalo();
+      }, t+30); t+=80;
+      prev=cur;
+    }
+
+    /* Soltar */
+    later(()=>{
+      if(!demoActive) return;
+      handPress(false);
+      setBubble('🖐️','¡Suelta para enviar la palabra!');
+      const h=document.getElementById('demoHandEmoji'); if(h) h.textContent='🖐️';
+    }, t); t+=380;
+
+    /* Popup éxito */
+    later(()=>{
+      if(!demoActive) return;
+      const p=document.getElementById('superPopup');
+      if(p){ p.textContent='¡GIRASOL! 🌻'; p.classList.remove('show'); void p.offsetWidth; p.classList.add('show'); }
+      const wd=document.getElementById('wordDisplay');
+      if(wd){ wd.style.background='linear-gradient(180deg,#d4ffd4,#86efac)'; wd.style.borderColor='#16a34a'; }
+      setBubble('🎉','¡Palabra encontrada! ⭐');
+    }, t); t+=900;
+
+    /* Limpiar todo */
+    later(()=>{
+      if(!demoActive) return;
+      const p=document.getElementById('superPopup'); if(p) p.classList.remove('show');
+      centers.forEach(c=>c.el.classList.remove('active'));
+      clearLines(); clearWord();
+      const wd=document.getElementById('wordDisplay');
+      if(wd){ wd.style.background=''; wd.style.borderColor=''; }
+      const h=document.getElementById('demoHandEmoji'); if(h) h.textContent='☝️';
+      setBubble('☝️','Toca y arrastra de letra en letra');
+      hideCursor();
+    }, t); t+=700;
+
+    later(()=>{ onDone&&onDone(); }, t);
+  }
+
+  /* ── Loop N pasadas ── */
+  function runLoop(n, onFinish){
+    let pass=0;
+    function next(){
+      if(!demoActive){ onFinish&&onFinish(); return; }
+      if(pass>=n){ onFinish&&onFinish(); return; }
+      pass++;
+      runPass(()=>{ later(next, 900); });
+    }
+    later(next, 400);
+  }
+
+  /* ── Mostrar dato curioso ── */
+  function showCuriosity(){
+    if(!demoActive) return;
+    demoActive=false; killAll();
+    clearLines(); clearWord(); hideCursor(); hideBubble();
+    document.querySelectorAll('.hive-letter').forEach(el=>el.classList.remove('active'));
+    const wd=document.getElementById('wordDisplay');
+    if(wd){ wd.style.background=''; wd.style.borderColor=''; wd.innerHTML=''; }
+    const p=document.getElementById('superPopup'); if(p) p.classList.remove('show');
+    // Ocultar botón saltar
+    const sk=document.getElementById('demoSkipBtn');
+    if(sk){ sk.style.opacity='0'; sk.style.transition='opacity .2s'; setTimeout(()=>{ sk.style.display='none'; sk.style.opacity=''; },220); }
+
+    const co=document.getElementById('curiosityOverlay'); if(!co) return;
+    co.style.display='flex';
+
+    const lv=(typeof LEVELS!=='undefined') ? LEVELS[0] : null;
+    const wh=document.getElementById('curiosityWordHint');
+    if(wh&&lv){
+      wh.innerHTML=`🌻 La palabra clave es <strong style="font-size:16px;color:#78350f;letter-spacing:2px">GIRASOL</strong><br>
+        <span style="font-size:11px;opacity:.75">Conecta las 7 letras en el panal</span>`;
+    }
+    const cb=document.getElementById('curiosityBody');
+    if(cb&&lv) cb.textContent=lv.curiosity;
+    const ei=document.getElementById('curiosityEmoji');
+    const emojis=['🌻','🌸','🌼','🌺','🌷','🌿'];
+    if(ei) ei.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  }
+
+  /* ── Lanzar demo ── */
+  function launchDemo(){
+    if(demoActive) return;
+    demoActive=true;
+
+    showBubble();
+    document.getElementById('demoSkipBtn').style.display='block';
+
+    function waitTiles(tries){
+      if(!demoActive) return;
+      if(!document.querySelectorAll('.hive-letter').length && tries>0){
+        later(()=>waitTiles(tries-1), 350); return;
+      }
+      runLoop(2, showCuriosity);
+    }
+    later(()=>waitTiles(12), 700);
+
+    /* Failsafe: si tarda >20s pasa a curiosidad */
+    later(()=>{ if(demoActive) showCuriosity(); }, 20000);
+  }
+
+  /* ── Hooks ── */
+  document.addEventListener('DOMContentLoaded', ()=>{
+
+    /* Botón saltar — guarda sesión para no volver a mostrar la demo */
+    document.getElementById('demoSkipBtn').addEventListener('click', ()=>{
+      localStorage.setItem(SESSION_KEY,'1');
+      const btn=document.getElementById('demoSkipBtn');
+      if(btn){ btn.style.opacity='0'; btn.style.transition='opacity .2s'; setTimeout(()=>{ btn.style.display='none'; btn.style.opacity=''; },220); }
+      if(demoActive) showCuriosity();
+    });
+
+    /* ¡A jugar! */
+    document.getElementById('curiosityPlayBtn').addEventListener('click', ()=>{
+      localStorage.setItem(SESSION_KEY,'1');
+      const co=document.getElementById('curiosityOverlay');
+      if(co){ co.style.opacity='0'; co.style.transition='opacity .3s'; later(()=>{ co.style.display='none'; co.style.opacity=''; },330); }
+    });
+
+    /* Hook al botón "¡JUGAR AHORA!" — polling robusto hasta que tutorial cierre */
+    const wb=document.getElementById('welcomePlayBtn');
+    if(wb) wb.addEventListener('click', ()=>{
+      if(localStorage.getItem(SESSION_KEY)) return;
+      function pollTutorial(attempts){
+        const tut=document.getElementById('tutorialModal');
+        const tutVisible = tut && tut.style.display==='grid';
+        if(tutVisible && attempts>0){
+          later(()=>pollTutorial(attempts-1), 300);
+          return;
+        }
+        later(launchDemo, 500);
+      }
+      // Dar tiempo a que game.js decida si abre el tutorial
+      later(()=>pollTutorial(50), 600);
+    }, {once:true});
+
+  });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════
+     ONBOARDING GUIADO — burbuja flotante que señala elementos reales
+     Se activa la PRIMERA vez que el usuario abre el juego de verdad
+     (después de ver la demo o saltarla)
+     Nombre técnico: "Contextual Guided Onboarding"
+═══════════════════════════════════════ -->
+<style>
+/* ── Contenedor del tooltip de onboarding ── */
+#ob-tooltip {
+  display:none;
+  position:fixed;
+  z-index:600;
+  pointer-events:none;
+  transition:opacity .3s, transform .3s;
+  opacity:0;
+}
+#ob-tooltip.ob-show {
+  display:block;
+  pointer-events:all;
+  opacity:1;
+}
+/* ── La tarjeta ── */
+.ob-card {
+  position:relative;
+  background:linear-gradient(160deg,#fffef0,#fde68a 80%,#f9d030);
+  border:3px solid #c49020;
+  border-radius:18px;
+  padding:14px 16px 12px;
+  width:min(280px,88vw);
+  box-shadow:0 8px 0 #9a7010,0 12px 32px rgba(0,0,0,0.55);
+  font-family:'Nunito',sans-serif;
+}
+/* Flecha arriba */
+.ob-card.ob-arrow-top::before {
+  content:'';
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  border:8px solid transparent;
+  border-bottom-color:#c49020;
+}
+.ob-card.ob-arrow-top::after {
+  content:'';
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  border:7px solid transparent;
+  border-bottom-color:#fde68a;
+}
+/* Flecha abajo */
+.ob-card.ob-arrow-bottom::before {
+  content:'';
+  position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
+  border:8px solid transparent;
+  border-top-color:#c49020;
+}
+.ob-card.ob-arrow-bottom::after {
+  content:'';
+  position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+  border:7px solid transparent;
+  border-top-color:#fde68a;
+}
+/* Flecha izquierda */
+.ob-card.ob-arrow-left::before {
+  content:'';
+  position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+  border:8px solid transparent;
+  border-right-color:#c49020;
+}
+.ob-card.ob-arrow-left::after {
+  content:'';
+  position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+  border:7px solid transparent;
+  border-right-color:#fde68a;
+}
+.ob-icon { font-size:28px; display:block; margin-bottom:4px; }
+.ob-title { font-size:14px; font-weight:900; color:#4a2800; margin:0 0 4px; }
+.ob-body  { font-size:12px; font-weight:800; color:#7a4010; line-height:1.5; margin:0 0 10px; }
+.ob-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.ob-step  { font-size:10px; font-weight:900; color:#9a6010; letter-spacing:.5px; }
+.ob-dots  { display:flex; gap:4px; }
+.ob-dot   { width:7px; height:7px; border-radius:50%; background:#c09030; opacity:.3; transition:.2s; }
+.ob-dot.ob-active { opacity:1; background:#78350f; }
+.ob-btn-ok {
+  background:linear-gradient(180deg,#6edd40,#2d7a10);
+  color:#fff; border:3px solid #104008; border-radius:10px;
+  padding:6px 14px; font-family:'Nunito',sans-serif;
+  font-weight:900; font-size:12px; cursor:pointer;
+  box-shadow:0 3px 0 #0a2a04;
+  transition:.12s;
+}
+.ob-btn-ok:active { transform:translateY(1px); }
+/* Spotlight — resalta el elemento señalado */
+#ob-spotlight {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:590;
+  pointer-events:none;
+}
+#ob-spotlight.ob-active { display:block; }
+.ob-ring {
+  position:absolute;
+  border:3px solid rgba(253,230,138,0.9);
+  border-radius:12px;
+  box-shadow:0 0 0 3000px rgba(0,0,0,0.45), 0 0 20px rgba(253,230,138,0.7);
+  transition:all .35s cubic-bezier(.17,.89,.32,1.4);
+  pointer-events:none;
+}
+@keyframes obIn {
+  from { opacity:0; transform:translateY(12px) scale(.93); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+#ob-tooltip.ob-show .ob-card { animation:obIn .4s cubic-bezier(.17,.89,.32,1.4); }
+</style>
+
+<!-- Spotlight ring -->
+<div id="ob-spotlight"><div class="ob-ring" id="ob-ring"></div></div>
+
+<!-- Tooltip -->
+<div id="ob-tooltip">
+  <div class="ob-card" id="ob-card">
+    <span class="ob-icon" id="ob-icon">🌻</span>
+    <p class="ob-title" id="ob-title">Título</p>
+    <p class="ob-body"  id="ob-body">Texto</p>
+    <div class="ob-footer">
+      <div>
+        <div class="ob-step" id="ob-step">1 / 5</div>
+        <div class="ob-dots" id="ob-dots"></div>
+      </div>
+      <button class="ob-btn-ok" id="ob-btn-ok">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ONBOARDING GUIADO v1
+   Enseña los 5 elementos clave del juego señalándolos
+   con spotlight + tooltip, UNA SOLA VEZ por dispositivo.
+   Se activa después de que el usuario empieza a jugar.
+══════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  const OB_KEY = 'wg_onboarding_v1';
+  if(localStorage.getItem(OB_KEY)) return; // Ya lo vio
+
+  const STEPS = [
+    {
+      targetId: 'hive',
+      icon: '🔤',
+      title: '¡El panal de letras!',
+      body: 'Toca las letras una por una — o arrastra el dedo por encima — para ir formando tu palabra.',
+      arrow: 'top'
+    },
+    {
+      targetId: 'wordDisplay',
+      icon: '✍️',
+      title: 'Tu palabra va aquí',
+      body: 'Las letras que tocas aparecen en este espacio. ¡Si te equivocas pulsa BORRAR!',
+      arrow: 'bottom'
+    },
+    {
+      targetId: 'submitBtn',
+      icon: '✅',
+      title: 'Botón ENVIAR',
+      body: 'Cuando tengas una palabra lista, toca aquí para confirmarla. También puedes soltar el dedo al final del arrastre.',
+      arrow: 'top'
+    },
+    {
+      targetId: 'wordsGrid',
+      icon: '📋',
+      title: 'Palabras encontradas',
+      body: 'Aquí aparecen todas las palabras que ya encontraste. ¡Intenta encontrarlas todas!',
+      arrow: 'top'
+    },
+    {
+      targetId: 'hintBtn',
+      icon: '💡',
+      title: 'Botón de PISTA',
+      body: 'Si te atascas, toca aquí para recibir una pista (cuesta 15 🪙). ¡Úsalas con cuidado!',
+      arrow: 'top'
+    }
+  ];
+
+  let step = 0;
+  let obActive = false;
+
+  const tooltip   = document.getElementById('ob-tooltip');
+  const spotlight = document.getElementById('ob-spotlight');
+  const ring      = document.getElementById('ob-ring');
+  const card      = document.getElementById('ob-card');
+  const iconEl    = document.getElementById('ob-icon');
+  const titleEl   = document.getElementById('ob-title');
+  const bodyEl    = document.getElementById('ob-body');
+  const stepEl    = document.getElementById('ob-step');
+  const dotsEl    = document.getElementById('ob-dots');
+  const btn       = document.getElementById('ob-btn-ok');
+
+  // Construir dots
+  STEPS.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'ob-dot' + (i===0 ? ' ob-active' : '');
+    d.id = 'ob-dot-' + i;
+    dotsEl.appendChild(d);
+  });
+
+  function showStep(i) {
+    if(i >= STEPS.length){ closeOB(); return; }
+    const s = STEPS[i];
+
+    // Esperar a que el elemento exista en el DOM
+    let target = document.getElementById(s.targetId);
+    if(!target){
+      // Si no existe aún, saltar al siguiente
+      showStep(i+1); return;
+    }
+
+    iconEl.textContent  = s.icon;
+    titleEl.textContent = s.title;
+    bodyEl.textContent  = s.body;
+    stepEl.textContent  = `${i+1} / ${STEPS.length}`;
+
+    // Actualizar dots
+    document.querySelectorAll('.ob-dot').forEach((d,j) => {
+      d.classList.toggle('ob-active', j===i);
+    });
+
+    // Botón texto
+    btn.textContent = i < STEPS.length-1 ? 'Entendido ✓' : '¡A jugar! 🌻';
+
+    // Posicionar spotlight
+    const rect = target.getBoundingClientRect();
+    const pad = 8;
+    ring.style.left   = (rect.left - pad) + 'px';
+    ring.style.top    = (rect.top  - pad) + 'px';
+    ring.style.width  = (rect.width  + pad*2) + 'px';
+    ring.style.height = (rect.height + pad*2) + 'px';
+    spotlight.classList.add('ob-active');
+
+    // Eliminar clases de flecha anteriores
+    card.classList.remove('ob-arrow-top','ob-arrow-bottom','ob-arrow-left');
+    card.classList.add('ob-arrow-' + s.arrow);
+
+    // Posicionar tooltip
+    tooltip.classList.add('ob-show');
+    tooltip.style.opacity = '0';
+    requestAnimationFrame(() => {
+      const tRect = card.getBoundingClientRect();
+      const tW = Math.min(280, window.innerWidth * 0.88);
+      let left, top;
+
+      if(s.arrow === 'top'){
+        // tooltip va debajo del target
+        top  = rect.bottom + pad + 16;
+        left = rect.left + rect.width/2 - tW/2;
+      } else if(s.arrow === 'bottom'){
+        // tooltip va encima del target
+        top  = rect.top - pad - 16 - 140; // altura aprox del tooltip
+        left = rect.left + rect.width/2 - tW/2;
+      } else {
+        // arrow-left: tooltip va a la derecha
+        top  = rect.top + rect.height/2 - 80;
+        left = rect.right + pad + 16;
+      }
+
+      // Clamp dentro de la pantalla
+      left = Math.max(8, Math.min(left, window.innerWidth - tW - 8));
+      top  = Math.max(8, Math.min(top, window.innerHeight - 200));
+
+      tooltip.style.left = left + 'px';
+      tooltip.style.top  = top  + 'px';
+      tooltip.style.width = tW + 'px';
+      tooltip.style.opacity = '1';
+    });
+  }
+
+  function closeOB(){
+    obActive = false;
+    localStorage.setItem(OB_KEY, '1');
+    tooltip.classList.remove('ob-show');
+    spotlight.classList.remove('ob-active');
+    setTimeout(()=>{ tooltip.style.display='none'; spotlight.style.display='none'; }, 400);
+  }
+
+  btn.addEventListener('click', ()=>{
+    step++;
+    if(step >= STEPS.length){
+      closeOB();
+    } else {
+      // Re-animar card
+      card.style.animation='none';
+      void card.offsetWidth;
+      card.style.animation='';
+      showStep(step);
+    }
+  });
+
+  // ── Arrancar onboarding cuando el juego esté listo ──
+  // Esperamos al evento 'wg:ready' que lanzaremos desde game.js,
+  // o como fallback en 3s tras el primer clic en "¡A jugar!"
+  function launchOnboarding(){
+    if(obActive) return;
+    obActive = true;
+    // Pequeño delay para que el juego esté pintado
+    setTimeout(()=>{
+      showStep(0);
+    }, 600);
+  }
+
+  // Escuchar el botón ¡A jugar! de la pantalla de curiosidad
+  document.addEventListener('click', function handler(e){
+    if(e.target && e.target.id === 'curiosityPlayBtn'){
+      if(!localStorage.getItem(OB_KEY)){
+        setTimeout(launchOnboarding, 800);
+      }
+      document.removeEventListener('click', handler);
+    }
+  });
+
+  // Fallback: si ya pasaron el tutorial y el welcome sin la demo
+  const wpb = document.getElementById('welcomePlayBtn');
+  if(wpb){
+    wpb.addEventListener('click', ()=>{
+      if(localStorage.getItem('wg_demo_done_v6') && !localStorage.getItem(OB_KEY)){
+        setTimeout(launchOnboarding, 1200);
+      }
+    });
+  }
+
+})();
+</script>
+
+</body>
+</html>
