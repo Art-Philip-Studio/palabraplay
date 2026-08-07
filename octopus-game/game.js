@@ -255,6 +255,8 @@ function gameOver(){
     document.getElementById('overlay-sub').textContent='Presiona LEFT o RIGHT para reiniciar';
     document.getElementById('overlay-score').textContent=
       `SCORE ${String(score).padStart(5,'0')}  HI ${String(hiScore).padStart(5,'0')}`;
+    const kofi=document.getElementById('kofi-octopus');
+    if(kofi) kofi.style.display='inline-block';
   },800);
 }
 

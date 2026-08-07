@@ -3,530 +3,1692 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SnakePlay — .io</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <title>PalabraPlay - Juegos Gratis Online | Ecuador</title>
+  <meta name="description" content="Juega gratis SnakePlay, Lexo, Hilario, Octopus Game y más. Los mejores juegos para Ecuador.">
+  <link rel="manifest" href="/manifest.json">
+  <!-- Soporte de "Agregar a pantalla de inicio" en iOS (Safari no usa manifest.json) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PalabraPlay">
+  <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=P&background=10b981&color=000&size=180&bold=true">
+  <meta name="theme-color" content="#10b981">
+  <!-- Service Worker: habilita el botón "Instalar app" en Android/Chrome -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+  <!-- Google Fonts: carga no bloqueante -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="snake.css">
-</head>
-<body data-screen="start">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"></noscript>
 
-  <!-- ===== ROTAR DISPOSITIVO ===== -->
-  <div id="rotate-overlay">
-    <div class="rotate-icon">📱</div>
-    <div class="rotate-title">Gira el dispositivo</div>
-    <div class="rotate-sub">SnakePlay funciona en horizontal</div>
-  </div>
+  <!-- Font Awesome: carga diferida con font-display:swap -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
-  <!-- ===== INICIO ===== -->
-  <div id="screen-start" class="screen active">
-    <canvas id="bg-canvas"></canvas>
-    <div class="start-content">
-      <div class="logo-wrap">
-        <div class="logo-snake">🐍</div>
-        <h1 class="logo-title">Snake<span>Play</span></h1>
-        <p class="logo-sub">.io — Sobrevive y domina</p>
-      </div>
-      <div class="start-panel">
-        <label class="name-label">Tu nombre</label>
-        <input type="text" id="player-name" class="name-input" placeholder="Jugador" maxlength="16" autocomplete="off">
-        <button id="btn-play" class="btn-play">JUGAR 🐍</button>
-
-        <!-- Skin selector -->
-        <div class="skin-section">
-          <div class="skin-section-label">COLOR DE SERPIENTE</div>
-          <div id="skin-selector" class="skin-grid"></div>
-          <div id="skin-name-label" class="skin-name-label">Víbora</div>
-        </div>
-
-        <div class="hint-row">
-          <span>🖱️ Ratón para dirigir</span>
-          <span>⚡ Clic = Boost (pierdes masa)</span>
-          <span>⏸ P para pausar</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== SELECCIÓN DE NIVEL ===== -->
-  <div id="screen-level" class="screen">
-    <canvas id="level-bg-canvas"></canvas>
-    <div class="level-content">
-      <button class="level-back-btn" id="btn-level-back">← Volver</button>
-      <div class="level-header">
-        <div class="level-snake-icon">🐍</div>
-        <h2 class="level-title">Elige tu <span>Nivel</span></h2>
-        <p class="level-sub">¿Qué tan difícil lo quieres?</p>
-      </div>
-      <div class="level-grid" id="level-grid">
-        <button class="level-card" data-level="1">
-          <div class="level-card-glow"></div>
-          <div class="level-emoji">🌱</div>
-          <div class="level-name">FÁCIL</div>
-          <div class="level-desc">Pocos bots, lentos y torpes. Perfecta para aprender.</div>
-          <div class="level-tags">
-            <span class="ltag">8 bots</span>
-            <span class="ltag">Lentos</span>
-            <span class="ltag">+Orbes</span>
-          </div>
-          <div class="level-rec" id="lrec-1"></div>
-        </button>
-        <button class="level-card" data-level="2">
-          <div class="level-card-glow"></div>
-          <div class="level-emoji">⚡</div>
-          <div class="level-name">NORMAL</div>
-          <div class="level-desc">La experiencia clásica. Bots equilibrados.</div>
-          <div class="level-tags">
-            <span class="ltag">14 bots</span>
-            <span class="ltag">Normal</span>
-            <span class="ltag">Clásico</span>
-          </div>
-          <div class="level-rec" id="lrec-2"></div>
-        </button>
-        <button class="level-card" data-level="3">
-          <div class="level-card-glow"></div>
-          <div class="level-emoji">🔥</div>
-          <div class="level-name">DIFÍCIL</div>
-          <div class="level-desc">Bots agresivos y rápidos. ¿Estás listo?</div>
-          <div class="level-tags">
-            <span class="ltag">20 bots</span>
-            <span class="ltag">Rápidos</span>
-            <span class="ltag">Agresivos</span>
-          </div>
-          <div class="level-rec" id="lrec-3"></div>
-        </button>
-        <button class="level-card level-card-elite" data-level="4">
-          <div class="level-card-glow"></div>
-          <div class="level-emoji">💀</div>
-          <div class="level-name">INFIERNO</div>
-          <div class="level-desc">Bots implacables. Mundo pequeño. Solo los mejores sobreviven.</div>
-          <div class="level-tags">
-            <span class="ltag">28 bots</span>
-            <span class="ltag">Brutales</span>
-            <span class="ltag">Sin piedad</span>
-          </div>
-          <div class="level-rec" id="lrec-4"></div>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== JUEGO ===== -->
-  <div id="screen-game" class="screen">
-    <canvas id="game-canvas"></canvas>
-
-    <!-- HUD superior -->
-    <div class="hud-top">
-      <div class="hud-box">
-        <span class="hud-label">PUNTOS</span>
-        <span class="hud-val" id="hud-score">0</span>
-      </div>
-      <div class="hud-box">
-        <span class="hud-label">RANKING</span>
-        <span class="hud-val" id="hud-rank">#1</span>
-      </div>
-      <div class="hud-box">
-        <span class="hud-label">TAMAÑO</span>
-        <span class="hud-val" id="hud-length">20</span>
-      </div>
-      <div class="hud-box">
-        <span class="hud-label">NIVEL</span>
-        <span class="hud-val" id="hud-level">–</span>
-      </div>
-      <!-- Barra de boost -->
-      <div class="hud-box hud-boost-box" id="boost-bar-wrap">
-        <span class="hud-label">BOOST ⚡</span>
-        <div class="boost-bar-bg">
-          <div class="boost-bar-fill" id="boost-bar-fill"></div>
-        </div>
-      </div>
-    </div>
-    <!-- Botón ⚙️ FUERA del hud-top, independiente, z-index alto -->
-    <button class="hud-btn-settings" id="btn-settings" title="Pausa / Ajustes">⚙️</button>
-
-    <!-- Minimap -->
-    <div id="minimap-wrap">
-      <canvas id="minimap-canvas"></canvas>
-      <div id="minimap-label">MAPA</div>
-    </div>
-
-    <!-- Leaderboard -->
-    <div id="leaderboard">
-      <div class="lb-title">🏆 Ranking</div>
-      <div id="lb-rows"></div>
-    </div>
-
-    <!-- Zoom indicator -->
-    <div id="zoom-indicator" id="zoom-indicator">ZOOM ×1.0</div>
-
-    <!-- Panel de pausa / ajustes -->
-    <div class="pause-overlay" id="pause-overlay" style="display:none">
-      <div class="pause-box">
-        <div class="pause-icon">⏸</div>
-        <h2 class="pause-title">Pausa</h2>
-
-        <!-- Control de volumen -->
-        <div class="pause-volume">
-          <button class="hud-btn" id="btn-mute" title="Silenciar">🔊</button>
-          <input type="range" id="volume-slider" class="volume-slider volume-slider-pause"
-                 min="0" max="1" step="0.05" value="0.7" title="Volumen">
-        </div>
-
-        <button class="pause-btn" id="pause-resume">▶ Continuar</button>
-        <button class="pause-btn pause-btn-home" id="btn-menu-game">🏠 Inicio PalabraPlay</button>
-      </div>
-    </div>
-
-    <!-- BOOST btn (doble tap en canvas o este botón) -->
-    <button class="btn-boost" id="btn-boost">⚡ BOOST</button>
-  </div>
-
-  <!-- ===== FIN ===== -->
-  <div id="screen-end" class="screen">
-    <div class="end-content">
-      <div class="end-emoji" id="end-emoji">💀</div>
-      <h2 class="end-title" id="end-title">¡Eliminado!</h2>
-      <div id="end-level-badge" style="display:none;font-family:'Orbitron',sans-serif;font-size:0.75rem;color:rgba(57,255,20,0.7);letter-spacing:1px;margin-bottom:4px;text-align:center;"></div>
-
-      <!-- Badge nuevo récord -->
-      <div id="new-record-badge" style="display:none">
-        🏆 ¡NUEVO RÉCORD!
-      </div>
-
-      <!-- Stats de esta partida -->
-      <div class="end-section-label">ESTA PARTIDA</div>
-      <div class="end-stats">
-        <div class="end-stat">
-          <span class="end-stat-label">Puntuación</span>
-          <span class="end-stat-val" id="end-score">0</span>
-        </div>
-        <div class="end-stat">
-          <span class="end-stat-label">Tamaño máx.</span>
-          <span class="end-stat-val" id="end-length">0</span>
-        </div>
-        <div class="end-stat">
-          <span class="end-stat-label">Tiempo</span>
-          <span class="end-stat-val" id="end-time">0:00</span>
-        </div>
-        <div class="end-stat end-stat-kills">
-          <span class="end-stat-label">Eliminaciones</span>
-          <span class="end-stat-val end-kills-val" id="end-kills">0</span>
-        </div>
-      </div>
-
-      <!-- Récords históricos -->
-      <div class="end-section-label">🏆 RÉCORDS</div>
-      <div class="end-stats end-records">
-        <div class="end-stat rec-stat">
-          <span class="end-stat-label">Puntuación</span>
-          <span class="end-stat-val rec-val" id="rec-score">0</span>
-        </div>
-        <div class="end-stat rec-stat">
-          <span class="end-stat-label">Tamaño máx.</span>
-          <span class="end-stat-val rec-val" id="rec-length">0</span>
-        </div>
-        <div class="end-stat rec-stat">
-          <span class="end-stat-label">Tiempo</span>
-          <span class="end-stat-val rec-val" id="rec-time">0:00</span>
-        </div>
-        <div class="end-stat rec-stat">
-          <span class="end-stat-label">Eliminaciones</span>
-          <span class="end-stat-val rec-val" id="rec-kills">0</span>
-        </div>
-      </div>
-
-      <div class="end-btns">
-        <button class="btn-end" id="btn-retry">🔄 Reintentar</button>
-        <button class="btn-end btn-menu" id="btn-menu">🏠 Menú</button>
-        <button class="btn-end btn-clear-rec" id="btn-clear-rec" title="Borrar récords">🗑️</button>
-      </div>
-
-      <!-- Compartir en redes sociales -->
-      <div class="share-section" id="share-section">
-        <div class="share-label">📤 RETAR EN REDES</div>
-        <div class="share-btns">
-          <button class="share-btn share-wa"  id="share-wa"  title="WhatsApp">💬<span>WhatsApp</span></button>
-          <button class="share-btn share-tw"  id="share-tw"  title="X / Twitter">✖<span>Twitter</span></button>
-          <button class="share-btn share-tg"  id="share-tg"  title="Telegram">✈️<span>Telegram</span></button>
-          <button class="share-btn share-cp"  id="share-cp"  title="Copiar">📋<span>Copiar</span></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MODAL KO-FI ===== -->
-  <div id="kofi-modal" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
-    <div class="kofi-backdrop" onclick="closeKofiModal()"></div>
-    <div class="kofi-box">
-      <button class="kofi-close" onclick="closeKofiModal()">✕</button>
-      <div class="kofi-chest">
-        <svg viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="40" cy="54" rx="22" ry="5" fill="rgba(0,0,0,0.18)"/>
-          <rect x="14" y="28" width="52" height="26" rx="5" fill="#c8832a"/>
-          <rect x="14" y="28" width="52" height="9" rx="5" fill="#e8a83a" id="km-lid"/>
-          <rect x="14" y="38" width="52" height="2" fill="#a86820"/>
-          <rect x="33" y="37" width="14" height="10" rx="2" fill="#daa520"/>
-          <path d="M36 37 Q40 30 44 37" stroke="#daa520" stroke-width="2.5" fill="none"/>
-          <circle cx="40" cy="42" r="2.5" fill="#b8860b"/>
-          <circle cx="28" cy="18" r="5" fill="#ffdd57" class="km-coin1"/>
-          <text x="28" y="22" font-size="6" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin1">$</text>
-          <circle cx="40" cy="12" r="5" fill="#ffdd57" class="km-coin2"/>
-          <text x="40" y="16" font-size="7" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin2">★</text>
-          <circle cx="52" cy="18" r="5" fill="#ffdd57" class="km-coin3"/>
-          <text x="52" y="22" font-size="6" text-anchor="middle" fill="#7a4f00" font-weight="bold" class="km-coin3">$</text>
-        </svg>
-      </div>
-      <h2 class="kofi-title">¡Buen juego! 🎉</h2>
-      <p class="kofi-text">SnakePlay es 100% gratis.<br>Si te divirtiste, <strong>un cafecito nos ayuda</strong> a seguir creando. ☕</p>
-      <a href="https://ko-fi.com/fernandoec" target="_blank" rel="noopener" class="kofi-btn" onclick="closeKofiModal()">
-        ☕ Apoyar en Ko-fi
-      </a>
-      <button class="kofi-skip" onclick="closeKofiModal()">No, gracias — Seguir jugando</button>
-    </div>
-  </div>
-
-  <!-- ===== TUTORIAL DEMO ===== -->
-  <div id="tutorial-overlay" style="
-    display:none;position:fixed;inset:0;z-index:800;
-    background:rgba(0,0,0,0.82);backdrop-filter:blur(3px);
-    align-items:center;justify-content:center;flex-direction:column;gap:0;
-  ">
-    <div id="tutorial-card" style="
-      background:linear-gradient(160deg,#0d1f0a,#132b10 60%,#0a1808);
-      border:3px solid #39ff14;border-radius:20px;
-      padding:28px 24px 22px;width:min(380px,92vw);text-align:center;
-      box-shadow:0 0 40px rgba(57,255,20,0.3),0 20px 50px rgba(0,0,0,0.7);
-      font-family:'Nunito',sans-serif;
-    ">
-      <div style="font-size:52px;margin-bottom:6px" id="tut-emoji">🐍</div>
-      <h2 style="font-size:20px;font-weight:900;color:#39ff14;letter-spacing:1px;margin:0 0 4px">¡Cómo jugar!</h2>
-      <p style="font-size:12px;color:#7fff7f;margin:0 0 16px;opacity:.8">Observa la demostración</p>
-
-      <!-- Demo animada de controles -->
-      <div style="background:rgba(0,0,0,0.4);border:1px solid #2a4a1a;border-radius:14px;padding:14px 10px;margin-bottom:14px;">
-        <div id="tut-steps" style="display:flex;flex-direction:column;gap:10px;">
-          <div class="tut-row" id="tut-row-0" style="opacity:.3;transition:opacity .4s">
-            <span class="tut-icon">🖱️</span>
-            <span class="tut-desc"><strong>Mueve el ratón</strong> (o dedo en móvil) para dirigir la serpiente</span>
-          </div>
-          <div class="tut-row" id="tut-row-1" style="opacity:.3;transition:opacity .4s">
-            <span class="tut-icon">🍎</span>
-            <span class="tut-desc"><strong>Come orbes</strong> de colores para crecer y ganar puntos</span>
-          </div>
-          <div class="tut-row" id="tut-row-2" style="opacity:.3;transition:opacity .4s">
-            <span class="tut-icon">⚡</span>
-            <span class="tut-desc"><strong>Clic o toca</strong> para activar BOOST — ¡más rápido pero gastas masa!</span>
-          </div>
-          <div class="tut-row" id="tut-row-3" style="opacity:.3;transition:opacity .4s">
-            <span class="tut-icon">💀</span>
-            <span class="tut-desc"><strong>Rodea</strong> a rivales para eliminarlos y ganar bonus masivo</span>
-          </div>
-          <div class="tut-row" id="tut-row-4" style="opacity:.3;transition:opacity .4s">
-            <span class="tut-icon">🚫</span>
-            <span class="tut-desc"><strong>No choques</strong> contra otras serpientes — ¡morirás al instante!</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Barra de progreso del tutorial -->
-      <div style="background:rgba(0,0,0,0.3);border-radius:999px;height:6px;margin-bottom:16px;overflow:hidden;">
-        <div id="tut-progress" style="height:100%;width:0%;background:#39ff14;border-radius:999px;transition:width .5s;box-shadow:0 0 8px #39ff14;"></div>
-      </div>
-
-      <button id="tut-play-btn" style="
-        width:100%;padding:14px;border-radius:14px;
-        background:linear-gradient(180deg,#39ff14,#1caa00 50%,#0d6600);
-        color:#fff;font-family:'Orbitron',sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;
-        border:3px solid #0a4400;cursor:pointer;
-        box-shadow:0 0 20px rgba(57,255,20,0.5),0 5px 0 #063300;
-        transition:.12s;
-      ">¡JUGAR AHORA! 🐍</button>
-      <button id="tut-skip-btn" style="
-        background:none;border:none;color:rgba(255,255,255,0.4);
-        font-family:'Nunito',sans-serif;font-size:11px;cursor:pointer;
-        margin-top:10px;text-decoration:underline;
-      ">Saltar tutorial</button>
-    </div>
-  </div>
-
-  <style>
-  /* Tutorial rows */
-  .tut-row{
-    display:flex;align-items:center;gap:10px;text-align:left;
-    background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.1);
-    border-radius:10px;padding:8px 10px;
-  }
-  .tut-row.active{ opacity:1!important; background:rgba(57,255,20,0.12)!important; border-color:rgba(57,255,20,0.3)!important; }
-  .tut-icon{ font-size:22px;flex-shrink:0; }
-  .tut-desc{ font-size:12px;color:#cff;font-weight:700;line-height:1.4; }
-  .tut-desc strong{ color:#39ff14; }
-
-  /* Share section */
-  .share-section{
-    margin-top:10px;padding:10px 0 4px;
-    border-top:1px solid rgba(57,255,20,0.15);
-  }
-  .share-label{
-    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;
-    color:rgba(57,255,20,0.6);margin-bottom:8px;
-  }
-  .share-btns{
-    display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
-  }
-  .share-btn{
-    display:flex;flex-direction:column;align-items:center;gap:3px;
-    border:2px solid rgba(255,255,255,0.2);border-radius:10px;
-    padding:7px 12px;cursor:pointer;font-family:'Nunito',sans-serif;
-    font-weight:900;font-size:11px;color:#fff;min-width:62px;
-    transition:.12s;box-shadow:0 3px 0 rgba(0,0,0,0.4);
-  }
-  .share-btn:active{ transform:translateY(3px);box-shadow:none; }
-  .share-btn span{ font-size:9px;opacity:.85; }
-  .share-wa{ background:linear-gradient(180deg,#25d366,#128c7e);border-color:#075e54; }
-  .share-tw{ background:linear-gradient(180deg,#1a1a1a,#000);border-color:#333; }
-  .share-tg{ background:linear-gradient(180deg,#2aabee,#1a7cc0);border-color:#1060a0; }
-  .share-cp{ background:linear-gradient(180deg,#6b46c1,#4c1d95);border-color:#2e1065; }
-  </style>
-
+  <!-- Google Ads: diferido para no bloquear el renderizado inicial -->
   <script>
-  // ── TUTORIAL DEMO ──
-  (function(){
-    const TUT_KEY = 'snakeplay_tut_v1';
-    if(localStorage.getItem(TUT_KEY)) return; // ya vio el tutorial
-
-    const overlay = document.getElementById('tutorial-overlay');
-    const rows    = document.querySelectorAll('.tut-row');
-    const progress= document.getElementById('tut-progress');
-    const steps   = rows.length;
-    let current   = 0;
-    let timer     = null;
-    let interval  = null;
-
-    function showStep(i){
-      rows.forEach((r,idx)=>{
-        r.classList.toggle('active', idx===i);
-      });
-      progress.style.width = ((i+1)/steps*100)+'%';
-      const emojis=['🐍','🍎','⚡','💀','🚫'];
-      document.getElementById('tut-emoji').textContent = emojis[i]||'🐍';
-    }
-
-    function startLoop(){
-      showStep(0);
-      interval = setInterval(()=>{
-        current = (current+1)%steps;
-        showStep(current);
-      }, 2000);
-    }
-
-    function closeTutorial(){
-      localStorage.setItem(TUT_KEY,'1');
-      clearInterval(interval);
-      overlay.style.opacity='0';
-      overlay.style.transition='opacity .4s';
-      setTimeout(()=>{ overlay.style.display='none'; overlay.style.opacity=''; },420);
-    }
-
-    document.addEventListener('DOMContentLoaded',()=>{
-      // Mostrar tutorial después de 0.8s en la pantalla de inicio
-      timer = setTimeout(()=>{
-        overlay.style.display='flex';
-        startLoop();
-      }, 800);
-
-      document.getElementById('tut-play-btn').addEventListener('click', closeTutorial);
-      document.getElementById('tut-skip-btn').addEventListener('click', ()=>{
-        localStorage.setItem(TUT_KEY,'1');
-        clearInterval(interval);
-        overlay.style.display='none';
-      });
+    window.addEventListener('load', function() {
+      var s = document.createElement('script');
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7304791163029192';
+      s.async = true; s.crossOrigin = 'anonymous';
+      document.head.appendChild(s);
     });
-  })();
-
-  // ── COMPARTIR EN REDES — pantalla de fin ──
-  function setupShareButtons(){
-    const score  = document.getElementById('end-score')?.textContent  || '0';
-    const length = document.getElementById('end-length')?.textContent || '0';
-    const time   = document.getElementById('end-time')?.textContent   || '0:00';
-    const kills  = document.getElementById('end-kills')?.textContent  || '0';
-    const name   = (typeof state !== 'undefined' && state.playerName) ? state.playerName : 'Jugador';
-
-    const text =
-`🐍 ¡Jugué SnakePlay! ¿Puedes superarme?
-👤 ${name}
-📊 Puntos: ${score} | Tamaño: ${length} | Tiempo: ${time} | Kills: ${kills}
-⚡ ¡Atrévete tú también — sobrevive y domina!`;
-
-    const enc = encodeURIComponent(text);
-
-    const wa = document.getElementById('share-wa');
-    const tw = document.getElementById('share-tw');
-    const tg = document.getElementById('share-tg');
-    const cp = document.getElementById('share-cp');
-
-    if(wa) wa.onclick = ()=> window.open(`https://wa.me/?text=${enc}`,'_blank');
-    if(tw) tw.onclick = ()=> window.open(`https://twitter.com/intent/tweet?text=${enc}`,'_blank');
-    if(tg) tg.onclick = ()=> window.open(`https://t.me/share/url?url=https://snakeplay.io&text=${enc}`,'_blank');
-    if(cp) cp.onclick = ()=>{
-      navigator.clipboard.writeText(text).then(()=>{
-        cp.innerHTML = '✅<span>¡Copiado!</span>';
-        setTimeout(()=>{ cp.innerHTML = '📋<span>Copiar</span>'; },2200);
-      }).catch(()=>{
-        const ta=document.createElement('textarea');
-        ta.value=text;ta.style.cssText='position:fixed;opacity:0';
-        document.body.appendChild(ta);ta.select();document.execCommand('copy');
-        document.body.removeChild(ta);
-        cp.innerHTML = '✅<span>¡Copiado!</span>';
-        setTimeout(()=>{ cp.innerHTML = '📋<span>Copiar</span>'; },2200);
-      });
-    };
-  }
-
-  // Llamar setupShareButtons cuando aparezca la pantalla de fin
-  const _origShowScreen = typeof showScreen === 'function' ? showScreen : null;
-  // Observar cambios en screen-end
-  document.addEventListener('DOMContentLoaded',()=>{
-    const endScreen = document.getElementById('screen-end');
-    if(!endScreen) return;
-    const obs = new MutationObserver(()=>{
-      if(endScreen.classList.contains('active')) setupShareButtons();
-    });
-    obs.observe(endScreen, {attributes:true, attributeFilter:['class']});
-  });
   </script>
+  <style>
+    /* Placeholder para iconos FA mientras carga: evita salto de diseño */
+    .fas,.fab,.far{display:inline-block;width:1em;height:1em;vertical-align:-.125em}
+  </style>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
 
-  <script src="snake.js"></script>
+    /* ── MODO CLARO/OSCURO ── */
+    :root{
+      --green:#1db954;--green-dark:#0d6e30;--green-light:#34d399;
+      --yellow:#ffdd57;--blue:#3b82f6;--purple:#8b5cf6;
+      --bg:#0cc0df;--bg2:#ffffff;--bg3:#e6fbff;--border:#2a3347;
+      --text:#e2e8f0;--muted:#64748b;
+      --card-hover:#243050;
+    }
+    /* Modo claro (mañana: 6am–6pm) */
+    body.light-mode{
+      --bg:#f0f4ff;--bg2:#ffffff;--bg3:#e8edf8;--border:#d0d8ef;
+      --text:#1a2040;--muted:#6b7a99;
+      --card-hover:#dce4f7;
+    }
+    body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#00c9d7 0%,#7ee8fa 50%,#a8edea 100%);background-attachment:fixed;color:var(--text);overflow-x:hidden;min-height:100vh;transition:background .3s,color .3s}
+    a{text-decoration:none;color:inherit}
 
-  <script>
-    // Botones pausa overlay
-    document.addEventListener('DOMContentLoaded', () => {
-      const btnResume = document.getElementById('pause-resume');
-      const btnPauseMenu = document.getElementById('pause-menu');
-      if(btnResume) btnResume.addEventListener('click', () => { if(game) game.togglePause(); });
-      if(btnPauseMenu) btnPauseMenu.addEventListener('click', () => {
-        if(game) game.destroy();
-        document.getElementById('pause-overlay').style.display = 'none';
-        showScreen('start');
-      });
+    /* ── NAVBAR ── */
+    .nav{
+      position:sticky;top:0;z-index:200;
+      background:rgba(14,17,23,0.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:0 1.2rem;height:56px;
+      display:flex;align-items:center;gap:1rem;
+      transition:background .3s;
+    }
+    body.light-mode .nav{background:rgba(240,244,255,0.96)}
+    .nav-logo{font-family:'Fredoka One',cursive;font-size:1.4rem;display:flex;align-items:center;gap:2px;white-space:nowrap;line-height:1;letter-spacing:-.5px}
+    .nav-logo .w1{color:#ffffff;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+    body.light-mode .nav-logo .w1{color:#1a2040}
+    .nav-logo .w2{color:var(--yellow);text-shadow:0 2px 0 #b86000}
+    .nav-logo i{color:var(--green);font-size:1rem;margin-right:5px}
+    .nav-search{
+      flex:1;max-width:260px;margin-left:auto;
+      background:var(--bg3);border:1px solid var(--border);
+      border-radius:50px;padding:7px 16px;
+      display:flex;align-items:center;gap:8px;cursor:pointer;
+      transition:border-color .15s;
+    }
+    .nav-search:hover{border-color:var(--green)}
+    .nav-search input{background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:.88rem;width:100%}
+    .nav-search input::placeholder{color:var(--muted)}
+    .nav-search i{color:var(--muted);font-size:.85rem}
+    .nav-actions{display:flex;gap:6px;margin-left:6px;align-items:center}
+    .nav-btn{
+      background:var(--green);color:white;border:none;
+      font-family:'Fredoka One',cursive;font-size:.85rem;
+      padding:7px 16px;border-radius:50px;cursor:pointer;
+      white-space:nowrap;transition:transform .12s;
+    }
+    .nav-btn:hover{transform:translateY(-1px)}
+    /* Botón modo claro/oscuro */
+    .theme-toggle{
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);width:34px;height:34px;border-radius:50%;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:.9rem;transition:background .15s;
+    }
+    .theme-toggle:hover{background:var(--card-hover)}
 
-      // Borrar récords
-      const btnClear = document.getElementById('btn-clear-rec');
-      if(btnClear) btnClear.addEventListener('click', () => {
-        if(confirm('¿Borrar todos los récords?')) {
-          Records.clear();
-          ['rec-score','rec-length','rec-time','rec-kills'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.textContent = id === 'rec-time' ? '0:00' : '0';
-            el?.parentElement?.classList.remove('is-record');
-          });
-          document.getElementById('new-record-badge').style.display = 'none';
-        }
-      });
+    /* Redes sociales nav */
+    .nav-social{display:flex;align-items:center;gap:5px;margin-left:8px}
+    .nav-px{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;transition:transform .12s}
+    .nav-px:hover{transform:translateY(-3px) scale(1.12)}
+    .nav-px svg{width:30px;height:30px;border-radius:7px;image-rendering:pixelated;box-shadow:2px 2px 0 rgba(0,0,0,.35)}
+    .nav-px span{font-family:'Fredoka One',cursive;font-size:.48rem;color:var(--muted);letter-spacing:.3px}
+    @media(max-width:600px){
+      .nav-search{max-width:140px}
+      .nav-px span{display:none}
+      .nav-px svg{width:24px;height:24px}
+      .nav-social{gap:3px;margin-left:4px}
+    }
+    @media(max-width:420px){.nav-search{display:none}.nav-social{gap:3px}}
+
+    /* ── GAME VIEWER (Poki 3 columnas) ── */
+    #game-viewer{display:none;background:var(--bg2);border-bottom:1px solid var(--border)}
+    #game-viewer.active{display:block}
+    .gv-top{
+      display:flex;align-items:center;gap:12px;
+      padding:.7rem 1.2rem;border-bottom:1px solid var(--border);
+      background:var(--bg);
+    }
+    .gv-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+    .gv-info{flex:1}
+    .gv-title{font-family:'Fredoka One',cursive;font-size:1.15rem;color:var(--yellow);line-height:1.1}
+    .gv-sub{font-size:.75rem;color:var(--muted)}
+    .gv-actions{display:flex;gap:6px;align-items:center}
+    .gv-btn{
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);font-size:.78rem;font-weight:700;
+      padding:6px 12px;border-radius:50px;cursor:pointer;
+      display:flex;align-items:center;gap:5px;transition:background .15s;white-space:nowrap;
+    }
+    .gv-btn:hover{background:var(--card-hover)}
+    .gv-btn.primary{background:var(--green);border-color:var(--green);color:white}
+    .gv-btn.primary:hover{background:var(--green-dark)}
+    .gv-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:color .15s}
+    .gv-close:hover{color:var(--text)}
+    .gv-poki-layout{
+      display:grid;grid-template-columns:88px 1fr 160px;
+      gap:0;height:calc(100vh - 112px);overflow:hidden;
+    }
+    @media(max-width:900px){.gv-poki-layout{grid-template-columns:72px 1fr}}
+    @media(max-width:600px){.gv-poki-layout{grid-template-columns:1fr;height:auto}}
+    .gv-left-col{
+      background:var(--bg);border-right:1px solid var(--border);
+      padding:.6rem .4rem;overflow-y:auto;
+      display:flex;flex-direction:column;gap:6px;scrollbar-width:none;
+    }
+    .gv-left-col::-webkit-scrollbar{display:none}
+    .gv-left-col-title{font-size:.55rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:center;padding:.2rem 0 .4rem}
+    .gr-item{cursor:pointer;text-align:center;border-radius:10px;overflow:hidden;transition:transform .15s,background .12s;padding:4px 2px}
+    .gr-item:hover{transform:scale(1.06);background:var(--bg3)}
+    .gr-thumb{width:100%;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:3px}
+    .gr-name{font-size:.58rem;color:var(--muted);font-weight:700;line-height:1.2}
+    @media(max-width:600px){.gv-left-col{display:none}}
+    .gv-center-col{display:flex;flex-direction:column;background:#000;position:relative}
+    .gv-frame-wrap{position:relative;flex:1;background:#000}
+    .gv-frame-wrap iframe{display:block;width:100%;height:calc(100vh - 112px);min-height:400px;border:none}
+    .gv-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#111;gap:16px;transition:opacity .4s;z-index:10}
+    .gv-loading.hidden{opacity:0;pointer-events:none}
+    .gv-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .gv-loading p{color:var(--muted);font-size:.88rem}
+    .gv-right-col{background:var(--bg);border-left:1px solid var(--border);padding:.8rem .5rem;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .gv-right-col-label{font-size:.55rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+    .gv-ad-wrap{width:100%;flex:1;display:flex;align-items:flex-start;justify-content:center}
+    @media(max-width:900px){.gv-right-col{display:none}}
+    .gv-related-strip{padding:.7rem 1rem;border-top:1px solid var(--border);background:var(--bg);display:none}
+    @media(max-width:600px){.gv-related-strip{display:block}}
+    .gv-related-title{font-size:.72rem;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
+    .gv-related-list{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+    .gv-related-list::-webkit-scrollbar{display:none}
+    .gr-strip-item{flex-shrink:0;width:64px;cursor:pointer;text-align:center;border-radius:10px;padding:4px;transition:transform .15s}
+    .gr-strip-item:hover{transform:translateY(-2px)}
+    .gr-strip-thumb{width:64px;height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:3px}
+    .gr-strip-name{font-size:.58rem;color:var(--muted);font-weight:700;line-height:1.2}
+
+    /* ── LAYOUT PRINCIPAL ── */
+    .main-layout{display:flex;gap:0}
+
+    /* ── SIDEBAR ── */
+    .sidebar{
+      width:200px;flex-shrink:0;
+      position:sticky;top:56px;height:calc(100vh - 56px);
+      overflow-y:auto;padding:1rem .6rem;
+      border-right:1px solid var(--border);
+      background:var(--bg);scrollbar-width:thin;
+    }
+    @media(max-width:768px){.sidebar{display:none}}
+    .sb-section{margin-bottom:1.4rem}
+    .sb-label{font-size:.68rem;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:.3rem .6rem;margin-bottom:.3rem}
+    .sb-item{display:flex;align-items:center;gap:10px;padding:.5rem .7rem;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:700;color:var(--muted);transition:background .12s,color .12s}
+    .sb-item:hover,.sb-item.active{background:var(--bg3);color:var(--text)}
+    .sb-item.active{color:var(--green)}
+    .sb-item i{width:16px;text-align:center;font-size:.85rem}
+    .sb-item .badge{margin-left:auto;background:var(--green);color:white;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:20px}
+
+    /* ── CONTENT ── */
+    .content{flex:1;min-width:0;padding:1.2rem}
+
+    /* ──────────────────────────────────────────────
+       HERO GRID — Tarjetas animadas con preview real
+    ────────────────────────────────────────────── */
+    .hero-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.2rem}
+    @media(max-width:700px){.hero-grid{grid-template-columns:1fr 1fr;gap:8px}}
+    @media(max-width:480px){.hero-grid{gap:7px}}
+    .lbl-new{background:var(--yellow);color:#7a4f00}
+    .lbl-hot{background:#ef4444;color:white}
+    .lbl-top{background:var(--green);color:white}
+    .game-card{
+      border-radius:18px;overflow:hidden;cursor:pointer;
+      border:1.5px solid rgba(255,255,255,0.10);
+      transition:transform .2s,box-shadow .2s,border-color .2s;
+      position:relative;background:#0a0e1a;animation:fadeUp .3s ease both;
+    }
+    body.light-mode .game-card{background:#fff;border-color:var(--border)}
+    .game-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.55);border-color:rgba(255,255,255,.22)}
+    body.light-mode .game-card:hover{border-color:var(--green)}
+    .preview-area{height:160px;position:relative;overflow:hidden}
+    @media(max-width:480px){.preview-area{height:110px}}
+    .card-foot{padding:10px 14px 13px;display:flex;flex-direction:column;gap:6px;background:#111827;border-top:1px solid rgba(255,255,255,0.06)}
+    body.light-mode .card-foot{background:var(--bg3);border-top-color:var(--border)}
+    .game-name{font-family:'Fredoka One',cursive;font-size:14px;color:#e2e8f0;letter-spacing:.2px}
+    body.light-mode .game-name{color:var(--text)}
+    .play-btn{
+      display:inline-flex;align-items:center;gap:5px;
+      font-family:'Fredoka One',cursive;font-size:12px;
+      padding:6px 16px;border-radius:50px;width:fit-content;
+      background:#0d6e30;color:#ffffff;
+      box-shadow:0 3px 0 #084d22;
+      transition:transform .12s,box-shadow .12s;
+    }
+    .game-card:hover .play-btn{transform:translateY(-2px);box-shadow:0 5px 0 var(--green-dark)}
+    /* Snake */
+    #snakeCanvas{display:block;width:100%;height:100%;background:#0a0e1a}
+    .snake-hud{position:absolute;top:6px;left:6px;right:6px;display:flex;gap:5px;pointer-events:none;z-index:5}
+    .snake-hud-box{display:flex;flex-direction:column;align-items:center;background:rgba(0,0,0,0.6);border:1px solid rgba(57,255,20,0.2);border-radius:7px;padding:2px 8px;backdrop-filter:blur(4px)}
+    .snake-hud-label{font-family:'Fredoka One',cursive;font-size:5px;color:#39ff14;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4}
+    .snake-hud-val{font-family:'Fredoka One',cursive;font-size:11px;color:white;line-height:1.2}
+    .snake-lb{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.55);border:1px solid rgba(57,255,20,0.18);border-radius:8px;padding:4px 6px;pointer-events:none;z-index:5;backdrop-filter:blur(4px);min-width:80px}
+    .snake-lb-title{font-family:'Fredoka One',cursive;font-size:4.5px;color:#39ff14;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:3px}
+    .snake-lb-row{display:flex;align-items:center;gap:3px;padding:1.5px 0}
+    .snake-lb-rank{font-family:'Fredoka One',cursive;font-size:5.5px;color:rgba(255,255,255,.4);width:10px;text-align:right}
+    .snake-lb-rank.top{color:#ffdd00}
+    .snake-lb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+    .snake-lb-name{font-size:6px;color:rgba(255,255,255,.7);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .snake-lb-me{color:white;font-weight:900}
+    .snake-lb-len{font-family:'Fredoka One',cursive;font-size:5.5px;color:rgba(255,255,255,.4)}
+    .snake-lb-len.me{color:#39ff14}
+    #card-snake .play-btn{background:linear-gradient(135deg,#39ff14,#00c40f);color:#0a0e1a;box-shadow:0 3px 0 #007a0a}
+    /* Lexo */
+    .lexo-bg{width:100%;height:100%;background:#040810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 10px;position:relative}
+    .lexo-header{position:absolute;top:7px;left:0;right:0;text-align:center}
+    .lexo-title{font-family:'Fredoka One',cursive;font-size:11px;color:#ffdd57;letter-spacing:3px}
+    .lexo-sub{font-size:7px;color:rgba(255,255,255,.35);letter-spacing:.5px;margin-top:1px}
+    .lexo-row{display:flex;gap:4px}
+    .lexo-cell{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:11px;color:#fff;border:1.5px solid #1e2a3a;background:transparent;transition:background .25s,border-color .25s,transform .15s}
+    .lexo-cell.correct{background:#059669;border-color:#059669}
+    .lexo-cell.present{background:#d97706;border-color:#d97706}
+    .lexo-cell.absent{background:#1f2937;border-color:#374151}
+    .lexo-cell.flip{animation:cellFlip .35s ease both}
+    @keyframes cellFlip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+    .lexo-cell.pop{animation:cellPop .15s ease}
+    @keyframes cellPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+    .lexo-hint{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.5);color:#fca5a5;font-size:7px;padding:2px 10px;border-radius:20px;white-space:nowrap;opacity:0;transition:opacity .3s}
+    .lexo-hint.show{opacity:1}
+    #card-lexo .play-btn{background:#3b82f6;color:white}
+    /* Hilario */
+    .hilario-bg{width:100%;height:100%;background:#080c14;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;position:relative;overflow:hidden}
+    .hilario-header{position:absolute;top:0;left:0;right:0;padding:5px 8px;display:flex;align-items:center;justify-content:space-between}
+    .hilario-logo{font-family:'Fredoka One',cursive;font-size:11px;color:#3b82f6;letter-spacing:2px}
+    .hilario-tema{font-size:7px;color:rgba(255,255,255,.7)}
+    .hilario-hint-btn{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);border-radius:5px;padding:1px 5px;font-size:8px;color:#f59e0b}
+    .hilario-chips{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-bottom:5px;padding:0 4px}
+    .hilario-chip{font-family:'Fredoka One',cursive;font-size:6.5px;padding:1.5px 6px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);cursor:default;transition:background .3s,color .3s,border-color .3s}
+    .hilario-chip.found-blue{background:#1d4ed8;border-color:#3b82f6;color:#fff}
+    .hilario-chip.found-gold{background:#d97706;border-color:#f59e0b;color:#fff}
+    .hilario-chip.pangrama{border-color:#f59e0b;color:#f59e0b}
+    .hilario-grid{display:grid;gap:2px}
+    .hilario-cell{width:17px;height:17px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:8px;font-weight:700;color:rgba(255,255,255,.8);border-radius:3px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);transition:background .3s,color .3s,transform .2s}
+    .hilario-cell.sel{background:#1d4ed8;color:#fff;transform:scale(1.08);border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.5)}
+    .hilario-cell.found-blue{background:#1e40af;color:#fff;border-color:#3b82f6}
+    .hilario-cell.found-gold{background:#92400e;color:#fff;border-color:#d97706}
+    #card-hilario .play-btn{background:#3b82f6;color:white}
+    /* Octopus */
+    .octo-bg{width:100%;height:100%;background:linear-gradient(180deg,#0a1830 0%,#06122a 60%,#0a0f1a 100%);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .octo-ray{position:absolute;top:0;width:20px;height:80%;background:linear-gradient(180deg,rgba(100,180,255,.07) 0%,transparent 100%);transform-origin:top center;pointer-events:none}
+    .octo-floor{position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(180deg,#1a1208,#0d0a04);border-top:1px solid rgba(255,180,50,.12)}
+    .octo-alga{position:absolute;bottom:18px;width:4px;border-radius:2px 2px 0 0;transform-origin:bottom center;animation:algaWave 2.5s ease-in-out infinite}
+    @keyframes algaWave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+    .octo-chest{position:absolute;bottom:14px;width:14px;height:10px;background:#c08000;border:1px solid #ffd700;border-radius:2px;box-shadow:0 0 6px rgba(255,215,0,.4);animation:chestGlow 2s ease-in-out infinite}
+    @keyframes chestGlow{0%,100%{box-shadow:0 0 4px rgba(255,215,0,.3)}50%{box-shadow:0 0 10px rgba(255,215,0,.7)}}
+    .octo-hud{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:4px 8px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)}
+    .octo-hud-hearts{font-size:8px;letter-spacing:1px}
+    .octo-hud-btns{display:flex;gap:3px}
+    .octo-hud-btn{font-family:monospace;font-size:6px;padding:1.5px 5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:3px;color:rgba(255,255,255,.7)}
+    .octo-hud-btn.sel{background:rgba(255,255,255,.2);color:#fff}
+    .octo-hud-lv{font-family:monospace;font-size:7px;color:rgba(255,255,255,.4)}
+    .octo-hud-lv span{color:rgba(255,255,255,.8)}
+    .octo-svg-wrap{position:relative;z-index:2;animation:octoFloat 2s ease-in-out infinite}
+    @keyframes octoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .octo-bubble{position:absolute;border-radius:50%;background:rgba(120,200,255,.2);border:1px solid rgba(120,200,255,.3);animation:bubbleRise linear infinite}
+    @keyframes bubbleRise{0%{transform:translateY(0);opacity:.8}100%{transform:translateY(-130px);opacity:0}}
+    .octo-creature{position:absolute;bottom:22px;font-size:9px;opacity:.7;animation:creatureWalk 4s linear infinite}
+    @keyframes creatureWalk{0%{transform:translateX(-10px)}50%{transform:translateX(10px)}100%{transform:translateX(-10px)}}
+    #card-octopus .play-btn{background:linear-gradient(135deg,#7c3aed,#a855f7);color:white}
+
+    /* ── WORD GIRASOL PREVIEW ── */
+    .girasol-bg{width:100%;height:100%;background:linear-gradient(180deg,#7ecff5 0%,#b2e6fa 45%,#5cb85c 70%,#3a7d3a 100%);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    /* decorativos eliminados */
+    /* Panal de letras — centrado, circular */
+    .gs-hive-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:62px;z-index:4}
+    .gs-hex{width:24px;height:27px;display:grid;place-items:center;position:absolute;transition:filter .15s}
+    .gs-hex::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#fef08a,#facc15);clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);border-radius:2px}
+    .gs-hex span{position:relative;z-index:2;font-family:'Fredoka One',cursive;font-size:9px;color:#78350f;font-weight:900}
+    .gs-hex.gs-sel::before{background:linear-gradient(180deg,#fff9a0,#fff176);filter:drop-shadow(0 0 5px #fde047)}
+    .gs-hex.gs-sel{filter:drop-shadow(0 0 4px rgba(253,224,71,.8))}
+    /* Línea conectora SVG */
+    .gs-line-svg{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:visible}
+    .gs-line-svg line{stroke:#fde047;stroke-width:1.5;stroke-linecap:round;opacity:.7}
+    /* Palabra formándose */
+    .gs-word{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-family:'Fredoka One',cursive;font-size:9px;color:#78350f;letter-spacing:2px;white-space:nowrap;background:rgba(253,224,71,.9);padding:1px 8px;border-radius:20px;opacity:0;transition:opacity .3s}
+    .gs-word.show{opacity:1}
+    /* Chips de palabras encontradas */
+    .gs-chips{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;gap:3px;flex-wrap:nowrap;z-index:5}
+    .gs-chip{font-family:'Fredoka One',cursive;font-size:7px;padding:1.5px 6px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+    .gs-filled{background:#fef3c7;border:1px solid #f59e0b;color:#78350f}
+    .gs-empty{background:rgba(255,255,255,.06);border:1px solid rgba(250,204,21,.25);color:rgba(253,224,71,.4)}
+    /* HUD superior */
+    .gs-hud{position:absolute;top:0;left:0;right:0;padding:4px 7px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.25);z-index:5}
+    .gs-logo{font-family:'Fredoka One',cursive;font-size:9px;color:#fde047;letter-spacing:1px}
+    .gs-coins{font-size:8px;color:#f59e0b;font-weight:800}
+    .gs-progress{position:absolute;top:18px;left:7px;right:7px;height:2px;background:rgba(255,255,255,.1);border-radius:1px;z-index:5}
+    .gs-progress-fill{height:100%;background:linear-gradient(90deg,#fde047,#f59e0b);border-radius:1px;width:33%;transition:width .6s ease}
+    .gs-play-btn{background:linear-gradient(135deg,#f59e0b,#facc15)!important;color:#78350f!important;box-shadow:0 3px 0 #b45309!important}
+
+    /* Color c9 — girasol dorado */
+    .c9{background:linear-gradient(135deg,#b45309,#f59e0b)}
+
+
+    /* ── CATEGORY CHIPS ── */
+    .cat-chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:1rem;padding-bottom:4px;scrollbar-width:none}
+    .cat-chips::-webkit-scrollbar{display:none}
+    .cat-chip{flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:50px;padding:.35rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--muted);transition:background .12s,color .12s,border-color .12s}
+    .cat-chip:hover,.cat-chip.active{background:var(--green);border-color:var(--green);color:white}
+
+    /* ── SECTION HEADER ── */
+    .sec-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;margin-top:.6rem}
+    .sec-head h2{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--text)}
+    .sec-head .see-all{margin-left:auto;font-size:.78rem;color:var(--green);cursor:pointer;font-weight:700}
+    .sec-head .see-all:hover{text-decoration:underline}
+
+    /* ── GAMES GRID (lista secundaria) ── */
+    .games-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+      gap:10px;margin-bottom:1.6rem;
+    }
+    @media(max-width:480px){.games-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}}
+    .game-tile{
+      border-radius:14px;overflow:hidden;cursor:pointer;
+      background:var(--bg3);border:1px solid var(--border);
+      transition:transform .15s,box-shadow .15s,border-color .15s;
+      position:relative;
+      animation:fadeUp .3s ease both;
+    }
+    .game-tile:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.4);border-color:#3a4560}
+    .game-tile:active{transform:translateY(-1px)}
+    .gt-thumb{height:110px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative}
+    .gt-label{position:absolute;top:6px;right:6px;font-size:.58rem;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+    .gt-info{padding:.55rem .7rem .65rem}
+    .gt-name{font-family:'Fredoka One',cursive;font-size:.9rem;color:var(--text);margin-bottom:2px;line-height:1.2}
+    .gt-desc{font-size:.7rem;color:var(--muted);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .gt-meta{display:flex;align-items:center;gap:4px;margin-top:5px}
+    .gt-stars{color:#f59e0b;font-size:.7rem}
+    .gt-plays{font-size:.65rem;color:var(--muted);font-weight:700}
+
+    /* ── STATS BAR — ahora va al footer ── */
+    .stats-footer{
+      display:flex;gap:8px;flex-wrap:wrap;
+      justify-content:center;
+      padding:1rem 1.2rem .5rem;
+    }
+    .stat-pill{
+      background:var(--bg3);border:1px solid var(--border);
+      border-radius:50px;padding:.4rem .9rem;
+      display:flex;align-items:center;gap:.4rem;font-size:.78rem;
+    }
+    .stat-pill strong{color:var(--yellow);font-family:'Fredoka One',cursive;font-size:.95rem}
+    .stat-pill span{color:var(--muted)}
+
+    /* ── AD TILE INLINE (móvil) ── */
+    .ad-tile{
+      border-radius:14px;overflow:hidden;
+      background:var(--bg3);border:1px solid var(--border);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:.4rem;min-height:100px;
+      grid-column:1 / -1;
+    }
+    .ad-tile .ad-label{font-size:.58rem;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:.2rem}
+    @media(min-width:769px){.ad-tile{display:none}}
+
+    /* ── SEARCH OVERLAY ── */
+    #search-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);backdrop-filter:blur(8px)}
+    #search-overlay.active{display:flex;flex-direction:column;align-items:center;padding-top:80px}
+    .so-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:92%;max-width:560px;overflow:hidden}
+    .so-input-wrap{display:flex;align-items:center;gap:10px;padding:.9rem 1.1rem;border-bottom:1px solid var(--border)}
+    .so-input-wrap i{color:var(--muted);font-size:1rem}
+    .so-input-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:1rem;font-family:'Nunito',sans-serif}
+    .so-input-wrap button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem}
+    .so-results{max-height:400px;overflow-y:auto}
+    .so-item{display:flex;align-items:center;gap:10px;padding:.7rem 1.1rem;cursor:pointer;transition:background .1s}
+    .so-item:hover{background:var(--bg3)}
+    .so-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+    .so-name{font-weight:700;font-size:.9rem}
+    .so-cat{font-size:.72rem;color:var(--muted)}
+    .so-empty{text-align:center;padding:2rem;color:var(--muted);font-size:.88rem}
+
+    /* ── FOOTER ── */
+    footer{
+      border-top:1px solid var(--border);
+      background:var(--bg);
+    }
+    .foot-main{
+      padding:1.2rem 1.2rem .5rem;
+      display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+    }
+    .foot-logo{font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--yellow)}
+    .foot-links{display:flex;gap:1rem;flex-wrap:wrap;margin-left:auto}
+    .foot-links a{font-size:.78rem;color:var(--muted);transition:color .12s}
+    .foot-links a:hover{color:var(--text)}
+    .foot-copy{width:100%;font-size:.72rem;color:var(--muted);margin-top:.3rem;padding:0 1.2rem .3rem}
+    .foot-disclaimer{font-size:11px;opacity:.6;padding:.5rem 1.2rem 1rem;text-align:center}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html" title="Inicio" style="cursor:pointer">
+    <i class="fas fa-gamepad"></i><span class="w1">Palabra</span><span class="w2">Play</span>
+  </a>
+  <div class="nav-search" onclick="openSearch()">
+    <i class="fas fa-search"></i>
+    <input id="nav-search-input" type="text" placeholder="¿Qué jugarás hoy?" readonly>
+  </div>
+  <div class="nav-social">
+    <!-- WhatsApp -->
+    <a href="https://wa.me/593968352133" target="_blank" rel="noopener" class="nav-px" title="WhatsApp">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect width="32" height="32" fill="#25D366"/>
+        <rect x="0" y="0" width="32" height="2" fill="#4EFF8B"/>
+        <rect x="0" y="0" width="2" height="32" fill="#4EFF8B"/>
+        <rect x="0" y="30" width="32" height="2" fill="#128C4A"/>
+        <rect x="30" y="0" width="2" height="32" fill="#128C4A"/>
+        <rect x="9" y="6" width="14" height="16" fill="#fff"/>
+        <rect x="8" y="7" width="1" height="14" fill="#fff"/>
+        <rect x="23" y="7" width="1" height="14" fill="#fff"/>
+        <rect x="9" y="22" width="3" height="4" fill="#fff"/>
+        <rect x="20" y="22" width="3" height="4" fill="#fff"/>
+        <rect x="12" y="24" width="8" height="2" fill="#fff"/>
+        <rect x="10" y="8" width="12" height="8" fill="#25D366"/>
+        <rect x="10" y="16" width="4" height="3" fill="#25D366"/>
+        <rect x="11" y="10" width="10" height="1" fill="#fff"/>
+        <rect x="11" y="12" width="7" height="1" fill="#fff"/>
+      </svg>
+      <span>WA</span>
+    </a>
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/profile.php?id=100090695967680" target="_blank" rel="noopener" class="nav-px" title="Facebook">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect width="32" height="32" fill="#1877F2"/>
+        <rect x="0" y="0" width="32" height="2" fill="#4A9AFF"/>
+        <rect x="0" y="0" width="2" height="32" fill="#4A9AFF"/>
+        <rect x="0" y="30" width="32" height="2" fill="#0A50C0"/>
+        <rect x="30" y="0" width="2" height="32" fill="#0A50C0"/>
+        <rect x="14" y="5" width="6" height="2" fill="#fff"/>
+        <rect x="12" y="7" width="2" height="2" fill="#fff"/>
+        <rect x="14" y="7" width="4" height="2" fill="#fff"/>
+        <rect x="12" y="9" width="2" height="18" fill="#fff"/>
+        <rect x="14" y="9" width="4" height="2" fill="#fff"/>
+        <rect x="10" y="13" width="8" height="2" fill="#fff"/>
+      </svg>
+      <span>FB</span>
+    </a>
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/art_philip_studio/" target="_blank" rel="noopener" class="nav-px" title="Instagram">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect width="32" height="32" fill="#E1306C"/>
+        <rect x="0" y="0" width="32" height="10" fill="#F77737"/>
+        <rect x="0" y="10" width="32" height="6" fill="#E1306C"/>
+        <rect x="0" y="16" width="32" height="8" fill="#C13584"/>
+        <rect x="0" y="24" width="32" height="8" fill="#833AB4"/>
+        <rect x="0" y="0" width="32" height="2" fill="rgba(255,255,255,0.3)"/>
+        <rect x="0" y="0" width="2" height="32" fill="rgba(255,255,255,0.3)"/>
+        <rect x="0" y="30" width="32" height="2" fill="rgba(0,0,0,0.2)"/>
+        <rect x="30" y="0" width="2" height="32" fill="rgba(0,0,0,0.2)"/>
+        <rect x="7" y="7" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"/>
+        <rect x="12" y="12" width="8" height="8" rx="4" fill="none" stroke="#fff" stroke-width="2"/>
+        <rect x="21" y="9" width="3" height="3" fill="#fff"/>
+      </svg>
+      <span>IG</span>
+    </a>
+    <!-- Discord -->
+    <a href="https://discord.com/channels/1099440245902664398/@home" target="_blank" rel="noopener" class="nav-px" title="Discord">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect width="32" height="32" fill="#5865F2"/>
+        <rect x="0" y="0" width="32" height="2" fill="#8891FF"/>
+        <rect x="0" y="0" width="2" height="32" fill="#8891FF"/>
+        <rect x="0" y="30" width="32" height="2" fill="#3442C0"/>
+        <rect x="30" y="0" width="2" height="32" fill="#3442C0"/>
+        <rect x="6" y="10" width="20" height="14" rx="4" fill="#fff"/>
+        <rect x="10" y="14" width="4" height="4" rx="2" fill="#5865F2"/>
+        <rect x="18" y="14" width="4" height="4" rx="2" fill="#5865F2"/>
+        <rect x="11" y="20" width="2" height="2" fill="#5865F2"/>
+        <rect x="13" y="21" width="6" height="1" fill="#5865F2"/>
+        <rect x="19" y="20" width="2" height="2" fill="#5865F2"/>
+      </svg>
+      <span>DC</span>
+    </a>
+  </div>
+  <div class="nav-actions">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Cambiar modo" aria-label="Cambiar modo claro/oscuro">🌙</button>
+    <button class="nav-btn" onclick="openSearch()" aria-label="Buscar juego"><i class="fas fa-search"></i></button>
+  </div>
+</nav>
+
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay" onclick="closeSearchIfBg(event)">
+  <div class="so-box">
+    <div class="so-input-wrap">
+      <i class="fas fa-search"></i>
+      <input id="search-input" type="text" placeholder="Buscar juego..." oninput="doSearch(this.value)" autofocus>
+      <button onclick="closeSearch()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="so-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- GAME VIEWER (Poki 3-column layout) -->
+<div id="game-viewer">
+  <div class="gv-top">
+    <div class="gv-icon" id="gv-icon">🎮</div>
+    <div class="gv-info">
+      <div class="gv-title" id="gv-title">Juego</div>
+      <div class="gv-sub" id="gv-sub">PalabraPlay · Gratis · Ecuador</div>
+    </div>
+    <div class="gv-actions">
+      <button class="gv-btn primary" id="gv-fullscreen" onclick="toggleFullscreen()"><i class="fas fa-expand"></i> Pantalla completa</button>
+      <button class="gv-btn" onclick="closeGame()"><i class="fas fa-home"></i> Inicio</button>
+      <button class="gv-close" onclick="closeGame()" title="Cerrar"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <div class="gv-poki-layout">
+    <div class="gv-left-col" id="gv-left-col">
+      <div class="gv-left-col-title">Más</div>
+    </div>
+    <div class="gv-center-col">
+      <div class="gv-frame-wrap" id="gv-frame-wrap">
+        <div class="gv-loading" id="gv-loading">
+          <div class="gv-spinner"></div>
+          <p id="gv-loading-text">Cargando juego...</p>
+        </div>
+        <iframe id="game-iframe" allowfullscreen allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"></iframe>
+      </div>
+    </div>
+    <div class="gv-right-col">
+      <div class="gv-right-col-label">Publicidad</div>
+      <div class="gv-ad-wrap">
+        <ins class="adsbygoogle" style="display:block;width:148px;min-height:400px"
+          data-ad-client="ca-pub-7304791163029192" data-ad-slot="9876543210"
+          data-ad-format="vertical" data-full-width-responsive="false"></ins>
+      </div>
+    </div>
+  </div>
+  <div class="gv-related-strip">
+    <div class="gv-related-title">Más juegos</div>
+    <div class="gv-related-list" id="gv-related-list"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Menú</div>
+      <div class="sb-item active" onclick="filterGames('all',this)"><i class="fas fa-home"></i> Inicio</div>
+      <div class="sb-item" onclick="filterGames('popular',this)"><i class="fas fa-fire"></i> Populares</div>
+      <div class="sb-item" onclick="filterGames('new',this)"><i class="fas fa-star"></i> Nuevos <span class="badge">5</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Categorías</div>
+      <div class="sb-item" onclick="filterGames('accion',this)"><i class="fas fa-bolt"></i> Acción</div>
+      <div class="sb-item" onclick="filterGames('palabras',this)"><i class="fas fa-font"></i> Palabras</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Info</div>
+      <div class="sb-item" onclick="window.open('about.html')"><i class="fas fa-info-circle"></i> Nosotros</div>
+      <div class="sb-item" onclick="window.open('contact.html')"><i class="fas fa-envelope"></i> Contacto</div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main id="main-content" class="content">
+
+    <!-- HERO GRID — Tarjetas animadas -->
+    <div class="hero-grid" id="hero-grid">
+
+      <!-- SNAKEPLAY -->
+      <div class="game-card" id="card-snake" onclick="openGame('snakeplay')">
+        <div class="preview-area">
+          <canvas id="snakeCanvas" width="280" height="160"></canvas>
+          <div class="snake-hud" id="snake-hud">
+            <div class="snake-hud-box"><span class="snake-hud-label">PUNTOS</span><span class="snake-hud-val" id="sh-pts">70</span></div>
+            <div class="snake-hud-box"><span class="snake-hud-label">RANKING</span><span class="snake-hud-val" id="sh-rank">#2</span></div>
+            <div class="snake-hud-box"><span class="snake-hud-label">TAMAÑO</span><span class="snake-hud-val" id="sh-len">24</span></div>
+          </div>
+          <div class="snake-lb"><div class="snake-lb-title">🏆 Ranking</div><div id="lb-rows"></div></div>
+        </div>
+        <div class="card-foot"><div class="game-name">SnakePlay 🐍</div><div class="play-btn">▶ Jugar SnakePlay</div></div>
+      </div>
+
+      <!-- LEXO -->
+      <div class="game-card" id="card-lexo" onclick="openGame('lexo')">
+        <div class="preview-area">
+          <div class="lexo-bg">
+            <div class="lexo-header"><div class="lexo-title">LEXO</div><div class="lexo-sub">Nivel 1 · 0 pts · 🔥 0</div></div>
+            <div style="height:24px"></div>
+            <div id="lexo-r0" class="lexo-row"></div>
+            <div id="lexo-r1" class="lexo-row"></div>
+            <div id="lexo-r2" class="lexo-row"></div>
+            <div id="lexo-hint" class="lexo-hint">Necesitas 5 letras</div>
+          </div>
+        </div>
+        <div class="card-foot"><div class="game-name">Lexo 📝</div><div class="play-btn">▶ Jugar Lexo</div></div>
+      </div>
+
+      <!-- HILARIO -->
+      <div class="game-card" id="card-hilario" onclick="openGame('hilario')">
+        <div class="preview-area">
+          <div class="hilario-bg">
+            <div class="hilario-header">
+              <div><div class="hilario-logo">HILARIO</div><div class="hilario-tema">TEMA: Animales</div></div>
+              <div class="hilario-hint-btn">💡 0</div>
+            </div>
+            <div style="height:28px"></div>
+            <div class="hilario-chips" id="hilario-chips">
+              <div class="hilario-chip pangrama">★ PANGRAMA</div>
+              <div class="hilario-chip" id="hc-gato">GATO</div>
+              <div class="hilario-chip" id="hc-perro">PERRO</div>
+              <div class="hilario-chip" id="hc-lobo">LOBO</div>
+              <div class="hilario-chip" id="hc-zorro">ZORRO</div>
+            </div>
+            <div class="hilario-grid" id="hilario-grid" style="grid-template-columns:repeat(6,17px)"></div>
+          </div>
+        </div>
+        <div class="card-foot"><div class="game-name">Hilario 😂</div><div class="play-btn">▶ Jugar Hilario</div></div>
+      </div>
+
+      <!-- OCTOPUS GAME -->
+      <div class="game-card" id="card-octopus" onclick="openGame('octopus-game')">
+        <div class="preview-area">
+          <div class="octo-bg" id="octo-bg">
+            <div class="octo-ray" style="left:18%;transform:rotate(-10deg)"></div>
+            <div class="octo-ray" style="left:42%;transform:rotate(-4deg)"></div>
+            <div class="octo-ray" style="left:68%;transform:rotate(6deg)"></div>
+            <div class="octo-bubble" style="width:6px;height:6px;left:22%;bottom:30px;animation-duration:2.4s;animation-delay:0s"></div>
+            <div class="octo-bubble" style="width:9px;height:9px;left:55%;bottom:25px;animation-duration:3.1s;animation-delay:.7s"></div>
+            <div class="octo-bubble" style="width:5px;height:5px;left:75%;bottom:35px;animation-duration:2s;animation-delay:1.3s"></div>
+            <div class="octo-bubble" style="width:7px;height:7px;left:38%;bottom:20px;animation-duration:2.7s;animation-delay:.3s"></div>
+            <div class="octo-svg-wrap">
+              <svg width="72" height="66" viewBox="0 0 72 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M28 38 Q18 52 12 62" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M32 40 Q22 56 18 66" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M44 40 Q50 56 54 66" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M48 38 Q58 52 60 62" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M24 30 Q8 28 4 34" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M24 36 Q6 40 2 48" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M48 30 Q64 28 68 34" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M48 36 Q66 40 70 48" stroke="#c0392b" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <ellipse cx="36" cy="26" rx="18" ry="20" fill="#e74c3c"/>
+                <ellipse cx="36" cy="28" rx="14" ry="15" fill="#c0392b" opacity=".4"/>
+                <rect x="22" y="8" width="28" height="5" rx="2" fill="#8B4513"/>
+                <rect x="18" y="11" width="36" height="3" rx="1.5" fill="#A0522D"/>
+                <circle cx="28" cy="22" r="5" fill="white"/>
+                <circle cx="44" cy="22" r="5" fill="white"/>
+                <circle cx="29.5" cy="23" r="2.5" fill="#1a1a2e"/>
+                <circle cx="45.5" cy="23" r="2.5" fill="#1a1a2e"/>
+                <circle cx="30.5" cy="21.5" r="1" fill="white"/>
+                <circle cx="46.5" cy="21.5" r="1" fill="white"/>
+                <ellipse cx="36" cy="34" rx="7" ry="5" fill="#3b82f6"/>
+                <ellipse cx="36" cy="32" rx="5" ry="3" fill="#60a5fa"/>
+                <circle cx="36" cy="34" r="3" fill="#f59e0b"/>
+                <circle cx="6" cy="33" r="2.5" fill="#e87070"/>
+                <circle cx="4" cy="47" r="2.5" fill="#e87070"/>
+                <circle cx="66" cy="33" r="2.5" fill="#e87070"/>
+                <circle cx="68" cy="47" r="2.5" fill="#e87070"/>
+              </svg>
+            </div>
+            <div class="octo-floor"></div>
+            <div class="octo-alga" style="left:12%;height:20px;background:#2d6a4f;animation-delay:0s"></div>
+            <div class="octo-alga" style="left:28%;height:14px;background:#1b4332;animation-delay:.5s"></div>
+            <div class="octo-alga" style="left:60%;height:18px;background:#2d6a4f;animation-delay:1s"></div>
+            <div class="octo-alga" style="left:80%;height:12px;background:#1b4332;animation-delay:.3s"></div>
+            <div class="octo-chest" style="left:46%"></div>
+            <div class="octo-creature" style="left:8%;animation-delay:0s">🦀</div>
+            <div class="octo-creature" style="left:72%;animation-delay:1.5s">🦞</div>
+            <div class="octo-hud">
+              <div class="octo-hud-hearts">❤️ ❤️</div>
+              <div class="octo-hud-btns">
+                <div class="octo-hud-btn sel">GAME A</div>
+                <div class="octo-hud-btn">GAME B</div>
+                <div class="octo-hud-btn">TIME</div>
+              </div>
+              <div class="octo-hud-lv">LV <span id="octo-lv">1</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-foot"><div class="game-name">Octopus Game 🐙</div><div class="play-btn">▶ Jugar Octopus</div></div>
+      </div>
+
+      <!-- WORD GIRASOL -->
+      <div class="game-card" id="card-word-girasol" onclick="openGame('word-girasol')">
+        <div class="preview-area">
+          <div class="girasol-bg" id="girasol-bg">
+            <!-- Panal 4 letras centrado -->
+            <div class="gs-hive-wrap">
+              <svg class="gs-line-svg" id="gs-lines"></svg>
+              <div id="girasol-hive"></div>
+            </div>
+            <!-- Palabra formándose -->
+            <div class="gs-word" id="gs-word"></div>
+            <!-- Chips palabras encontradas -->
+            <div class="gs-chips">
+              <div class="gs-chip gs-empty" id="gs-chip0">_ _ _</div>
+              <div class="gs-chip gs-empty" id="gs-chip1">_ _ _ _</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-foot"><div class="game-name">Word Girasol 🌻</div><div class="play-btn gs-play-btn">▶ Jugar Girasol</div></div>
+      </div>
+
+    </div>
+
+    <!-- CATEGORY CHIPS -->
+    <div class="cat-chips">
+      <div class="cat-chip active" onclick="filterChip('all',this)">🎯 Todos</div>
+      <div class="cat-chip" onclick="filterChip('popular',this)">🔥 Populares</div>
+      <div class="cat-chip" onclick="filterChip('accion',this)">⚡ Acción</div>
+      <div class="cat-chip" onclick="filterChip('palabras',this)">📝 Palabras</div>
+    </div>
+
+    <!-- TODOS LOS JUEGOS (grid secundario) -->
+    <div class="sec-head">
+      <span style="font-size:1.1rem">🎮</span>
+      <h2 id="games-section-title">Todos los Juegos</h2>
+      <span class="see-all" id="games-count"></span>
+    </div>
+    <div class="games-grid" id="games-grid"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECCIÓN: RESEÑAS DE JUGADORES
+══════════════════════════════════════════ -->
+<section id="resenas" style="
+  padding:3rem 1.2rem;
+  background:rgba(0,0,0,0.18);
+  border-top:1px solid rgba(255,255,255,0.08);
+">
+
+  <!-- Encabezado -->
+  <div style="text-align:center;margin-bottom:2rem;">
+    <p style="font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--green);opacity:.8;margin-bottom:.4rem;">⭐ COMUNIDAD</p>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:1.9rem;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3);margin-bottom:.3rem;">Lo que dicen los jugadores</h2>
+    <p style="font-size:.85rem;color:var(--muted);max-width:420px;margin:0 auto;">Opiniones reales de nuestra comunidad. ¡Deja la tuya!</p>
+  </div>
+
+  <!-- Reseñas fijas (ejemplos reales) -->
+  <div id="reviews-grid" style="
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+    gap:1rem;
+    max-width:1000px;
+    margin:0 auto 2.5rem;
+  ">
+
+    <!-- Reseña 1 -->
+    <div class="review-card" style="
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:16px;padding:1.2rem;
+      backdrop-filter:blur(8px);
+      transition:transform .2s,box-shadow .2s;
+    " onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,.3)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;">M</div>
+        <div>
+          <div style="font-weight:700;font-size:.88rem;color:#fff;">María G.</div>
+          <div style="font-size:.7rem;color:var(--muted);">Quito, Ecuador</div>
+        </div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:.85rem;">★★★★★</div>
+      </div>
+      <p style="font-size:.82rem;color:#c8d8e8;line-height:1.6;">"HILARIO es adictivo 😂 Lo juego en el bus, en el trabajo… ¡No puedo parar! El pangrama me tiene loca."</p>
+      <div style="margin-top:.7rem;font-size:.68rem;color:var(--muted);">HILARIO · hace 2 días</div>
+    </div>
+
+    <!-- Reseña 2 -->
+    <div class="review-card" style="
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:16px;padding:1.2rem;
+      backdrop-filter:blur(8px);
+      transition:transform .2s,box-shadow .2s;
+    " onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,.3)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;">C</div>
+        <div>
+          <div style="font-weight:700;font-size:.88rem;color:#fff;">Carlos R.</div>
+          <div style="font-size:.7rem;color:var(--muted);">Guayaquil, Ecuador</div>
+        </div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:.85rem;">★★★★★</div>
+      </div>
+      <p style="font-size:.82rem;color:#c8d8e8;line-height:1.6;">"SnakePlay es la versión que siempre quise del snake clásico. Rápido, sin anuncios molestos y muy fluido."</p>
+      <div style="margin-top:.7rem;font-size:.68rem;color:var(--muted);">SnakePlay · hace 1 semana</div>
+    </div>
+
+    <!-- Reseña 3 -->
+    <div class="review-card" style="
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:16px;padding:1.2rem;
+      backdrop-filter:blur(8px);
+      transition:transform .2s,box-shadow .2s;
+    " onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,.3)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;">A</div>
+        <div>
+          <div style="font-weight:700;font-size:.88rem;color:#fff;">Andrea P.</div>
+          <div style="font-size:.7rem;color:var(--muted);">México DF</div>
+        </div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:.85rem;">★★★★☆</div>
+      </div>
+      <p style="font-size:.82rem;color:#c8d8e8;line-height:1.6;">"Lexo me ayudó a mejorar mi vocabulario en español jugando. Los temas son perfectos. ¡Espero más puzzles!"</p>
+      <div style="margin-top:.7rem;font-size:.68rem;color:var(--muted);">Lexo · hace 3 días</div>
+    </div>
+
+    <!-- Contenedor para reseñas enviadas por usuarios (se agregan via JS) -->
+    <div id="user-reviews-container"></div>
+
+  </div>
+
+  <!-- Formulario dejar reseña -->
+  <div style="
+    max-width:520px;margin:0 auto;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:20px;padding:1.8rem;
+    backdrop-filter:blur(10px);
+  ">
+    <h3 style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#fff;margin-bottom:1.2rem;text-align:center;">
+      💬 Deja tu reseña
+    </h3>
+
+    <!-- Selección de estrellas -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;">Tu puntuación</label>
+      <div id="star-selector" style="display:flex;gap:.3rem;font-size:1.8rem;cursor:pointer;">
+        <span class="star-btn" data-val="1" style="color:#374151;transition:color .1s,transform .1s;">★</span>
+        <span class="star-btn" data-val="2" style="color:#374151;transition:color .1s,transform .1s;">★</span>
+        <span class="star-btn" data-val="3" style="color:#374151;transition:color .1s,transform .1s;">★</span>
+        <span class="star-btn" data-val="4" style="color:#374151;transition:color .1s,transform .1s;">★</span>
+        <span class="star-btn" data-val="5" style="color:#374151;transition:color .1s,transform .1s;">★</span>
+      </div>
+    </div>
+
+    <!-- Fila: nombre + juego -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem;">
+      <div>
+        <label style="display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Tu nombre</label>
+        <input id="rv-name" type="text" placeholder="Ej: María G." maxlength="40" style="
+          width:100%;background:rgba(0,0,0,0.25);
+          border:1px solid rgba(255,255,255,0.15);border-radius:10px;
+          color:#fff;padding:.65rem .9rem;font-family:'Nunito',sans-serif;
+          font-size:.85rem;outline:none;transition:border-color .2s;
+        " onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+      </div>
+      <div>
+        <label for="rv-game" style="display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Juego favorito</label>
+        <select id="rv-game" aria-label="Selecciona tu juego favorito" style="
+          width:100%;background:rgba(0,0,0,0.35);
+          border:1px solid rgba(255,255,255,0.15);border-radius:10px;
+          color:#fff;padding:.65rem .9rem;font-family:'Nunito',sans-serif;
+          font-size:.85rem;outline:none;cursor:pointer;
+          -webkit-appearance:none;appearance:none;
+          transition:border-color .2s;
+        " onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+          <option value="PalabraPlay">PalabraPlay (general)</option>
+          <option value="HILARIO">HILARIO</option>
+          <option value="Lexo">Lexo</option>
+          <option value="SnakePlay">SnakePlay</option>
+          <option value="Octopus Game">Octopus Game</option>
+          <option value="Words Girasol">Words Girasol</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Ciudad -->
+    <div style="margin-bottom:.8rem;">
+      <label style="display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Ciudad (opcional)</label>
+      <input id="rv-city" type="text" placeholder="Ej: Quito, Ecuador" maxlength="40" style="
+        width:100%;background:rgba(0,0,0,0.25);
+        border:1px solid rgba(255,255,255,0.15);border-radius:10px;
+        color:#fff;padding:.65rem .9rem;font-family:'Nunito',sans-serif;
+        font-size:.85rem;outline:none;transition:border-color .2s;
+      " onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+    </div>
+
+    <!-- Mensaje -->
+    <div style="margin-bottom:1.2rem;">
+      <label style="display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Tu opinión</label>
+      <textarea id="rv-msg" placeholder="¿Qué te gustó? ¿Qué mejorarías?..." maxlength="280" rows="3" style="
+        width:100%;background:rgba(0,0,0,0.25);
+        border:1px solid rgba(255,255,255,0.15);border-radius:10px;
+        color:#fff;padding:.65rem .9rem;font-family:'Nunito',sans-serif;
+        font-size:.85rem;outline:none;resize:vertical;
+        transition:border-color .2s;min-height:80px;
+      " onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
+      <div style="text-align:right;font-size:.68rem;color:var(--muted);margin-top:.2rem;"><span id="rv-char">0</span>/280</div>
+    </div>
+
+    <!-- Botón enviar -->
+    <button id="rv-submit" onclick="enviarResena()" style="
+      width:100%;padding:.9rem;
+      background:linear-gradient(135deg,var(--green),#0d6e30);
+      color:#fff;border:none;border-radius:12px;
+      font-family:'Fredoka One',cursive;font-size:1.1rem;
+      letter-spacing:.05em;cursor:pointer;
+      box-shadow:0 4px 20px rgba(29,185,84,.35);
+      transition:transform .15s,box-shadow .15s;
+    " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(29,185,84,.5)'"
+       onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(29,185,84,.35)'">
+      ⭐ Publicar reseña
+    </button>
+
+    <!-- Estado del envío -->
+    <div id="rv-status" style="display:none;margin-top:.8rem;padding:.7rem 1rem;border-radius:10px;font-size:.82rem;text-align:center;"></div>
+  </div>
+
+</section>
+
+</main>
+
+<!-- FOOTER — stats aquí, no arriba -->
+<footer>
+  <!-- Stats movidas aquí del hero -->
+  <div class="stats-footer">
+    <div class="stat-pill"><strong id="sp-plays">12,847</strong><span>jugadas hoy</span></div>
+    <div class="stat-pill"><strong>5</strong><span>juegos</span></div>
+    <div class="stat-pill"><strong>100%</strong><span>gratis</span></div>
+    <div class="stat-pill"><strong>🇪🇨</strong><span>Ecuador</span></div>
+  </div>
+  <div class="foot-main">
+    <div class="foot-logo">🎮 PalabraPlay</div>
+    <div class="foot-links">
+      <a href="about.html">Nosotros</a>
+      <a href="privacy.html">Privacidad</a>
+      <a href="terms.html">Términos</a>
+      <a href="contact.html">Contacto</a>
+      <a href="https://www.instagram.com/art_philip_studio/" target="_blank">Instagram</a>
+    </div>
+    <div class="foot-copy">© 2026 PalabraPlay · Art Philip Studio · Calderón, Ecuador · 100% Gratis</div>
+  </div>
+  <p class="foot-disclaimer">SnakePlay es un juego original inspirado en el género .io. No está afiliado a Slither.io ni a Lowtech Studios.</p>
+</footer>
+
+<script>
+// ── GAME DATA ──
+const GAMES = [
+  {
+    id:'snakeplay',
+    name:'SnakePlay',
+    emoji:'🐍',
+    color:'c5',
+    desc:'Crece, esquiva y domina. ¡El más adictivo!',
+    url:'snakeplay/index.html',
+    label:'new',
+    stars:'★★★★★',
+    plays:'',
+    tags:['accion','popular','new'],
+    hero:true
+  },
+  {
+    id:'lexo',
+    name:'Lexo',
+    emoji:'📝',
+    color:'c2',
+    desc:'Adivina la palabra oculta letra por letra.',
+    url:'lexo/index.html',
+    label:'new',
+    stars:'★★★★★',
+    plays:'',
+    tags:['palabras','popular','new'],
+    hero:true
+  },
+  {
+    id:'hilario',
+    name:'Hilario',
+    emoji:'😂',
+    color:'c7',
+    desc:'Desafíos locos y mucha diversión.',
+    url:'hilario/index.html',
+    label:'new',
+    stars:'★★★★★',
+    plays:'',
+    tags:['accion','popular','new'],
+    hero:true
+  },
+  {
+    id:'octopus-game',
+    name:'Octopus Game',
+    emoji:'🐙',
+    color:'c4',
+    desc:'Mueve tus tentáculos y supera obstáculos.',
+    url:'octopus-game/index.html',
+    label:'new',
+    stars:'★★★★★',
+    plays:'',
+    tags:['accion','popular','new'],
+    hero:true
+  },
+  {
+    id:'word-girasol',
+    name:'Word Girasol',
+    emoji:'🌻',
+    color:'c9',
+    desc:'Conecta letras y encuentra palabras ocultas en el panal.',
+    url:'words-girasol/index.html',
+    label:'new',
+    stars:'★★★★★',
+    plays:'',
+    tags:['palabras','popular','new'],
+    hero:true
+  }
+];
+
+let currentFilter = 'all';
+let currentGameId = null;
+
+// ── PREVIEW ANIMATIONS — Snake (diferido, no bloquea LCP) ──
+function _initSnakePreview(){
+  const canvas = document.getElementById('snakeCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = 280, H = canvas.height = 160;
+  const SZ = 8, COLS = W/SZ, ROWS = H/SZ;
+  let snake = [{x:18,y:10},{x:17,y:10},{x:16,y:10},{x:15,y:10},{x:14,y:10},{x:13,y:10},{x:12,y:10}];
+  let dir = {x:1,y:0}, nextDir = {x:1,y:0};
+  const FOOD_COLORS = ['#ef4444','#f59e0b','#3b82f6','#ec4899','#8b5cf6','#06b6d4'];
+  let orbs = [{x:24,y:6,c:'#ef4444'},{x:10,y:4,c:'#3b82f6'},{x:28,y:14,c:'#ec4899'},{x:5,y:13,c:'#f59e0b'},{x:20,y:17,c:'#8b5cf6'}];
+  const SKINS = ['#3b82f6','#ec4899','#f59e0b','#8b5cf6','#06b6d4'];
+  let bots = SKINS.map((color,i)=>{const sx=Math.floor(Math.random()*(COLS-8))+4,sy=Math.floor(Math.random()*(ROWS-4))+2,segs=[];for(let j=0;j<4;j++)segs.push({x:sx-j,y:sy});return{segs,dir:{x:1,y:0},color,timer:0,turnEvery:12+i*3};});
+  let pts=70,len=snake.length;
+  const lbNames=['Lombricita','Jugador','SerpentKing','NoodleMaster'],lbLens=[26,24,24,24],lbColors=['#ec4899','#39ff14','#8b5cf6','#3b82f6'];
+  function buildLB(){const c=document.getElementById('lb-rows');if(!c)return;c.innerHTML=lbNames.map((n,i)=>{const isMe=i===1;return`<div class="snake-lb-row"><span class="snake-lb-rank${i===0?' top':''}">${i+1}</span><span class="snake-lb-dot" style="background:${lbColors[i]}"></span><span class="snake-lb-name${isMe?' snake-lb-me':''}">${n}</span><span class="snake-lb-len${isMe?' me':''}">${lbLens[i]}</span></div>`;}).join('');}
+  buildLB();
+  let steerTimer=0;
+  function autoSteer(){steerTimer++;if(steerTimer<14)return;steerTimer=0;const head=snake[0],target=orbs.reduce((a,b)=>Math.abs(a.x-head.x)+Math.abs(a.y-head.y)<Math.abs(b.x-head.x)+Math.abs(b.y-head.y)?a:b);const dx=target.x-head.x,dy=target.y-head.y,prefs=[];if(dx>0)prefs.push({x:1,y:0});else if(dx<0)prefs.push({x:-1,y:0});if(dy>0)prefs.push({x:0,y:1});else if(dy<0)prefs.push({x:0,y:-1});for(const nd of prefs){if(nd.x===-dir.x&&nd.y===-dir.y)continue;const nx=head.x+nd.x,ny=head.y+nd.y;if(nx>0&&nx<COLS-1&&ny>0&&ny<ROWS-1){nextDir=nd;return;}}}
+  function stepBot(b){b.timer++;if(b.timer<b.turnEvery)return;b.timer=0;const dirs=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}],head=b.segs[0],valid=dirs.filter(d=>{if(d.x===-b.dir.x&&d.y===-b.dir.y)return false;const nx=head.x+d.x,ny=head.y+d.y;return nx>0&&nx<COLS-1&&ny>0&&ny<ROWS-1;});if(valid.length)b.dir=valid[Math.floor(Math.random()*valid.length)];const nh={x:head.x+b.dir.x,y:head.y+b.dir.y};b.segs.unshift(nh);b.segs.pop();}
+  function randOrb(){return{x:Math.floor(Math.random()*(COLS-4))+2,y:Math.floor(Math.random()*(ROWS-4))+2,c:FOOD_COLORS[Math.floor(Math.random()*FOOD_COLORS.length)]};}
+  let frame=0,gameFrame=0;
+  function loop(){
+    frame++;
+    ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(57,255,20,0.055)';ctx.lineWidth=.5;
+    for(let x=0;x<=W;x+=SZ){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<=H;y+=SZ){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    orbs.forEach(o=>{const pulse=1+Math.sin(frame/18+o.x*0.7)*0.12;ctx.save();ctx.shadowColor=o.c;ctx.shadowBlur=6*pulse;ctx.fillStyle=o.c;ctx.beginPath();ctx.arc(o.x*SZ+SZ/2,o.y*SZ+SZ/2,(SZ/2-1)*pulse,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.55)';ctx.beginPath();ctx.arc(o.x*SZ+SZ/2-1.5,o.y*SZ+SZ/2-1.5,1.5,0,Math.PI*2);ctx.fill();ctx.restore();});
+    bots.forEach(b=>b.segs.forEach((seg,i)=>{ctx.save();ctx.globalAlpha=0.65-i/b.segs.length*0.2;ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(seg.x*SZ+1,seg.y*SZ+1,SZ-2,SZ-2,2);ctx.fill();ctx.restore();}));
+    if(frame%5===0){bots.forEach(b=>stepBot(b));autoSteer();dir=nextDir;const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(head.x<=0)head.x=COLS-2;if(head.x>=COLS)head.x=1;if(head.y<=0)head.y=ROWS-2;if(head.y>=ROWS)head.y=1;let ate=false;orbs.forEach((o,i)=>{if(head.x===o.x&&head.y===o.y){orbs[i]=randOrb();ate=true;pts++;len++;}});snake.unshift(head);if(!ate&&snake.length>24)snake.pop();const pts_el=document.getElementById('sh-pts'),len_el=document.getElementById('sh-len');if(pts_el)pts_el.textContent=pts;if(len_el)len_el.textContent=snake.length;lbLens[1]=snake.length;gameFrame++;if(gameFrame%30===0)buildLB();}
+    snake.forEach((seg,i)=>{const t=i/snake.length,l=50-t*18;ctx.fillStyle=`hsl(130,80%,${l}%)`;ctx.beginPath();ctx.roundRect(seg.x*SZ+1,seg.y*SZ+1,SZ-2,SZ-2,3);ctx.fill();});
+    const h=snake[0];ctx.save();ctx.shadowColor='#39ff14';ctx.shadowBlur=8;ctx.fillStyle='#39ff14';ctx.beginPath();ctx.roundRect(h.x*SZ+1,h.y*SZ+1,SZ-2,SZ-2,3);ctx.fill();ctx.restore();
+    ctx.fillStyle='white';const ex=dir.x===0?1:dir.x>0?4:1,ey=dir.y===0?1:dir.y>0?4:1;ctx.fillRect(h.x*SZ+ex,h.y*SZ+ey,2,2);ctx.fillRect(h.x*SZ+ex+2,h.y*SZ+ey,2,2);
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+// Inicia snake preview solo después de que la página esté idle
+(window.requestIdleCallback||function(cb){setTimeout(cb,200)})(_initSnakePreview);
+
+// ── PREVIEW ANIMATIONS — Lexo ──
+(function(){
+  const ROUNDS=[{word:'CARTA',colors:['correct','present','absent','absent','absent']},{word:'PLAZA',colors:['present','absent','correct','correct','absent']},{word:'JUEGO',colors:['correct','correct','correct','correct','correct']},{word:'LIBRO',colors:['absent','correct','absent','present','correct']},{word:'MUNDO',colors:['correct','correct','correct','correct','correct']}];
+  let roundIdx=0;
+  function makeCell(letter,colorClass){const d=document.createElement('div');d.className='lexo-cell';d.textContent=letter;if(colorClass)d.classList.add(colorClass);return d;}
+  function renderRows(){
+    const r0=ROUNDS[(roundIdx-2+ROUNDS.length)%ROUNDS.length],r1=ROUNDS[(roundIdx-1+ROUNDS.length)%ROUNDS.length],r2=ROUNDS[roundIdx];
+    const row0=document.getElementById('lexo-r0'),row1=document.getElementById('lexo-r1'),row2=document.getElementById('lexo-r2');
+    if(!row0)return;
+    row0.innerHTML='';r0.word.split('').forEach((l,i)=>{const c=makeCell(l,r0.colors[i]);row0.appendChild(c);});
+    row1.innerHTML='';r1.word.split('').forEach((l,i)=>{const c=makeCell(l,r1.colors[i]);row1.appendChild(c);});
+    row2.innerHTML='';
+    const letters=r2.word.split('');let typedCount=0;
+    function typeNext(){if(typedCount>=letters.length){setTimeout(revealColors,400);return;}const c=document.createElement('div');c.className='lexo-cell pop';c.textContent=letters[typedCount];row2.appendChild(c);typedCount++;setTimeout(typeNext,200);}
+    function revealColors(){const cells=row2.querySelectorAll('.lexo-cell');cells.forEach((c,i)=>{setTimeout(()=>c.classList.add(r2.colors[i],'flip'),i*200);});setTimeout(()=>{roundIdx=(roundIdx+1)%ROUNDS.length;renderRows();},letters.length*200+800);}
+    setTimeout(typeNext,300);
+  }
+  renderRows();
+})();
+
+// ── PREVIEW ANIMATIONS — Hilario ──
+(function(){
+  const GRID_LETTERS=[['G','A','T','O','S','A'],['P','E','R','R','O','L'],['L','O','B','O','Z','O'],['Z','O','R','R','O','B'],['C','I','E','R','V','O'],['A','N','I','M','A','L'],['S','E','L','V','A','S']];
+  const WORDS=[{word:'GATO',cells:[[0,0],[0,1],[0,2],[0,3]],chip:'hc-gato',type:'blue'},{word:'PERRO',cells:[[1,0],[1,1],[1,2],[1,3],[1,4]],chip:'hc-perro',type:'blue'},{word:'LOBO',cells:[[2,0],[2,1],[2,2],[2,3]],chip:'hc-lobo',type:'blue'},{word:'ZORRO',cells:[[3,0],[3,1],[3,2],[3,3],[3,4]],chip:'hc-zorro',type:'gold'},{word:'CIERVO',cells:[[4,0],[4,1],[4,2],[4,3],[4,4],[4,5]],chip:null,type:'blue'},{word:'ANIMAL',cells:[[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],chip:null,type:'gold'}];
+  const grid=document.getElementById('hilario-grid');
+  if(!grid)return;
+  grid.style.gridTemplateColumns='repeat(6,17px)';
+  const cellEls=[];
+  GRID_LETTERS.forEach((row,r)=>{const rowEls=[];row.forEach((l,c)=>{const el=document.createElement('div');el.className='hilario-cell';el.textContent=l;el.id=`hcell-${r}-${c}`;grid.appendChild(el);rowEls.push(el);});cellEls.push(rowEls);});
+  let wi=0,foundWords=new Set();
+  function highlightWord(wordObj){
+    wordObj.cells.forEach((pos,i)=>setTimeout(()=>{const el=cellEls[pos[0]][pos[1]];el.classList.remove('found-blue','found-gold');el.classList.add('sel');},i*120));
+    setTimeout(()=>{const cls=wordObj.type==='gold'?'found-gold':'found-blue';wordObj.cells.forEach(pos=>{const el=cellEls[pos[0]][pos[1]];el.classList.remove('sel');el.classList.add(cls);});if(wordObj.chip){const chip=document.getElementById(wordObj.chip);if(chip)chip.classList.add(wordObj.type==='gold'?'found-gold':'found-blue');}foundWords.add(wi);wi=(wi+1)%WORDS.length;if(foundWords.size>=WORDS.length){foundWords.clear();wi=0;setTimeout(()=>{cellEls.forEach(row=>row.forEach(el=>el.classList.remove('sel','found-blue','found-gold')));document.querySelectorAll('.hilario-chip').forEach(c=>c.classList.remove('found-blue','found-gold'));setTimeout(()=>highlightWord(WORDS[wi]),600);},800);return;}setTimeout(()=>highlightWord(WORDS[wi]),700);},wordObj.cells.length*120+300);
+  }
+  setTimeout(()=>highlightWord(WORDS[0]),600);
+})();
+
+// ── PREVIEW ANIMATIONS — Octopus ──
+(function(){
+  let lv=1;const lvEl=document.getElementById('octo-lv');
+  setInterval(()=>{lv=(lv%3)+1;if(lvEl)lvEl.textContent=lv;},3000);
+})();
+
+// ── PREVIEW ANIMATIONS — Word Girasol ──
+(function(){
+  const hive = document.getElementById('girasol-hive');
+  if(!hive) return;
+
+  // 4 letras: R,O,S,A → palabras: ORA(3), ROSA(4)
+  // Layout panal 2x2 en contenedor 100x62:
+  //   [R(0)] [O(1)]
+  //   [S(2)] [A(3)]
+  const LETTERS = ['R','O','S','A'];
+  const HEX_POS = [[5,2],[52,2],[5,32],[52,32]];
+  const SZ = 28; // tamaño hex px
+
+  hive.innerHTML = LETTERS.map((l,i)=>
+    `<div class="gs-hex" id="gsh-${i}" style="left:${HEX_POS[i][0]}px;top:${HEX_POS[i][1]}px"><span>${l}</span></div>`
+  ).join('');
+  const hexEls = LETTERS.map((_,i)=>document.getElementById(`gsh-${i}`));
+
+  const linesSvg = document.getElementById('gs-lines');
+  const wordEl   = document.getElementById('gs-word');
+  const chip0    = document.getElementById('gs-chip0'); // "_ _ _"  → ORA
+  const chip1    = document.getElementById('gs-chip1'); // "_ _ _ _" → ROSA
+
+  // Secuencias simples: ORA luego ROSA
+  const SEQS = [
+    {seq:[1,2,3], word:'ORA',  chip:chip0},
+    {seq:[2,1,3], word:'SOA',  chip:null},   // pausa limpia
+    {seq:[2,0,1,3], word:'ROSA', chip:chip1},
+  ];
+  let si=0;
+
+  function cx(i){ return HEX_POS[i][0] + SZ/2; }
+  function cy(i){ return HEX_POS[i][1] + SZ/2 + 2; }
+
+  function drawLines(sel){
+    if(!linesSvg) return;
+    linesSvg.innerHTML='';
+    for(let i=0;i<sel.length-1;i++){
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',cx(sel[i]));  ln.setAttribute('y1',cy(sel[i]));
+      ln.setAttribute('x2',cx(sel[i+1]));ln.setAttribute('y2',cy(sel[i+1]));
+      linesSvg.appendChild(ln);
+    }
+  }
+
+  function animSeq(){
+    const {seq,word,chip} = SEQS[si % SEQS.length];
+    hexEls.forEach(h=>h.classList.remove('gs-sel'));
+    if(linesSvg) linesSvg.innerHTML='';
+    if(wordEl){ wordEl.textContent=''; wordEl.classList.remove('show'); }
+
+    let t=0;
+    const sel=[];
+    seq.forEach((idx,i)=>{
+      setTimeout(()=>{
+        hexEls[idx] && hexEls[idx].classList.add('gs-sel');
+        sel.push(idx);
+        drawLines(sel);
+        if(wordEl){ wordEl.textContent=word.slice(0,i+1); wordEl.classList.add('show'); }
+      }, t);
+      t += 260;
     });
-  </script>  <p style="position:fixed;bottom:4px;left:50%;transform:translateX(-50%);font-size:10px;opacity:.25;color:white;pointer-events:none;white-space:nowrap;z-index:5">
-    SnakePlay es un juego original inspirado en el género .io. No está afiliado a Slither.io ni a Lowtech Studios.
-  </p>
 
+    // Encontrada
+    setTimeout(()=>{
+      if(wordEl) wordEl.textContent='✓ '+word;
+      if(chip){ chip.textContent=word; chip.className='gs-chip gs-filled'; }
+    }, t+80);
+
+    // Limpiar y siguiente
+    setTimeout(()=>{
+      hexEls.forEach(h=>h.classList.remove('gs-sel'));
+      if(linesSvg) linesSvg.innerHTML='';
+      if(wordEl){ wordEl.textContent=''; wordEl.classList.remove('show'); }
+      si++;
+      // Si completó el ciclo, reiniciar chips
+      if(si % SEQS.length === 0){
+        setTimeout(()=>{
+          if(chip0){ chip0.textContent='_ _ _';  chip0.className='gs-chip gs-empty'; }
+          if(chip1){ chip1.textContent='_ _ _ _'; chip1.className='gs-chip gs-empty'; }
+        }, 400);
+      }
+      setTimeout(animSeq, si % SEQS.length===0 ? 1200 : 550);
+    }, t+800);
+  }
+  setTimeout(animSeq, 900);
+})();
+
+// ── RENDER GAMES GRID ──
+function renderGames(filter){
+  currentFilter = filter;
+  const filtered = filter==='all' ? GAMES : GAMES.filter(g=>g.tags.includes(filter));
+  const grid = document.getElementById('games-grid');
+  const title = document.getElementById('games-section-title');
+  const count = document.getElementById('games-count');
+  const labels = {all:'Todos los Juegos',popular:'🔥 Populares',palabras:'📝 Palabras',accion:'⚡ Acción',new:'✨ Nuevos'};
+  title.textContent = labels[filter]||'Juegos';
+  count.textContent = filtered.length+' juegos';
+
+  const tiles = filtered.map((g,i)=>`
+    <div class="game-tile" onclick="openGame('${g.id}')" style="animation-delay:${i*40}ms">
+      <div class="gt-thumb ${g.color}">
+        ${g.emoji}
+        ${g.label?`<span class="gt-label lbl-${g.label}">${g.label==='hot'?'Viral':g.label==='new'?'Nuevo':'Top'}</span>`:''}
+      </div>
+      <div class="gt-info">
+        <div class="gt-name">${g.name}</div>
+        <div class="gt-desc">${g.desc}</div>
+        <div class="gt-meta">
+          <span class="gt-stars">${g.stars}</span>
+          <span class="gt-plays">${g.plays}</span>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Anuncio móvil al final
+  tiles.push(`
+    <div class="ad-tile">
+      <div class="ad-label">Publicidad</div>
+      <ins class="adsbygoogle" style="display:block;width:100%;min-height:90px"
+        data-ad-client="ca-pub-7304791163029192" data-ad-slot="1234567890"
+        data-ad-format="auto" data-full-width-responsive="true"></ins>
+    </div>`);
+
+  grid.innerHTML = tiles.join('');
+  try{ (window.adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+}
+
+// ── FILTER ──
+function filterGames(cat, el){
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderGames(cat);
+  document.querySelectorAll('.cat-chip').forEach(c=>{
+    c.classList.toggle('active', c.getAttribute('onclick')?.includes(`'${cat}'`));
+  });
+}
+function filterChip(cat, el){
+  document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(e=>{
+    e.classList.toggle('active', e.getAttribute('onclick')?.includes(`'${cat}'`));
+  });
+  renderGames(cat);
+}
+
+// ── OPEN GAME (inline en la misma página, como Poki) ──
+function openGame(id){
+  const game = GAMES.find(g=>g.id===id);
+  if(!game) return;
+  currentGameId = id;
+  document.title = game.name+' - PalabraPlay';
+
+  const viewer = document.getElementById('game-viewer');
+  viewer.classList.add('active');
+  viewer.scrollIntoView({behavior:'smooth',block:'start'});
+
+  document.getElementById('gv-icon').textContent = game.emoji;
+  document.getElementById('gv-icon').style.background = getColorCSS(game.color);
+  document.getElementById('gv-title').textContent = game.name;
+  document.getElementById('gv-sub').textContent = 'PalabraPlay · Gratis · Sin registro';
+
+  // Update fullscreen button label con nombre del juego
+  document.getElementById('gv-fullscreen').innerHTML = `<i class="fas fa-expand"></i> Pantalla completa`;
+
+  const loading = document.getElementById('gv-loading');
+  const iframe = document.getElementById('game-iframe');
+  loading.classList.remove('hidden');
+  document.getElementById('gv-loading-text').textContent = 'Cargando '+game.name+'...';
+  iframe.src = '';
+
+  setTimeout(()=>{
+    iframe.src = game.url;
+    iframe.onload = ()=>{ loading.classList.add('hidden'); };
+    setTimeout(()=>loading.classList.add('hidden'), 4000);
+  }, 200);
+
+  renderRelated(id);
+  try{ (window.adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+}
+
+function getColorCSS(cls){
+  const map={c1:'linear-gradient(135deg,#059669,#10b981)',c2:'linear-gradient(135deg,#2563eb,#60a5fa)',c3:'linear-gradient(135deg,#dc2626,#f97316)',c4:'linear-gradient(135deg,#7c3aed,#a78bfa)',c5:'linear-gradient(135deg,#d97706,#fbbf24)',c6:'linear-gradient(135deg,#0f766e,#2dd4bf)',c7:'linear-gradient(135deg,#be185d,#f472b6)',c8:'linear-gradient(135deg,#1d4ed8,#06b6d4)',c9:'linear-gradient(135deg,#b45309,#f59e0b)'};
+  return map[cls]||'#1db954';
+}
+
+function renderRelated(currentId){
+  const related = GAMES.filter(g=>g.id!==currentId).slice(0,8);
+  document.getElementById('gv-left-col').innerHTML = '<div class="gv-left-col-title">Más</div>' + related.map(g=>`
+    <div class="gr-item" onclick="openGame('${g.id}')">
+      <div class="gr-thumb ${g.color}">${g.emoji}</div>
+      <div class="gr-name">${g.name}</div>
+    </div>
+  `).join('');
+  document.getElementById('gv-related-list').innerHTML = related.map(g=>`
+    <div class="gr-strip-item" onclick="openGame('${g.id}')">
+      <div class="gr-strip-thumb ${g.color}">${g.emoji}</div>
+      <div class="gr-strip-name">${g.name}</div>
+    </div>
+  `).join('');
+}
+
+function closeGame(){
+  document.getElementById('game-viewer').classList.remove('active');
+  document.getElementById('game-iframe').src='';
+  document.title = 'PalabraPlay - Juegos Gratis Online | Ecuador';
+  currentGameId = null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleFullscreen(){
+  const iframe = document.getElementById('game-iframe');
+  if(document.fullscreenElement){ document.exitFullscreen(); }
+  else if(iframe.requestFullscreen){ iframe.requestFullscreen(); }
+  else if(iframe.webkitRequestFullscreen){ iframe.webkitRequestFullscreen(); }
+}
+
+// ── TEMA CLARO/OSCURO automático + toggle manual ──
+function applyTheme(mode){
+  document.body.classList.toggle('light-mode', mode==='light');
+  document.getElementById('theme-btn').textContent = mode==='light' ? '🌙' : '☀️';
+  localStorage.setItem('pp-theme', mode);
+}
+function toggleTheme(){
+  const current = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+  applyTheme(current==='light' ? 'dark' : 'light');
+}
+function initTheme(){
+  const saved = localStorage.getItem('pp-theme');
+  if(saved){ applyTheme(saved); return; }
+  // Auto: claro de día (6am–6pm), oscuro de noche
+  const hour = new Date().getHours();
+  applyTheme(hour>=6 && hour<18 ? 'light' : 'dark');
+}
+
+// ── SEARCH ──
+function openSearch(){
+  document.getElementById('search-overlay').classList.add('active');
+  setTimeout(()=>document.getElementById('search-input').focus(),100);
+  doSearch('');
+}
+function closeSearch(){
+  document.getElementById('search-overlay').classList.remove('active');
+  document.getElementById('search-input').value='';
+}
+function closeSearchIfBg(e){
+  if(e.target===document.getElementById('search-overlay')) closeSearch();
+}
+function doSearch(q){
+  const results = document.getElementById('search-results');
+  const query = q.toLowerCase().trim();
+  const matches = query ? GAMES.filter(g=>g.name.toLowerCase().includes(query)||g.desc.toLowerCase().includes(query)) : GAMES;
+  if(!matches.length){
+    results.innerHTML='<div class="so-empty">😕 No encontramos ese juego.</div>';
+    return;
+  }
+  results.innerHTML = matches.map(g=>`
+    <div class="so-item" onclick="selectSearchGame('${g.id}')">
+      <div class="so-icon ${g.color}">${g.emoji}</div>
+      <div>
+        <div class="so-name">${g.name}</div>
+        <div class="so-cat">${g.tags.join(' · ')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function selectSearchGame(id){ closeSearch(); setTimeout(()=>openGame(id),200); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('search-overlay').classList.contains('active')) closeSearch();
+    else if(document.getElementById('game-viewer').classList.contains('active')) closeGame();
+  }
+});
+
+// ── STATS COUNTER ──
+function animCount(id,end){
+  const el=document.getElementById(id);if(!el)return;
+  let v=Math.max(0,end-300);
+  const t=setInterval(()=>{
+    v=Math.min(v+7,end);
+    el.textContent=v.toLocaleString('es');
+    if(v>=end)clearInterval(t);
+  },16);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  initTheme();
+  renderGames('all');
+  animCount('sp-plays',12847);
+
+  // Hash routing
+  const hash = window.location.hash.slice(1);
+  if(hash){
+    const game = GAMES.find(g=>g.id===hash);
+    if(game) openGame(game.id);
+  }
+});
+
+const urlParams = new URLSearchParams(window.location.search);
+const gParam = urlParams.get('game');
+if(gParam) window.addEventListener('load',()=>openGame(gParam));
+</script>
+
+
+<!-- EmailJS SDK (carga diferida) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+
+<script>
+/* ══════════════════════════════════════════
+   SISTEMA DE RESEÑAS — PalabraPlay
+   Envia al correo via EmailJS + guarda en localStorage
+══════════════════════════════════════════ */
+
+// ── INICIALIZAR EMAILJS ──
+(function(){
+  function initEJS(){
+    try { emailjs.init("Hjb8zflqeJag36Cg-"); } catch(e) {}
+  }
+  // El script de EmailJS tiene defer, esperamos que cargue
+  if(typeof emailjs !== 'undefined'){ initEJS(); }
+  else { window.addEventListener('load', initEJS); }
+})();
+
+// ── ESTRELLAS ──
+let starValue = 0;
+const starBtns = document.querySelectorAll('.star-btn');
+
+starBtns.forEach(function(star) {
+  star.addEventListener('mouseover', function() {
+    const v = parseInt(this.dataset.val);
+    starBtns.forEach(function(s, i) {
+      s.style.color = i < v ? '#fbbf24' : '#374151';
+      s.style.transform = i < v ? 'scale(1.15)' : '';
+    });
+  });
+
+  star.addEventListener('mouseout', function() {
+    starBtns.forEach(function(s, i) {
+      s.style.color = i < starValue ? '#fbbf24' : '#374151';
+      s.style.transform = '';
+    });
+  });
+
+  star.addEventListener('click', function() {
+    starValue = parseInt(this.dataset.val);
+    starBtns.forEach(function(s, i) {
+      s.style.color = i < starValue ? '#fbbf24' : '#374151';
+    });
+  });
+});
+
+// ── CONTADOR DE CARACTERES ──
+var rvMsg = document.getElementById('rv-msg');
+var rvChar = document.getElementById('rv-char');
+if (rvMsg && rvChar) {
+  rvMsg.addEventListener('input', function() {
+    rvChar.textContent = this.value.length;
+  });
+}
+
+// ── CARGAR RESEÑAS GUARDADAS (localStorage) ──
+function cargarResenasGuardadas() {
+  var guardadas = [];
+  try { guardadas = JSON.parse(localStorage.getItem('palabraplay_resenas') || '[]'); } catch(e) {}
+  var cont = document.getElementById('user-reviews-container');
+  if (!cont) return;
+  cont.innerHTML = '';
+  // Mostrar las últimas 6
+  var recientes = guardadas.slice(-6).reverse();
+  recientes.forEach(function(r) {
+    var card = crearTarjetaResena(r, false);
+    cont.appendChild(card);
+  });
+}
+
+// ── CREAR TARJETA DE RESEÑA ──
+var colores = [
+  'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+  'linear-gradient(135deg,#ec4899,#be185d)',
+  'linear-gradient(135deg,#f59e0b,#d97706)',
+  'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+  'linear-gradient(135deg,#10b981,#059669)',
+  'linear-gradient(135deg,#ef4444,#b91c1c)'
+];
+
+function crearTarjetaResena(r, nuevo) {
+  var card = document.createElement('div');
+  card.style.cssText = 'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1.2rem;backdrop-filter:blur(8px);transition:transform .2s,box-shadow .2s;';
+  if (nuevo) {
+    card.style.border = '1px solid rgba(29,185,84,0.5)';
+    card.style.background = 'rgba(29,185,84,0.08)';
+  }
+
+  var color = colores[Math.floor(Math.random() * colores.length)];
+  var inicial = (r.nombre || '?')[0].toUpperCase();
+  var estrellas = '★'.repeat(r.estrellas) + '☆'.repeat(5 - r.estrellas);
+  var hace = r.fecha ? calcularHace(r.fecha) : 'ahora';
+
+  card.innerHTML =
+    '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;">' +
+      '<div style="width:40px;height:40px;border-radius:50%;background:' + color + ';display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;">' + inicial + '</div>' +
+      '<div>' +
+        '<div style="font-weight:700;font-size:.88rem;color:#fff;">' + escapeHtml(r.nombre) + '</div>' +
+        '<div style="font-size:.7rem;color:var(--muted);">' + escapeHtml(r.ciudad || 'Ecuador') + '</div>' +
+      '</div>' +
+      '<div style="margin-left:auto;color:#fbbf24;font-size:.82rem;">' + estrellas + '</div>' +
+    '</div>' +
+    '<p style="font-size:.82rem;color:#c8d8e8;line-height:1.6;">"' + escapeHtml(r.mensaje) + '"</p>' +
+    '<div style="margin-top:.7rem;font-size:.68rem;color:var(--muted);">' + escapeHtml(r.juego) + ' · ' + hace + '</div>';
+
+  card.addEventListener('mouseover', function(){ this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,.3)'; });
+  card.addEventListener('mouseout',  function(){ this.style.transform='';this.style.boxShadow=''; });
+
+  return card;
+}
+
+function calcularHace(timestamp) {
+  var diff = Date.now() - timestamp;
+  var mins = Math.floor(diff / 60000);
+  if (mins < 2) return 'ahora mismo';
+  if (mins < 60) return 'hace ' + mins + ' min';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return 'hace ' + hrs + 'h';
+  var dias = Math.floor(hrs / 24);
+  return 'hace ' + dias + ' día' + (dias > 1 ? 's' : '');
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── ENVIAR RESEÑA ──
+function enviarResena() {
+  var nombre  = (document.getElementById('rv-name').value || '').trim();
+  var juego   = (document.getElementById('rv-game').value || '').trim();
+  var ciudad  = (document.getElementById('rv-city').value || '').trim();
+  var mensaje = (document.getElementById('rv-msg').value  || '').trim();
+  var status  = document.getElementById('rv-status');
+  var btn     = document.getElementById('rv-submit');
+
+  // Validaciones
+  if (!nombre) { mostrarStatus('error', '⚠️ Escribe tu nombre para publicar.'); return; }
+  if (!mensaje || mensaje.length < 10) { mostrarStatus('error', '⚠️ Tu opinión debe tener al menos 10 caracteres.'); return; }
+  if (starValue === 0) { mostrarStatus('error', '⚠️ Selecciona cuántas estrellas le das.'); return; }
+
+  btn.textContent = '⏳ Enviando...';
+  btn.disabled = true;
+
+  var estrellasTxt = '★'.repeat(starValue) + '☆'.repeat(5 - starValue);
+
+  // ── GUARDAR EN LOCALSTORAGE (aparece en la página de inmediato) ──
+  var resena = {
+    nombre:   nombre,
+    juego:    juego,
+    ciudad:   ciudad,
+    mensaje:  mensaje,
+    estrellas: starValue,
+    fecha:    Date.now()
+  };
+  try {
+    var guardadas = JSON.parse(localStorage.getItem('palabraplay_resenas') || '[]');
+    guardadas.push(resena);
+    localStorage.setItem('palabraplay_resenas', JSON.stringify(guardadas));
+  } catch(e) {}
+
+  // ── AGREGAR A LA PÁGINA AHORA (sin recargar) ──
+  var cont = document.getElementById('user-reviews-container');
+  if (cont) {
+    var card = crearTarjetaResena(resena, true);
+    card.style.animation = 'reviewIn .4s ease';
+    cont.prepend(card);
+  }
+
+  // ── ENVIAR AL CORREO VIA EMAILJS ──
+  // ⚠️ IMPORTANTE: crea una nueva plantilla en tu cuenta EmailJS
+  // Variables de la plantilla: {{jugador}}, {{juego}}, {{ciudad}}, {{estrellas}}, {{mensaje}}
+  var SERVICE_ID  = 'service_jakrgxc';  // tu service ID de EmailJS (mismo de Philip)
+  var TEMPLATE_ID = 'template_palabraplay_resena'; // ← CAMBIAR por el ID de tu nueva plantilla
+
+  try {
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+      jugador:   nombre,
+      juego:     juego,
+      ciudad:    ciudad || 'No especificada',
+      estrellas: estrellasTxt + ' (' + starValue + '/5)',
+      mensaje:   mensaje
+    }).then(function() {
+      console.log('Reseña enviada al correo ✓');
+    }).catch(function(err) {
+      console.warn('EmailJS error (la reseña igual se guardó):', err);
+    });
+  } catch(e) {}
+
+  // ── ÉXITO ──
+  mostrarStatus('success', '🎉 ¡Gracias ' + nombre + '! Tu reseña ya está publicada.');
+  btn.textContent = '✓ ¡Publicada!';
+
+  // Limpiar formulario
+  document.getElementById('rv-name').value = '';
+  document.getElementById('rv-city').value = '';
+  document.getElementById('rv-msg').value  = '';
+  document.getElementById('rv-char').textContent = '0';
+  starValue = 0;
+  starBtns.forEach(function(s) { s.style.color = '#374151'; });
+
+  // Reactivar botón
+  setTimeout(function() {
+    btn.textContent = '⭐ Publicar reseña';
+    btn.disabled = false;
+  }, 4000);
+}
+
+function mostrarStatus(tipo, msg) {
+  var el = document.getElementById('rv-status');
+  if (!el) return;
+  el.style.display = 'block';
+  el.textContent = msg;
+  if (tipo === 'success') {
+    el.style.background = 'rgba(29,185,84,.15)';
+    el.style.border = '1px solid rgba(29,185,84,.4)';
+    el.style.color = '#34d399';
+  } else {
+    el.style.background = 'rgba(239,68,68,.1)';
+    el.style.border = '1px solid rgba(239,68,68,.3)';
+    el.style.color = '#f87171';
+  }
+  setTimeout(function(){ el.style.display='none'; }, 5000);
+}
+
+// Animación de entrada para nuevas reseñas
+var styleAnim = document.createElement('style');
+styleAnim.textContent = '@keyframes reviewIn{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}';
+document.head.appendChild(styleAnim);
+
+// Cargar reseñas guardadas al iniciar
+cargarResenasGuardadas();
+
+</script>
 </body>
 </html>
