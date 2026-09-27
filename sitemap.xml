@@ -6,19 +6,29 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://palabraplay.netlify.app/flecha.html</loc>
+    <loc>https://palabraplay.netlify.app/snakeplay/index.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://palabraplay.netlify.app/rompecabezas.html</loc>
+    <loc>https://palabraplay.netlify.app/lexo/index.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://palabraplay.netlify.app/laberinto-flechas.html</loc>
+    <loc>https://palabraplay.netlify.app/hilario/index.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://palabraplay.netlify.app/octopus-game/index.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://palabraplay.netlify.app/words-girasol/index.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://palabraplay.netlify.app/about</loc>
@@ -49,20 +59,5 @@
     <loc>https://palabraplay.netlify.app/que-es-wordle.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://palabraplay.netlify.app/como-jugar-ahorcado.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://palabraplay.netlify.app/blog-beneficios-juegos-mentales.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://palabraplay.netlify.app/snakeplay/index.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>
