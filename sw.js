@@ -1,19 +1,26 @@
-// sw.js — Service Worker de PalabraPlay
-// Objetivo: habilitar "Instalar app" / "Agregar a pantalla de inicio" en
-// Android/Chrome (que exige un Service Worker activo) y dar un mínimo
-// de caché para que el sitio abra más rápido en visitas repetidas.
+// sw.js — Service Worker de PalabraPlay (v2)
+// - Hace la página instalable como app (PWA)
+// - Cachea archivos propios para abrir rápido y funcionar sin internet
+// - NO toca anuncios, chat de soporte ni otros dominios
 
-const CACHE_NAME = 'palabraplay-cache-v1';
+const CACHE_NAME = 'palabraplay-cache-v2';
 
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/styles.css',
+  '/script.js',
+  '/pwa.js',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/offline.html'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => {})
+    caches.open(CACHE_NAME)
+      .then((cache) => Promise.all(CORE_ASSETS.map((u) => cache.add(u).catch(() => {}))))
   );
   self.skipWaiting();
 });
@@ -21,30 +28,43 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(
-        names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
-      )
+      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
     )
   );
   self.clients.claim();
 });
 
-// Estrategia: red primero, y si falla (sin conexión) se sirve de caché.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
 
+  const url = new URL(req.url);
+  // Solo manejamos archivos de nuestro propio dominio (deja pasar anuncios, chat, fuentes, etc.)
+  if (url.origin !== self.location.origin) return;
+
+  // Páginas HTML: red primero (siempre lo más nuevo); sin internet -> caché -> página offline
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(req, copy)); }
+          return res;
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('/offline.html')))
+    );
+    return;
+  }
+
+  // Resto (css, js, imágenes): caché primero y se actualiza en segundo plano
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          // Solo cachear respuestas válidas del mismo origen
-          if (response.ok && event.request.url.startsWith(self.location.origin)) {
-            cache.put(event.request, clone);
-          }
-        });
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    caches.match(req).then((cached) => {
+      const network = fetch(req)
+        .then((res) => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(req, copy)); }
+          return res;
+        })
+        .catch(() => cached);
+      return cached || network;
+    })
   );
 });
