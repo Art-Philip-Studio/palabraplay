@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="520" viewBox="0 0 220 520">
+  <defs>
+    <clipPath id="vano"><rect x="22" y="22" width="176" height="498"/></clipPath>
+    <path id="hoja" d="M22,22 L72,50 L72,496 L22,520 Z"/>
+    <clipPath id="choja"><use href="#hoja"/></clipPath>
+  </defs>
+
+  <!-- Marco de madera (base plana en y=520) -->
+  <path d="M0,520 L0,28 Q0,0 28,0 L192,0 Q220,0 220,28 L220,520 Z" fill="#8A5A3C"/>
+  <rect x="0" y="22" width="9" height="498" fill="#F2E6C9" fill-opacity="0.12"/>
+  <rect x="211" y="22" width="9" height="498" fill="#2B2B2B" fill-opacity="0.15"/>
+  <rect x="22" y="0" width="176" height="22" fill="#2B2B2B" fill-opacity="0.1"/>
+
+  <!-- Vano: luz de día y campo -->
+  <g clip-path="url(#vano)">
+    <rect x="22" y="22" width="176" height="500" fill="#F2E6C9"/>
+    <ellipse cx="150" cy="130" rx="70" ry="80" fill="#C9B458" fill-opacity="0.18"/>
+    <ellipse cx="150" cy="130" rx="38" ry="44" fill="#F2E6C9" fill-opacity="0.6"/>
+    <path d="M22,366 Q70,336 120,350 Q165,362 198,340 L198,400 L22,400 Z" fill="#5E5A7A" fill-opacity="0.45"/>
+    <path d="M22,376 Q80,352 130,366 Q170,376 198,358 L198,400 L22,400 Z" fill="#2F4B3A" fill-opacity="0.6"/>
+    <rect x="22" y="380" width="176" height="140" fill="#6B8F4E"/>
+    <rect x="22" y="404" width="176" height="14" fill="#F2E6C9" fill-opacity="0.14"/>
+    <rect x="22" y="440" width="176" height="18" fill="#2B2B2B" fill-opacity="0.07"/>
+    <rect x="22" y="478" width="176" height="24" fill="#F2E6C9" fill-opacity="0.12"/>
+    <!-- Sombra de profundidad en el vano -->
+    <rect x="22" y="22" width="176" height="16" fill="#2B2B2B" fill-opacity="0.1"/>
+    <rect x="186" y="22" width="12" height="498" fill="#2B2B2B" fill-opacity="0.07"/>
+  </g>
+
+  <!-- Hoja de la puerta abierta, vista en perspectiva desde adentro -->
+  <use href="#hoja" fill="#8A5A3C"/>
+  <use href="#hoja" fill="#2B2B2B" fill-opacity="0.1"/>
+  <g clip-path="url(#choja)">
+    <rect x="38" y="0" width="3" height="520" fill="#2B2B2B" fill-opacity="0.2"/>
+    <rect x="54" y="0" width="3" height="520" fill="#2B2B2B" fill-opacity="0.2"/>
+    <rect x="22" y="0" width="6" height="520" fill="#F2E6C9" fill-opacity="0.12"/>
+    <rect x="64" y="0" width="10" height="520" fill="#2B2B2B" fill-opacity="0.14"/>
+    <path d="M22,300 L72,150 L72,174 L22,324 Z" fill="#2B2B2B" fill-opacity="0.12"/>
+  </g>
+  <rect x="16" y="86" width="26" height="16" rx="6" fill="#2B2B2B" fill-opacity="0.6"/>
+  <rect x="16" y="404" width="26" height="16" rx="6" fill="#2B2B2B" fill-opacity="0.6"/>
+  <circle cx="62" cy="282" r="5" fill="#C9B458"/>
+
+  <!-- Umbral de madera -->
+  <rect x="0" y="504" width="220" height="16" fill="#8A5A3C"/>
+  <rect x="0" y="504" width="220" height="16" fill="#2B2B2B" fill-opacity="0.18"/>
+  <rect x="0" y="504" width="220" height="3" fill="#F2E6C9" fill-opacity="0.14"/>
+</svg>

@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Mi Chagra</title>
+<style>
+  :root {
+    --verde-oscuro:#2F4B3A; --verde-pasto:#6B8F4E; --maiz:#C9B458; --tierra:#8A5A3C;
+    --naranja:#D9822B; --rojo:#B23A48; --azul:#3E6FA3; --crema:#F2E6C9;
+    --morado:#5E5A7A; --negro:#2B2B2B;
+    --ground: 1400px;            /* LINEA DEL SUELO */
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; background:var(--negro); overflow:hidden; font-family:sans-serif; }
+
+  /* La escena mide siempre 1080x1920 y se escala para caber en la pantalla */
+  #viewport { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  #ventana { position:relative; overflow:hidden; flex:none; }
+  #stage { position:absolute; left:0; top:0; width:1080px; height:1920px; transform-origin:0 0; overflow:hidden; background:var(--azul); flex:none; }
+
+  .capa { position:absolute; left:0; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  .capa img { display:block; }
+
+  /* Todo lo que se para en el suelo: su base queda en la línea --ground */
+  .en-suelo { position:absolute; bottom:calc(var(--alto, 1920px) - var(--ground)); }
+  .en-suelo img { display:block; -webkit-user-drag:none; user-select:none; }
+
+  #cielo        { top:0; }
+  #lejanas      { top:calc(var(--ground) - 600px); }
+  #cercanas     { top:calc(var(--ground) - 500px + 40px); }
+  #suelo        { top:var(--ground); }
+  #relleno      { top:1800px; width:1080px; height:3200px; background:var(--tierra); }  /* continúa la tierra bajo suelo.svg; va detrás y se solapa para que no se vea costura */
+
+  #casita  { left:20px; }
+  #abuela  { left:320px; transition:transform .15s; }
+  #imgAbuela { transform-origin:50% 100%; animation:respira 3.2s ease-in-out infinite; }
+  @keyframes respira { 50% { transform:scaleY(1.014); } }
+  #abuela.salto { transform:translateY(-24px); }
+  .planta  { cursor:pointer; z-index:2; transform:scale(1.4); transform-origin:50% 100%; }
+  .planta::before { content:""; position:absolute; inset:-14px -16px 0 -16px; }          /* área de toque más grande */
+  .planta.atras { z-index:1; transform:scale(1.19); bottom:calc(var(--alto, 1920px) - var(--ground) + 60px); }
+  .planta.bloqueada img { filter:grayscale(1) brightness(.8); opacity:.28; }
+  .planta:active img { transform:scale(.96); }
+  .planta.lista img { animation:brillo 1s infinite alternate; }
+  @keyframes brillo { to { filter:drop-shadow(0 0 22px #F2E6C9) brightness(1.08); } }
+  .barra { position:absolute; top:calc(var(--ground) + 22px); width:110px; height:14px; background:rgba(43,43,43,.45); border-radius:8px; overflow:hidden; }
+  .barra i { display:block; height:100%; width:0; background:var(--maiz); }
+  button:disabled { opacity:.55; }
+
+  /* Cambio de luz */
+  #tinte { position:absolute; inset:0; background:var(--naranja); opacity:0; mix-blend-mode:multiply; pointer-events:none; transition:opacity .8s; }
+  #stage.atardecer #tinte { opacity:.25; }
+
+  /* Interfaz */
+  #hud { position:absolute; top:calc(40px + var(--crop, 0px)); left:40px; right:40px; display:flex; justify-content:space-between; align-items:center; pointer-events:none; }
+  #msg { white-space:normal; max-width:620px; min-width:0; font-size:30px; line-height:1.2; padding:10px 24px; border-radius:34px; text-align:center; opacity:0; transition:opacity .5s; }
+  #msg.ver { opacity:1; }
+  #hud { gap:20px; }
+  .pill { white-space:nowrap; background:rgba(43,43,43,.6); color:var(--crema); font-size:34px; padding:10px 24px; border-radius:60px; }
+  /* Panel de mejoras: vive abajo, en la tierra, fuera del campo de juego */
+  #panel { position:absolute; left:0; right:0; bottom:0; z-index:8; padding:28px 40px 56px; display:flex; flex-direction:column; gap:12px;
+           background:rgba(43,43,43,.92); border-radius:56px 56px 0 0; }
+  #panelTop { display:flex; justify-content:space-between; align-items:center; color:var(--crema); font-size:40px; font-weight:bold; }
+  #btnLuz { font-size:34px; padding:10px 26px; border-radius:40px; }
+  .mejora { display:flex; align-items:center; gap:24px; width:100%; height:116px; padding:0 28px; border-radius:32px; text-align:left; }
+  .mejora .ico { font-size:60px; }
+  .mejora .txt { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .mejora .t { font-size:40px; }
+  .mejora .d { font-size:28px; font-weight:normal; opacity:.75; }
+  .mejora .precio { font-size:40px; padding:12px 26px; border-radius:40px; background:var(--verde-oscuro); color:var(--crema); white-space:nowrap; }
+  .cuy { bottom:calc(var(--alto, 1920px) - var(--ground) - 16px); z-index:5; --e:1.6; --b:1; --fy:1; transform:scale(calc(var(--e) * var(--b)), calc(var(--e) * var(--b) * var(--fy))); transform-origin:50% 100%; }
+  .cuy img { display:block; }
+  .mas { position:absolute; font-size:56px; font-weight:bold; color:var(--crema); text-shadow:0 3px 0 var(--negro); animation:sube .9s forwards; pointer-events:none; z-index:9; }
+  @keyframes sube { to { transform:translateY(-110px); opacity:0; } }
+  button { font-family:inherit; font-size:30px; padding:20px 26px; border:0; border-radius:20px; background:var(--crema); color:var(--negro); font-weight:bold; }
+  /* Pantalla horizontal: el panel sale de la escena y se pone al lado, con tamaños normales */
+  body.horizontal #panel { position:relative; left:auto; right:auto; bottom:auto; width:380px; margin-left:24px; flex:none; border-radius:28px; padding:18px; gap:10px; }
+  body.horizontal #panelTop { font-size:20px; flex-wrap:wrap; gap:8px; }
+  body.horizontal .botonesTop { flex-wrap:wrap; align-items:center; }
+  body.horizontal #btnLuz { font-size:18px; padding:6px 14px; }
+  body.horizontal .mejora { height:72px; padding:0 14px; gap:12px; border-radius:18px; }
+  body.horizontal .mejora .ico { font-size:32px; }
+  body.horizontal .mejora .t { font-size:18px; }
+  body.horizontal .mejora .d { font-size:13px; }
+  body.horizontal .mejora .precio { font-size:18px; padding:6px 14px; }
+  .botonesTop { display:flex; gap:10px; }
+  .mini { font-size:34px; padding:10px 22px; border-radius:40px; }
+  .fila { display:flex; align-items:center; gap:12px; color:var(--crema); font-size:32px; flex-wrap:wrap; }
+  .fila .info { flex:1; min-width:100%; font-size:28px; opacity:.8; }
+  .chip { font-size:44px; padding:6px 20px; border-radius:30px; }
+  .chip.sel { background:var(--maiz); }
+  .chip:disabled { opacity:.3; }
+  #btnSiembra { display:none; background:var(--maiz); }
+  #cap { position:absolute; top:calc(160px + var(--crop, 0px)); left:40px; right:40px; font-size:34px; color:var(--crema); text-shadow:0 2px 0 var(--negro); pointer-events:none; }
+  #cap span { display:inline-block; background:rgba(43,43,43,.45); padding:3px 16px; border-radius:26px; text-shadow:none; font-size:24px; pointer-events:auto; cursor:pointer; }
+  #dialogo { position:absolute; left:230px; top:655px; width:640px; padding:18px 28px; background:var(--crema); color:var(--negro); font-size:34px; font-weight:bold; border-radius:36px; z-index:7; pointer-events:none; opacity:0; transition:opacity .4s; }
+  #dialogo.ver { opacity:1; }
+  #dialogo::after { content:""; position:absolute; left:var(--cola, 120px); bottom:-26px; border:26px solid transparent; border-top-color:var(--crema); border-bottom:0; }
+  #yapa { position:absolute; width:150px; height:150px; font-size:120px; line-height:150px; text-align:center; z-index:6; cursor:pointer; animation:flota 1s ease-in-out infinite alternate; filter:drop-shadow(0 0 24px #F2E6C9); }
+  @keyframes flota { to { transform:translateY(-26px) scale(1.12); } }
+  body.horizontal #panel { max-height:96vh; overflow-y:auto; }
+  body.horizontal .mini { font-size:16px; padding:5px 12px; }
+  body.horizontal .fila { font-size:15px; }
+  body.horizontal .fila .info { font-size:13px; }
+  body.horizontal .chip { font-size:24px; padding:4px 12px; }
+  button:active { background:var(--maiz); }
+  /* Caminar y la casa por dentro */
+  #stage { touch-action:none; }
+  #hud, #cap { z-index:7; }
+  #imgAbuela.camina { animation:paso .38s ease-in-out infinite; }
+  @keyframes paso { 0%,100% { transform:translateY(0) rotate(-2deg); } 50% { transform:translateY(-12px) rotate(2deg); } }
+  #fade { position:absolute; inset:0; background:var(--negro); opacity:0; pointer-events:none; transition:opacity .35s; z-index:6; }
+  #interior { position:absolute; left:0; top:0; width:1080px; height:100%; z-index:3; display:none; overflow:hidden; background:#8D5F41; }
+  #intFondo { position:absolute; left:0; top:0; display:block; }
+  #puerta { left:0; }
+  .saco { z-index:2; }
+  .saco.atras { z-index:1; bottom:calc(var(--alto, 1920px) - var(--ground) + 85px); transform:scale(.82); transform-origin:50% 100%; }
+  #stage.dentro #interior { display:block; }
+  #stage.dentro #abuela { z-index:4; }
+  #stage.dentro .planta, #stage.dentro .barra, #stage.dentro .cuy, #stage.dentro #yapa, #stage.dentro #casita, #stage.dentro #burro { display:none; }
+  /* El burrito espera junto a la casita; brilla cuando hay sacos llenos para llevar al mercado */
+  #abuela { pointer-events:none; }   /* para poder tocar el burrito aunque ella esté delante */
+  #burro { left:280px; cursor:pointer; }
+  #burro img { width:302px; display:block; }
+  #burro::before { content:""; position:absolute; inset:-20px; }
+  #burro.listo img { animation:brillo 1s infinite alternate; }
+  /* El viaje al mercado: camino y plaza */
+  #viaje { position:absolute; left:0; top:0; width:1080px; height:100%; z-index:3; display:none; overflow:hidden; background:#84573B; }
+  #viajeFondo { position:absolute; left:0; top:0; display:block; }
+  #burroViaje { left:-450px; }
+  #burroViaje img { display:block; }
+  #imgBurroViaje.camina { animation:paso .5s ease-in-out infinite; }
+  #stage.viaje #viaje { display:block; }
+  #stage.viaje .planta, #stage.viaje .barra, #stage.viaje .cuy, #stage.viaje #yapa, #stage.viaje #casita, #stage.viaje #abuela, #stage.viaje #burro { display:none; }
+  /* La granja de cuyes: se abre con el botón 🐹 o tocando un cuy */
+  #granja { position:absolute; left:0; top:0; width:1080px; height:100%; z-index:3; display:none; overflow:hidden; background:#8D5F41; }
+  #granjaFondo { position:absolute; left:0; top:0; display:block; }
+  #stage.granja #granja { display:block; }
+  #stage.granja #dialogo { display:none; }
+  #stage.granja .planta, #stage.granja .barra, #stage.granja .cuy, #stage.granja #yapa, #stage.granja #casita, #stage.granja #abuela, #stage.granja #burro { display:none; }
+  #granjaBotones { position:absolute; left:40px; right:40px; top:calc(var(--crop, 0px) + 250px); display:flex; gap:16px; z-index:2; }
+  #granjaBotones button { font-size:38px; padding:18px 28px; border-radius:40px; }
+  #granjaBotones #btnTodos { flex:1; }
+  #granjaVacia { position:absolute; left:80px; right:80px; top:1000px; text-align:center; font-size:44px; color:var(--crema); background:rgba(43,43,43,.7); padding:24px; border-radius:30px; display:none; }
+  .cuyG { cursor:pointer; z-index:2; --e:2; --b:1; --fy:1; transform:scale(calc(var(--e) * var(--b)), calc(var(--e) * var(--b) * var(--fy))); transform-origin:50% 100%; width:120px; }
+  .cuyG.atras { z-index:1; }
+  /* con más de 4 cuyes la granja usa dos filas: los de adelante se achican un poco y los de atrás quedan más arriba */
+  #granja.dosFilas .cuyG { --e:1.7; }
+  #granja.dosFilas .cuyG.atras { --e:1.35; bottom:calc(var(--alto, 1920px) - var(--ground) + 104px); }
+  .cuyG .hb { position:absolute; left:10px; width:100px; top:-26px; height:11px; background:rgba(43,43,43,.55); border-radius:6px; overflow:hidden; }
+  .cuyG .hb i { display:block; height:100%; background:var(--verde-pasto); }
+  .cuyG.flaco .hb i { background:var(--rojo); }
+  .cuyG.muere .hb i { background:var(--rojo); animation:parpadea .5s infinite alternate; }
+  .cuyG img { animation:respira 2.4s ease-in-out infinite; transform-origin:50% 100%; }
+  .cuyG.come img { animation:come .25s 4; }
+  @keyframes come { 50% { transform:translateY(-10px); } }
+  @keyframes parpadea { to { opacity:.25; } }
+  .cuy.flaco img, .cuyG.flaco img { filter:grayscale(.55) brightness(.88); }
+  .cuy.flaco, .cuyG.flaco { --fy:.875; }
+  .cuy.bebe, .cuyG.bebe { --b:.6; }
+  .cuy.flaco::after, .cuyG.flaco::after { content:"🥺"; position:absolute; top:-20px; left:46px; font-size:30px; }
+  .cuyG.flaco::after { top:-60px; }
+
+  /* Corazón de pareja y pregunta (dentro de la granja) */
+  #corazon { position:absolute; width:160px; height:160px; font-size:130px; line-height:160px; text-align:center; z-index:4; cursor:pointer; display:none; animation:late .8s ease-in-out infinite alternate; filter:drop-shadow(0 0 22px #F2E6C9); }
+  #corazon::before { content:""; position:absolute; inset:-30px; }
+  @keyframes late { to { transform:scale(1.18); } }
+  #parejaModal { position:absolute; inset:0; z-index:6; display:none; background:rgba(43,43,43,.55); }
+  #parejaModal.ver { display:block; }
+  #parejaModal .caja { position:absolute; left:90px; right:90px; top:calc(var(--crop, 0px) + 520px); background:var(--crema); color:var(--negro); border-radius:48px; padding:40px; text-align:center; font-size:42px; font-weight:bold; }
+  #parejaModal .fila2 { display:flex; gap:20px; margin-top:30px; }
+  #parejaModal button { flex:1; font-size:38px; padding:22px; background:var(--verde-pasto); color:var(--crema); border-radius:36px; }
+  #parejaModal #btnParejaNo { background:var(--tierra); }
+  /* El territorio: mapa de lotes para comprar con monedas */
+  #mapa { position:absolute; left:0; top:0; width:1080px; height:100%; z-index:3; display:none; overflow:hidden; background:linear-gradient(#B08F5F, #8D5F41); }
+  #stage.mapa #mapa { display:block; }
+  #stage.mapa .planta, #stage.mapa .barra, #stage.mapa .cuy, #stage.mapa #yapa, #stage.mapa #casita, #stage.mapa #abuela, #stage.mapa #burro, #stage.mapa #dialogo { display:none; }
+  #mapaBotones { position:absolute; left:40px; right:40px; top:calc(var(--crop, 0px) + 205px); display:flex; gap:16px; align-items:center; z-index:2; }
+  #mapaBotones button { font-size:38px; padding:18px 28px; border-radius:40px; }
+  #mapaBotones .pill { margin-left:auto; font-size:34px; }
+  #mapaVista { position:absolute; left:40px; width:1000px; top:calc(var(--crop, 0px) + 288px); height:744px; overflow:hidden; z-index:2; cursor:grab; }
+  #mapaGrid { position:relative; width:1494px; height:744px; display:grid; grid-template-columns:repeat(10, 144px); gap:6px; background-size:100% 100%; }
+  #mapaGrid.conFondo .lote { background:transparent !important; background-image:none !important; }
+  .lote.lock { filter:saturate(.35) brightness(.7); }
+  .lote.lock .cand { font-size:50px; line-height:1; } .lote.lock .cand img { width:50px; height:50px; }
+  .lote.lock .lp { opacity:.75; }
+  #mapaBotones button { padding:18px 22px; }
+  .lote { position:relative; width:144px; height:144px; border-radius:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--crema); font-weight:bold; cursor:pointer; border:6px solid transparent; filter:saturate(.45) brightness(.78); }
+  .lote .le { font-size:56px; line-height:1; } .lote .lp { font-size:26px; background:rgba(43,43,43,.55); padding:2px 12px; border-radius:20px; white-space:nowrap; }
+  .lote.tV { background:var(--verde-pasto); } .lote.tL { background:#B3A24E; } .lote.tA { background:var(--morado); } .lote.tR { background:var(--azul); } .lote.tC { background:var(--verde-oscuro); }
+  .lote.own, .lote.tC { filter:none; background-image:repeating-linear-gradient(90deg, rgba(43,43,43,.16) 0 6px, transparent 6px 22px); }
+  .lote.vec { filter:saturate(.9) brightness(.95); border-color:var(--crema); animation:pulsa 1.2s ease-in-out infinite alternate; }
+  .lote.sel { border-color:var(--maiz); box-shadow:0 0 0 6px rgba(201,180,88,.45); animation:none; filter:none; }
+  @keyframes pulsa { to { border-color:rgba(242,230,201,.3); } }
+  #mapaInfo { position:absolute; left:40px; right:40px; top:calc(var(--crop, 0px) + 1044px); z-index:2; background:rgba(43,43,43,.86); color:var(--crema); border-radius:36px; padding:16px 26px; display:flex; flex-direction:column; gap:10px; font-size:30px; }
+  #mapaInfo .fila3 { display:flex; align-items:center; gap:20px; }
+  #loteInfo { flex:1; line-height:1.25; } #loteInfo b { font-size:36px; display:block; }
+  #btnComprar { font-size:34px; padding:20px 26px; border-radius:34px; background:var(--maiz); white-space:nowrap; }
+  #precios { font-size:27px; opacity:.9; border-top:2px solid rgba(242,230,201,.25); padding-top:10px; line-height:1.35; }
+  /* El recibo del mercado */
+  #recibo { position:absolute; left:70px; right:70px; top:calc(var(--crop, 0px) + 330px); z-index:5; background:var(--crema); color:var(--negro); border-radius:44px; padding:30px 34px; display:none; font-size:36px; }
+  #recibo h2 { font-size:48px; text-align:center; margin-bottom:14px; }
+  #recibo .rf { display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:2px dashed rgba(43,43,43,.25); }
+  #recibo .rf span:nth-child(2) { opacity:.7; font-size:30px; }
+  #recibo .rt { display:flex; justify-content:space-between; font-size:54px; font-weight:bold; margin-top:16px; }
+  #recibo button { width:100%; margin-top:22px; font-size:38px; background:var(--verde-pasto); color:var(--crema); border-radius:36px; }
+  #stage.dentro #mapa { display:none; }
+  /* El camino: la abuelita camina a la derecha */
+  #stage { touch-action:pan-y; }
+  /* Panel plegable */
+  #panelAgarre { display:flex; justify-content:center; margin:-14px 0 -4px; }
+  #panelToggle { background:none; border:0; color:var(--crema); display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 80px; cursor:pointer; touch-action:none; }
+  #panelToggle i { display:block; width:120px; height:10px; border-radius:6px; background:rgba(242,230,201,.55); }
+  #panelFlecha { font-size:34px; line-height:1; transition:transform .3s; }
+  #panel.plegado #panelFlecha { transform:rotate(180deg); }
+  #panelCuerpo { display:flex; flex-direction:column; gap:12px; overflow:hidden; max-height:1400px; opacity:1; transition:max-height .35s ease, opacity .25s ease; }
+  #panel.plegado #panelCuerpo { max-height:0; opacity:0; pointer-events:none; }
+  #panel { transition:padding .35s ease; } #panel.plegado { padding-bottom:36px; }
+  body.horizontal #panelToggle { padding:2px 60px; } body.horizontal #panelToggle i { width:70px; height:6px; } body.horizontal #panelFlecha { font-size:18px; }
+  body.horizontal #panelCuerpo { gap:10px; }
+  /* Portada, pausa y ajustes: pantalla completa, con tamaños normales */
+  .gran { display:block; width:min(78vw,340px); margin:12px auto 0; font:bold 22px system-ui,sans-serif; padding:15px 24px; border:0; border-radius:40px; background:#C9B458; color:#2B2B2B; box-shadow:0 5px 0 #8f7d2c; cursor:pointer; }
+  .gran:active { transform:translateY(3px); box-shadow:0 2px 0 #8f7d2c; }
+  .gran.sec { background:#F2E6C9; box-shadow:0 5px 0 #b9ad8c; font-size:18px; padding:12px 24px; }
+  #portada { position:fixed; inset:0; z-index:50; overflow:hidden; background:#2B2B2B; }
+  #portada .pCielo { position:absolute; inset:0; background:linear-gradient(#7EC8F0,#D5ECF2 58%,#EAF2D8); }
+  #portada img { position:absolute; display:block; pointer-events:none; user-select:none; }
+  #portada .pMon { bottom:24%; left:50%; width:max(100%,820px); transform:translateX(-50%); }
+  #portada .pMon2 { bottom:20%; left:50%; width:max(115%,940px); transform:translateX(-50%); }
+  #portada .pSuelo { position:absolute; left:0; right:0; bottom:0; height:22%; background:#8A5A3C; border-top:10px solid #6B8F4E; }
+  #portada .pCasa { bottom:16%; left:calc(50% - min(48vw,300px)); height:min(24vh,230px); }
+  #portada .pAbuela { bottom:13%; left:50%; transform:translateX(-50%); height:min(40vh,400px); }
+  #portada .pPlanta { height:min(30vh,300px); } #portada .p1 { bottom:15%; left:calc(50% + min(14vw,110px)); } #portada .p2 { bottom:15%; left:calc(50% + min(26vw,200px)); }
+  #portada .pCentro { position:absolute; top:7%; left:0; right:0; text-align:center; }
+  #portada h1 { margin:0; font:900 clamp(46px,13vw,96px) system-ui,sans-serif; color:#F2E6C9; text-shadow:0 5px 0 #2F4B3A, 0 0 28px rgba(0,0,0,.35); letter-spacing:1px; }
+  #portada p { margin:4px 0 16px; font:700 clamp(17px,4.4vw,26px) system-ui,sans-serif; color:#F2E6C9; text-shadow:0 2px 0 #2F4B3A, 0 0 14px rgba(0,0,0,.45); }
+  .velo { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; background:rgba(43,43,43,.62); }
+  .velo.ver { display:flex; } #ajustes { z-index:60; }
+  .velo .caja { width:min(88vw,400px); max-height:92vh; overflow-y:auto; background:#2F4B3A; color:#F2E6C9; border-radius:32px; padding:26px 24px 30px; text-align:center; box-shadow:0 12px 40px rgba(0,0,0,.4); }
+  .velo h2 { margin:0 0 14px; font:900 30px system-ui,sans-serif; }
+  .ajFila { display:flex; align-items:center; justify-content:space-between; gap:16px; background:rgba(242,230,201,.12); border-radius:22px; padding:10px 16px; margin:10px 0; font:bold 20px system-ui,sans-serif; text-align:left; }
+  .ajFila .mini { font-size:24px; padding:8px 20px; min-width:84px; }
+  /* Pantallas bajas (celular acostado): portada más compacta, botones lado a lado */
+  @media (max-height:520px) {
+    #portada .pCentro { top:3%; }
+    #portada h1 { font-size:min(12vw,17vh); } #portada p { font-size:min(4vw,4.6vh); margin:0 0 6px; }
+    #portada .gran { display:inline-block; width:auto; min-width:min(34vw,240px); margin:4px 8px 0; padding:9px 18px; font-size:min(4.6vw,4.8vh); }
+    #portada .pAbuela { height:36vh; bottom:10%; } #portada .pPlanta { height:26vh; } #portada .pCasa { height:22vh; bottom:14%; }
+    #portada .pSuelo { height:18%; } #portada .pMon { bottom:20%; } #portada .pMon2 { bottom:16%; }
+    .velo .caja { padding:14px 18px 18px; } .velo h2 { font-size:22px; margin-bottom:8px; } .ajFila { padding:6px 14px; margin:6px 0; font-size:17px; } .velo .gran { font-size:16px; padding:9px 18px; margin-top:8px; }
+  }
+  #btnPausa:disabled { opacity:.35; }
+  .ipausa { display:block; width:1.05em; height:1.05em; fill:#2B2B2B; margin:0 .25em; }
+  .ajFila .mini { white-space:nowrap; } .ajFila span { flex:1; }
+  #camino { position:absolute; left:0; top:0; width:1080px; height:100%; z-index:3; display:none; overflow:hidden; background:linear-gradient(#7EC8F0, #D5ECF2 60%, #EAF2D8); user-select:none; touch-action:none; }
+  #stage.atardecer #camino { background:linear-gradient(#E58B5A, #F4C58B 55%, #F7DFB0); }
+  #stage.camino #camino { display:block; }
+  #stage.camino .planta, #stage.camino .barra, #stage.camino .cuy, #stage.camino #yapa, #stage.camino #casita, #stage.camino #abuela, #stage.camino #burro, #stage.camino #cap { display:none; }
+  .cmCapa { position:absolute; left:0; width:4320px; pointer-events:none; will-change:transform; }
+  .cmCapa img { position:absolute; top:0; display:block; }
+  #cmMonL { top:800px; height:600px; } #cmMonC { top:940px; height:500px; } #cmSuelo { top:1400px; height:620px; }
+  #cmRelleno { position:absolute; left:0; right:0; top:2018px; bottom:0; background:#6f4630; }
+  .cmItem { position:absolute; left:0; pointer-events:none; will-change:transform; }
+  #cmAbuela { position:absolute; left:300px; top:910px; width:280px; height:560px; pointer-events:none; }
+  #cmAbuela img { display:block; width:280px; transform-origin:50% 100%; }
+  #cmAyuda { position:absolute; left:120px; right:120px; top:calc(160px + var(--crop, 0px)); white-space:normal; line-height:1.25; text-align:center; font-size:28px; border-radius:34px; z-index:6; pointer-events:none; transition:opacity 1s; }
+  #trueque { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(43,43,43,.55); z-index:9; }
+  #trueque.ver { display:flex; }
+  #trueque .caja { width:900px; background:var(--crema); color:var(--negro); border-radius:40px; padding:36px 40px; font-size:34px; }
+  #trueque h3 { margin:0 0 6px; font-size:46px; } #trueque p { margin:0 0 18px; opacity:.8; font-size:30px; }
+  .trOferta { display:flex; align-items:center; gap:16px; background:#fff8; border-radius:24px; padding:16px 20px; margin:12px 0; font-size:36px; }
+  .trOferta .tx { flex:1; } .trOferta small { display:block; font-size:26px; opacity:.7; }
+  .trOferta button, #trCerrar { font-size:34px; padding:14px 28px; border-radius:30px; border:0; background:var(--maiz); color:var(--negro); font-weight:bold; }
+  .trOferta button:disabled { opacity:.35; }
+  #trCerrar { background:var(--verde-oscuro); color:var(--crema); width:100%; margin-top:10px; }
+</style>
+</head>
+<body>
+<div id="viewport">
+ <div id="ventana">
+  <div id="stage">
+    <!-- 1. Fondo: cielo, montañas, suelo -->
+    <div class="capa" id="cielo"><img id="imgCielo" src="assets/ambiente/cielo_dia.svg" alt=""></div>
+    <div class="capa" id="lejanas"><img src="assets/ambiente/montanas_lejanas.svg" alt=""></div>
+    <div class="capa" id="cercanas"><img src="assets/ambiente/montanas_cercanas.svg" alt=""></div>
+    <div class="capa" id="relleno"></div>
+    <div class="capa" id="suelo"><img src="assets/ambiente/suelo.svg" alt=""></div>
+
+    <!-- 2. Elemento propio -->
+    <div class="en-suelo" id="casita"><img src="assets/ambiente/casita.svg" alt=""></div>
+
+    <div class="en-suelo" id="burro"><img id="imgBurro" src="assets/viaje/burrito_0.svg" alt=""></div>
+
+    <!-- 3. Personaje -->
+    <div class="en-suelo" id="abuela"><img id="imgAbuela" src="assets/personaje/abuela_parada.svg" alt=""></div>
+
+    <!-- 4. Plantas (se crean con JS) -->
+    <div id="plantas"></div>
+
+    <!-- 5. Dentro de la casa (se muestra al entrar por la puerta) -->
+    <div id="interior">
+      <img id="intFondo" src="assets/interior/interior_fondo.svg" alt="">
+      <div class="en-suelo" id="puerta"><img src="assets/interior/puerta.svg" alt=""></div>
+      <div id="sacos"></div>
+    </div>
+
+    <!-- 5b. La granja de cuyes -->
+    <div id="granja">
+      <img id="granjaFondo" src="assets/granja/granja_fondo.svg" alt="">
+      <div id="granjaBotones"><button id="btnVolver"></button><button id="btnTodos"></button></div>
+      <div id="granjaVacia"></div>
+      <div id="corazon">❤️</div>
+      <div id="parejaModal"><div class="caja"><p id="parejaTxt"></p><div class="fila2"><button id="btnParejaSi"></button><button id="btnParejaNo"></button></div></div></div>
+    </div>
+
+    <!-- 5c. El territorio -->
+    <div id="mapa">
+      <div id="mapaBotones"><button id="btnVolverM"></button><button id="btnMapaIzq">◀</button><button id="btnMapaDer">▶</button><span class="pill" id="mapaCuenta"></span></div>
+      <div id="mapaVista"><div id="mapaGrid"></div></div>
+      <div id="mapaInfo"><div class="fila3"><div id="loteInfo"></div><button id="btnComprar"></button></div><div id="precios"></div></div>
+    </div>
+
+    <!-- 5d. El camino: la abuelita camina a la derecha y conoce a la vecina -->
+    <div id="camino">
+      <div class="cmCapa" id="cmMonL"></div><div class="cmCapa" id="cmMonC"></div><div class="cmCapa" id="cmSuelo"></div><div id="cmRelleno"></div>
+      <div id="cmMundo"></div>
+      <div id="cmAbuela"><img id="cmImgAbuela" src="assets/personaje/abuela_parada.svg" alt=""></div>
+      <div class="pill" id="cmAyuda"></div>
+      <div id="trueque"><div class="caja"><h3 id="trTitulo"></h3><p id="trInfo"></p><div id="trOfertas"></div><button id="trCerrar"></button></div></div>
+    </div>
+
+    <!-- 6. El viaje al mercado -->
+    <div id="viaje">
+      <img id="viajeFondo" src="assets/viaje/camino_fondo.svg" alt="">
+      <div class="en-suelo" id="burroViaje"><img id="imgBurroViaje" src="assets/viaje/burrito_1.svg" alt=""></div>
+      <div id="recibo"></div>
+    </div>
+
+    <div id="tinte"></div>
+    <div id="fade"></div>
+    <div id="dialogo"></div>
+    <div id="cap"><span id="capTxt"></span></div>
+
+    <div id="hud">
+      <div class="pill">🌽 <span id="puntos">0</span><span id="monTxt" style="display:none"> · 💰 <span id="monedas">0</span></span></div>
+      <div class="pill" id="msg">Toca las plantas</div>
+    </div>
+    <div id="panel">
+      <div id="panelAgarre"><button id="panelToggle" aria-label="Plegar o desplegar el panel"><i></i><b id="panelFlecha">⌄</b></button></div>
+      <div id="panelTop"><span id="tMejoras"></span><span class="botonesTop"><button class="mini" id="btnGranja" aria-label="Granja">🐹</button><button class="mini" id="btnMapa" aria-label="Territorio">🗺️</button><button class="mini" id="btnPausa" aria-label="Pausa"><svg class="ipausa" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg></button><button class="mini" id="btnAjustes" aria-label="Ajustes">⚙️</button></span></div>
+      <div id="panelCuerpo">
+      <div class="fila" id="cultivos"></div>
+      <button class="mejora" id="btnParcela"><span class="ico">🌾</span><span class="txt"><b class="t"></b><small class="d"></small></span><span class="precio"></span></button>
+      <button class="mejora" id="btnCuy"><span class="ico">🐹</span><span class="txt"><b class="t"></b><small class="d"></small></span><span class="precio"></span></button>
+      <button class="mejora" id="btnSiembra"><span class="ico">🌱</span><span class="txt"><b class="t"></b><small class="d"></small></span><span class="precio"></span></button>
+      <button class="mejora" id="btnAbono"><span class="ico">🌱</span><span class="txt"><b class="t"></b><small class="d"></small></span><span class="precio"></span></button>
+      </div>
+    </div>
+  </div>
+ </div>
+</div>
+
+<!-- Portada de bienvenida -->
+<div id="portada">
+  <div class="pCielo"></div>
+  <img class="pMon" src="assets/ambiente/montanas_lejanas.svg" alt=""><img class="pMon2" src="assets/ambiente/montanas_cercanas.svg" alt="">
+  <div class="pSuelo"></div>
+  <img class="pCasa" src="assets/ambiente/casita.svg" alt=""><img class="pAbuela" src="assets/personaje/abuela_contenta.svg" alt="">
+  <img class="pPlanta p1" src="assets/plantas/planta_4_choclo.svg" alt=""><img class="pPlanta p2" src="assets/plantas/planta_3_planta.svg" alt="">
+  <div class="pCentro"><h1>Chagrita</h1><p id="pSub"></p><button class="gran" id="pJugar"></button><button class="gran sec" id="pAjustes"></button></div>
+</div>
+<!-- Pausa -->
+<div class="velo" id="pausa"><div class="caja"><h2 id="paTitulo"></h2><button class="gran" id="paContinuar"></button><button class="gran sec" id="paAjustes"></button><button class="gran sec" id="paInicio"></button></div></div>
+<!-- Ajustes -->
+<div class="velo" id="ajustes"><div class="caja">
+  <h2 id="ajTitulo"></h2>
+  <div class="ajFila"><span id="ajSonido"></span><button class="mini" id="btnSonido" aria-label="Sonido">🔊</button></div>
+  <div class="ajFila"><span id="ajMusica"></span><button class="mini" id="btnMusica" aria-label="Música">🎶</button></div>
+  <div class="ajFila"><span id="ajIdioma"></span><button class="mini" id="btnIdioma" aria-label="Idioma">ES</button></div>
+  <div class="ajFila"><span id="ajLuz"></span><button class="mini" id="btnLuz" aria-label="Día / atardecer">☀️ / 🌇</button></div>
+  <button class="gran sec" id="ajCerrar"></button>
+</div></div>
+
+<script>
+let pausado = true;      // el juego arranca en pausa hasta pulsar "Jugar"
+let habiaAvance = false; // se sabe al cargar la partida guardada
+/* ===== CONFIGURACION: aquí cambias posiciones sin tocar el resto ===== */
+const CONFIG = {
+  ruta: "assets/",
+  poses: {
+    parada:     "personaje/abuela_parada.svg",
+    cosechando: "personaje/abuela_cosechando.svg",
+    contenta:   "personaje/abuela_contenta.svg",
+  },
+  etapas: [
+    "plantas/planta_1_semilla.svg",
+    "plantas/planta_2_brote.svg",
+    "plantas/planta_3_planta.svg",
+    "plantas/planta_4_choclo.svg",
+  ],
+  // 8 espacios: los 4 primeros van adelante y los 4 últimos atrás (más pequeños y más altos)
+  plantasX: [640, 750, 860, 970,  680, 790, 900, 1000],   // centro horizontal de cada planta
+  fila:     [1, 1, 1, 1,          0, 0, 0, 0],            // 1 = adelante, 0 = atrás
+  inicial: 2,                                              // parcelas abiertas al empezar
+  // Economía (se ajusta aquí): tiempos en segundos, costos en choclos
+  economia: { baseSeg: 16, inicioPuntos: 12, parcelaBase: 12, parcelaMult: 1.6, abonoBase: 6, abonoMult: 1.7, cuyBase: 40, cuyMult: 1.8 },
+  plantaAncho: 110,
+  // Hambre de los cuyes: dura = segundos jugando de lleno a vacío; aviso = bajo este nivel se ponen flacos; gracia = segundos en 0 antes de morir; racion = cuánto llena una comida; costo = choclos por comida
+  hambre: { dura: 150, aviso: 0.35, gracia: 25, racion: 0.6, costo: 5 },
+  // La granja tiene 7 lugares: 4 adelante y 3 atrás (más pequeños). Los cuyes que se compran son máximo 4; el resto nace de parejas.
+  granjaX:    [170, 410, 650, 890,  290, 530, 770],
+  granjaFila: [1,   1,   1,   1,    0,   0,   0],
+  maxComprables: 4,
+  // Parejas: hambreMin = qué tan llenos deben estar los dos adultos para que aparezca el corazón; crece = segundos de juego que tarda un bebé en ser adulto;
+  // enfria = segundos de espera después de un nacimiento; ahoraNo = espera si dices "Ahora no"
+  pareja: { hambreMin: 0.5, crece: 90, enfria: 120, ahoraNo: 45 },
+  cuyFlaco: null,   // cuando tengas el dibujo, pon aquí "ayudantes/cuy_flaco.svg"
+  cuyBebe: null,    // y aquí "ayudantes/cuy_bebe.svg" (por ahora el bebé es el mismo cuy más pequeño)
+  // Territorio: 5x5 lotes. V=valle (maíz), L=ladera (papa), A=altiplano (quinua), R=ribera (habas), .=tu chagra.
+  // Precio de un lote = base × factor del terreno × crece^(lotes ya comprados). Cada lote da un bono a la cosecha del cultivo de su terreno.
+  territorio: {
+    cols: 10, filas: 5, centro: 22,   // 10 columnas x 5 filas = 50 lotes (el mapa se desliza hacia la derecha)
+    mapa: ["AALAAARAAL", "LLVLAALVLA", "RV.VRLVLRA", "LVVLLARLVA", "ALRLAAALRA"],
+    base: 60, crece: 1.15,
+    fondo: "territorio/mapa_fondo.svg",       // dibujo del mapa (1494 x 744)
+    candado: "territorio/candado.svg",      // candado dibujado
+    factor: { V: 1, L: 1.5, A: 2.2, R: 3 },
+    bono:   { V: 0.05, L: 0.06, A: 0.08, R: 0.12 },
+    cultivo:{ V: 0, L: 1, A: 2, R: 3 },
+  },
+  // Mercado: el burrito lleva los sacos llenos y los vende en monedas 💰 (precio por cultivo en CULT.precio, ver más abajo)
+  // cadaSeg = cada cuántos segundos de juego se mueven los precios del mercado
+  mercado: { cadaSeg: 90, burros: ["viaje/burrito_0.svg", "viaje/burrito_1.svg", "viaje/burrito_2.svg"], camino: "viaje/camino_fondo.svg", plaza: "viaje/mercado_fondo.svg" },
+  // Caminar: posiciones (centro de la abuelita) y velocidad, en píxeles de la escena
+  caminar: { vel: 430, minX: 110, maxX: 960, inicio: 200, puertaFuera: 112, puertaDentro: 110, saco: 850, salida: 190 },
+  // Sacos: cada saco se llena con "capacidad" choclos; al llenarse aparece otro. "cortes" = qué parte llena usa cada dibujo.
+  sacos: {
+    capacidad: 500,
+    archivos: ["interior/saco_0.svg", "interior/saco_1.svg", "interior/saco_2.svg", "interior/saco_3.svg", "interior/saco_4.svg"],
+    cortes: [0, 0.15, 0.40, 0.70, 1],
+    // lugares en el cuarto (centro horizontal): primero los de adelante, luego los de atrás (más pequeños y más altos)
+    huecos: [ {x:850, atras:0}, {x:670, atras:0}, {x:490, atras:0}, {x:760, atras:1}, {x:580, atras:1}, {x:940, atras:1} ],
+  },
+  cielos: { dia:"ambiente/cielo_dia.svg", atardecer:"ambiente/cielo_atardecer.svg" },
+};
+
+/* ===== Escalar la escena a la pantalla ===== */
+const stage = document.getElementById("stage");
+const ALTO_MIN = 2200;   // alto mínimo de la escena: deja sitio al panel de mejoras sin tapar el campo
+const ventana = document.getElementById("ventana"), panel = document.getElementById("panel"), viewport = document.getElementById("viewport");
+function ajustar() {
+  const W = innerWidth, H = innerHeight;
+  const horizontal = W > H * 1.15;
+  if (horizontal) {
+    // Computador / celular acostado: se muestra solo la franja del campo (de y=440 a y=1740) y el panel va a la derecha
+    const TOP = 440, ALTO_VISTA = 1300, ANCHO_PANEL = 404;
+    const s = Math.min(H / ALTO_VISTA, (W - ANCHO_PANEL) / 1080);
+    stage.style.height = ALTO_MIN + "px"; stage.style.setProperty("--alto", ALTO_MIN + "px"); stage.style.setProperty("--crop", TOP + "px");
+    stage.style.transform = `translate(0px, ${-TOP * s}px) scale(${s})`;
+    ventana.style.width = (1080 * s) + "px"; ventana.style.height = (ALTO_VISTA * s) + "px";
+    document.body.classList.add("horizontal"); if (panel.parentNode !== viewport) viewport.appendChild(panel);
+  } else {
+    // Celular vertical: la escena crece hacia abajo si la pantalla es más larga que 9:16 (sin franjas oscuras)
+    const s = Math.min(W / 1080, H / ALTO_MIN);
+    const alto = Math.max(ALTO_MIN, Math.ceil(H / s) + 4);
+    stage.style.height = alto + "px"; stage.style.setProperty("--alto", alto + "px"); stage.style.setProperty("--crop", "0px");
+    stage.style.transform = `scale(${s})`;
+    ventana.style.width = (1080 * s) + "px"; ventana.style.height = (alto * s) + "px";
+    document.body.classList.remove("horizontal"); if (panel.parentNode !== stage) stage.appendChild(panel);
+  }
+}
+addEventListener("resize", ajustar); ajustar();
+
+/* ===== Personaje ===== */
+const imgAbuela = document.getElementById("imgAbuela");
+const abuela = document.getElementById("abuela");
+let timerPose;
+function pose(nombre, ms) {
+  imgAbuela.src = CONFIG.ruta + CONFIG.poses[nombre];
+  clearTimeout(timerPose);
+  if (ms) timerPose = setTimeout(() => pose("parada"), ms);
+}
+
+/* ===== Textos (español / inglés) ===== */
+const TXT = {
+  es: { mejoras:"Mejoras", max:"Máx.", sembrar:"Sembrar",
+    parcelaT:(n,m)=>`Parcela nueva (${n}/${m})`, parcelaD:"Más plantas, más choclos", parcelaFin:"Campo completo",
+    cuyT:n=>`Cuy ayudante (${n}/4)`, cuyD:"Cosecha solo, pero come maíz", cuyFin:"Ya tienes todos",
+    abonoT:n=>`Abono nv.${n}`, abonoD:x=>`Crecen ×${x} más rápido`,
+    siembraT:n=>`Nueva siembra (+${n} 🌱)`, siembraD:"Empiezas de nuevo con Semillas de la abuela: +10% cada una",
+    confirmar:n=>`¿Empezar una nueva siembra? Reinicias tu chagra y ganas ${n} Semillas de la abuela (+10% de choclos cada una).`,
+    siembraHecha:n=>`¡Nueva siembra! Tienes ${n} 🌱 Semillas de la abuela`,
+    cap:(n,nom)=>`Cap. ${n} · ${nom}`,
+    capNombres:["La chagrita","La minga","El mercado del domingo","El camino a la ciudad","La fiesta de la cosecha"],
+    dialogos:["Esta chagrita era de mi mamá. ¡Vamos a devolverle la vida, mi cielo!","¡Llegó la minga! Los vecinos ayudan. Ahora podemos sembrar papas.","Domingo de mercado: la quinua se vende bien. ¡A sembrar quinua!","Se abrió el camino a la ciudad. Allá pagan muy bien las habas.","¡Fiesta de la cosecha! Gracias a ti, la chagrita alimenta a todo el pueblo."],
+    inicio:n=>`Tienes ${n} 🌽: ¡abre tu primera parcela!`, espera:"Tu chagra te estaba esperando",
+    fuera:n=>`Mientras no estabas, tus cuyes cosecharon ${n} 🌽`, fueraPlantas:"Tus plantas siguieron creciendo mientras no estabas",
+    creciendo:"Aún está creciendo…", cosechado:"¡Cosechado!", compra:"Compra una parcela 🌾", abierta:"¡Nueva parcela abierta!",
+    cuyLlego:"¡Llegó un cuy ayudante!", abonoMsg:x=>`¡Crecen más rápido! ×${x}`, yapa:n=>`¡La yapa! +${n} 🌽`, yapaAbuela:"¡Toma, mi cielo, la yapa!", burroVacio:"Aún no hay sacos llenos", vendido:(n,v)=>`¡Mercado! +${v} 🌽`, saco:(n,s)=>s > 0 ? `Mira, mi cielo: ya llenamos ${s} saco${s > 1 ? "s" : ""} y llevamos ${n} 🌽` : `Mira, mi cielo: ya guardamos ${n} 🌽 en el saco`,
+    cultivo:{maiz:"Maíz",papa:"Papa",quinua:"Quinua",habas:"Habas"}, bloqueado:"Se desbloquea en el capítulo", titulo:"Chagrita · Mi chagra andina" },
+  en: { mejoras:"Upgrades", max:"Max", sembrar:"Plant",
+    parcelaT:(n,m)=>`New plot (${n}/${m})`, parcelaD:"More plants, more corn", parcelaFin:"Field complete",
+    cuyT:n=>`Guinea pig helper (${n}/4)`, cuyD:"Harvests, but eats corn", cuyFin:"You have them all",
+    abonoT:n=>`Fertilizer lv.${n}`, abonoD:x=>`Grow ×${x} faster`,
+    siembraT:n=>`New planting (+${n} 🌱)`, siembraD:"Start over with Grandma's Seeds: +10% each",
+    confirmar:n=>`Start a new planting? Your farm resets and you earn ${n} Grandma's Seeds (+10% harvest each).`,
+    siembraHecha:n=>`New planting! You have ${n} 🌱 Grandma's Seeds`,
+    cap:(n,nom)=>`Ch. ${n} · ${nom}`,
+    capNombres:["The little chagra","The minga","Sunday market","The road to the city","Harvest festival"],
+    dialogos:["This little farm was my mother's. Let's bring it back to life, dear!","The minga is here! The neighbors help out. Now we can plant potatoes.","Market Sunday: quinoa sells well. Let's plant quinoa!","The road to the city is open. They pay well for fava beans there.","Harvest festival! Thanks to you, the farm feeds the whole village."],
+    inicio:n=>`You have ${n} 🌽: open your first plot!`, espera:"Your farm was waiting for you",
+    fuera:n=>`While you were away, your guinea pigs harvested ${n} 🌽`, fueraPlantas:"Your plants kept growing while you were away",
+    creciendo:"Still growing…", cosechado:"Harvested!", compra:"Buy a plot 🌾", abierta:"New plot opened!",
+    cuyLlego:"A guinea pig helper arrived!", abonoMsg:x=>`They grow faster! ×${x}`, yapa:n=>`The yapa! +${n} 🌽`, yapaAbuela:"Here you go, dear, the yapa!", burroVacio:"No full sacks yet", vendido:(n,v)=>`Market! +${v} 🌽`, saco:(n,s)=>s > 0 ? `Look, dear: ${s} sack${s > 1 ? "s" : ""} full, ${n} 🌽 in total` : `Look, dear: we have stored ${n} 🌽 in the sack`,
+    cultivo:{maiz:"Corn",papa:"Potato",quinua:"Quinoa",habas:"Fava beans"}, bloqueado:"Unlocks in chapter", titulo:"Chagrita · My Andean farm" }
+};
+let idioma = (navigator.language || "es").toLowerCase().startsWith("es") ? "es" : "en";
+Object.assign(TXT.es, { ajustes:"Ajustes", ajSonido:"Sonidos", ajMusica:"Música", ajIdioma:"Idioma", ajLuz:"Día / atardecer", cerrar:"Cerrar", pausaT:"Pausa", continuar:"▶ Continuar", irInicio:"🏠 Ir al inicio", jugar:"▶ Jugar", portadaSub:"Tu chagra andina",
+  explorar:"Explorar", cmVolver:"⬅ Volver", cmAyuda:"Mantén presionado el lado derecho para caminar · el izquierdo, para volver", explorarTip:"Desliza el dedo hacia la izquierda (o pulsa →) para explorar el camino",
+  vecinaHola:"¡Buenas, vecina! Traje mis cosechas. ¿Hacemos un trueque?", trTitulo:"Trueque con Rosa",
+  trInfo:"Cambia tu cosecha sin vender por cultivos que valen más. Cada trato se repite hasta 3 veces.",
+  trTiene:n=>`Tienes ${n}`, trCambiar:"Cambiar", trCerrar:"Seguir caminando", trFalta:"Te falta cosecha para ese trueque",
+  trHecho:"¡Trato hecho, vecina!", trAgotado:s=>`Ya no me queda más por ahora; vuelve en ${s} s`, trAgot:"Agotado" });
+Object.assign(TXT.en, { ajustes:"Settings", ajSonido:"Sounds", ajMusica:"Music", ajIdioma:"Language", ajLuz:"Day / sunset", cerrar:"Close", pausaT:"Paused", continuar:"▶ Continue", irInicio:"🏠 Main menu", jugar:"▶ Play", portadaSub:"Your Andean farm",
+  explorar:"Explore", cmVolver:"⬅ Back", cmAyuda:"Hold the right side to walk · the left side to go back", explorarTip:"Swipe left (or press →) to explore the road",
+  vecinaHola:"Hello, neighbor! I brought my harvest. Shall we trade?", trTitulo:"Trade with Rosa",
+  trInfo:"Swap unsold harvest for crops worth more. Each deal can be made up to 3 times.",
+  trTiene:n=>`You have ${n}`, trCambiar:"Trade", trCerrar:"Keep walking", trFalta:"You need more harvest for that trade",
+  trHecho:"Deal done, neighbor!", trAgotado:s=>`I have no more for now; come back in ${s} s`, trAgot:"Sold out" });
+let capNombreVisible = false, capTimer;
+const capCorto = c => (idioma === "es" ? "Cap. " : "Ch. ") + c;
+function verNombreCap(ms = 3500) { capNombreVisible = true; mostrar(); clearTimeout(capTimer); capTimer = setTimeout(() => { capNombreVisible = false; mostrar(); }, ms); }
+const t = (k, ...a) => { const v = TXT[idioma][k] ?? TXT.es[k]; return typeof v === "function" ? v(...a) : v; };
+const num2 = x => x.toFixed(2).replace(".", idioma === "es" ? "," : ".");
+const fmt = n => Math.floor(n).toLocaleString(idioma === "es" ? "es" : "en-US");
+
+/* ===== Cultivos y capítulos ===== */
+const E1 = CONFIG.etapas.slice(0, 2);       // semilla y brote son iguales para todos los cultivos
+// valor = choclos 🌽 que da cada cosecha; precio = monedas 💰 que paga el mercado por cada unidad cosechada (se multiplica por el precio del día: 0,7 a 1,4)
+const CULT = [
+  { id:"maiz",   emoji:"🌽", seg:16, valor:1,  precio:0.5, cap:1, etapas:[...E1, "plantas/planta_3_planta.svg", "plantas/planta_4_choclo.svg"] },
+  { id:"papa",   emoji:"🥔", seg:30, valor:3,  precio:1.8, cap:2, etapas:[...E1, "plantas/papa_3.svg",   "plantas/papa_4.svg"] },
+  { id:"quinua", emoji:"🌾", seg:50, valor:6,  precio:4,   cap:3, etapas:[...E1, "plantas/quinua_3.svg", "plantas/quinua_4.svg"] },
+  { id:"habas",  emoji:"🫘", seg:80, valor:12, precio:9,   cap:4, etapas:[...E1, "plantas/habas_3.svg",  "plantas/habas_4.svg"] },
+];
+const CAPS = [0, 200, 1500, 8000, 40000];   // choclos cosechados (en total) para llegar a cada capítulo
+const capitulo = () => { let c = 1; CAPS.forEach((m, i) => { if (total >= m) c = i + 1; }); return c; };
+
+/* ===== Plantas: crecen solas con el tiempo ===== */
+let nivelAbono = 0;                        // cada nivel acelera el crecimiento
+const velocidad = () => 1 + 0.25 * nivelAbono;
+const costoAbono = () => Math.floor(CONFIG.economia.abonoBase * Math.pow(CONFIG.economia.abonoMult, nivelAbono));
+let total = 0, run = 0, vendidos = 0, semillas = 0, sembrar = 0, sonido = true, musica = true;     // total = histórico; run = esta siembra
+let monedas = 0, ventas = 0;                                           // 💰 se ganan vendiendo en el mercado; sirven para comprar territorio
+let stock = { maiz: 0, papa: 0, quinua: 0, habas: 0 };                 // cosecha sin vender, por cultivo (en choclos de valor)
+let precioVar = { maiz: 1, papa: 1, quinua: 1, habas: 1 }, precioAnt = { maiz: 1, papa: 1, quinua: 1, habas: 1 }, tPrecio = 0;
+const TER = CONFIG.territorio, lotes = new Set([TER.centro]);          // lotes = índices de los terrenos que ya son tuyos
+const codigo = i => i === TER.centro ? "." : TER.mapa[Math.floor(i / TER.cols)][i % TER.cols];
+const vecinosDe = i => { const r = Math.floor(i / TER.cols), c = i % TER.cols, o = []; if (r > 0) o.push(i - TER.cols); if (r < TER.filas - 1) o.push(i + TER.cols); if (c > 0) o.push(i - 1); if (c < TER.cols - 1) o.push(i + 1); return o; };
+const esVecino = i => vecinosDe(i).some(v => lotes.has(v));
+const compradosN = () => lotes.size - 1;
+const precioLote = i => Math.round(TER.base * TER.factor[codigo(i)] * Math.pow(TER.crece, compradosN()));
+const bonoTer = ci => { let b = 0; lotes.forEach(i => { const c = codigo(i); if (c !== "." && TER.cultivo[c] === ci) b += TER.bono[c]; }); return b; };
+// multiplicador de cosecha de un cultivo: Semillas (+10% c/u) × terrenos. xci/xb = "qué pasaría si" tuviera un bono extra (para mostrar en el mapa)
+const multX = (ci, xci = -1, xb = 0) => (1 + 0.10 * semillas) * (1 + bonoTer(ci) + (ci === xci ? xb : 0));
+const mult = ci => multX(ci);
+const precioHoy = k => k.precio * precioVar[k.id];
+const num1 = x => (Math.round(x * 10) / 10).toString().replace(".", idioma === "es" ? "," : ".");
+function moverPrecios() {
+  precioAnt = Object.assign({}, precioVar);
+  CULT.forEach(k => { const v = precioVar[k.id]; precioVar[k.id] = Math.round(Math.max(0.7, Math.min(1.4, v + (Math.random() - 0.5) * 0.3 + (1 - v) * 0.25)) * 20) / 20; });
+}
+
+const cont = document.getElementById("plantas");
+let abiertas = CONFIG.inicial;
+const costoParcela = () => Math.floor(CONFIG.economia.parcelaBase * Math.pow(CONFIG.economia.parcelaMult, abiertas - CONFIG.inicial));
+const prog = CONFIG.plantasX.map((_, i) => i < CONFIG.inicial ? i * 0.3 : 0);
+const cult = CONFIG.plantasX.map(() => 0);                             // qué cultivo tiene cada parcela
+const imgs = [], divs = [], barras = [];
+CONFIG.plantasX.forEach((x, i) => {
+  const d = document.createElement("div");
+  d.className = "en-suelo planta";
+  d.style.left = (x - CONFIG.plantaAncho / 2) + "px";
+  if (!CONFIG.fila[i]) d.classList.add("atras");
+  if (i >= abiertas) d.classList.add("bloqueada");
+  const im = document.createElement("img");
+  im.src = CONFIG.ruta + CULT[0].etapas[0];
+  d.appendChild(im);
+  d.addEventListener("pointerdown", () => cosechar(i));
+  cont.appendChild(d); imgs.push(im); divs.push(d);
+  const bar = document.createElement("div");
+  bar.className = "barra"; bar.style.left = (x - 55) + "px"; if (!CONFIG.fila[i]) bar.style.display = "none";
+  bar.innerHTML = "<i></i>"; document.getElementById("stage").appendChild(bar); barras.push(bar.firstChild);
+});
+
+let puntos = CONFIG.economia.inicioPuntos;
+const elPuntos = document.getElementById("puntos");
+const elMsg = document.getElementById("msg");
+const btnAbono = document.getElementById("btnAbono"), btnCuy = document.getElementById("btnCuy"), btnParcela = document.getElementById("btnParcela"), btnSiembra = document.getElementById("btnSiembra");
+const etapaDe = p => p >= 1 ? 3 : Math.floor(p * 3);
+
+/* ===== Sonidos (se generan con el navegador, sin archivos) ===== */
+let ac = null;
+function tono(f, d = 0.12, tipo = "sine", vol = 0.07, retraso = 0) {
+  if (!sonido) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + retraso;
+    o.type = tipo; o.frequency.value = f; g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + d);
+  } catch (e) { /* sin audio: el juego sigue */ }
+}
+addEventListener("pointerdown", () => { if (ac && ac.state === "suspended") ac.resume(); });
+const sfx = {
+  cosecha: () => { tono(660, .08); tono(880, .1, "sine", .07, .07); },
+  cuy:     () => tono(740, .06, "sine", .025),
+  compra:  () => { tono(523, .1, "triangle"); tono(784, .14, "triangle", .07, .09); },
+  yapa:    () => [523, 659, 784, 1047].forEach((f, i) => tono(f, .15, "triangle", .07, i * .08)),
+  capitulo:() => [392, 494, 587, 784].forEach((f, i) => tono(f, .3, "sine", .06, i * .14)),
+};
+
+/* ===== Música de fondo (original, generada con código; sin archivos ni derechos de autor de terceros) =====
+   Escala pentatónica menor de La (la favorita de los Andes). La melodía la compuse desde cero:
+   no copia ninguna canción. Para cambiarla, edita FRASES y ACORDES. */
+const ESC = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25];   // La Do Re Mi Sol La Do Re Mi
+const FRASES = {   // 16 pasos (corcheas) = 2 compases. número = nota de ESC, -2 = sigue sonando, -1 = silencio
+  A:  [5,-2,6,-2,5,4,3,-2,  4,-2,3,-2,1,-2,0,-2],
+  B:  [3,-2,4,-2,5,-2,7,-2,  6,-2,5,4,3,-2,-1,-1],
+  C:  [7,-2,6,5,6,-2,5,-2,  4,3,4,-2,3,-2,1,-2],
+  A2: [5,-2,6,-2,5,4,3,-2,  4,3,1,-2,0,-2,-2,-1],
+};
+const FORMA = ["A","B","A","A2","C","B","C","A2"];
+const ACORDES = { Am: [220, 261.63, 329.63], C: [261.63, 329.63, 392], G: [196, 293.66, 392] };
+const ARMONIA = { A: ["Am","C"], B: ["Am","G"], C: ["C","Am"], A2: ["Am","Am"] };
+const ARPEGIO = [0,2,1,2,0,2,1,2];
+let mg = null, tempMus = null, pasoMus = 0, tMus = 0;
+function audio() { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); return ac; }
+function flauta(f, t0, d) {
+  const o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
+  o.type = "sine"; o.frequency.value = f; lfo.frequency.value = 5.2; lg.gain.value = f * 0.006;
+  lfo.connect(lg); lg.connect(o.frequency);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.06);
+  g.gain.setValueAtTime(0.05, t0 + Math.max(0.07, d - 0.12)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  o.connect(g); g.connect(mg); o.start(t0); lfo.start(t0); o.stop(t0 + d + 0.02); lfo.stop(t0 + d + 0.02);
+}
+function charango(f, t0) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "triangle"; o.frequency.value = f;
+  g.gain.setValueAtTime(0.035, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+  o.connect(g); g.connect(mg); o.start(t0); o.stop(t0 + 0.24);
+}
+function bombo(t0) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(110, t0); o.frequency.exponentialRampToValueAtTime(45, t0 + 0.18);
+  g.gain.setValueAtTime(0.11, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.26);
+  o.connect(g); g.connect(mg); o.start(t0); o.stop(t0 + 0.28);
+}
+function bajo(f, t0) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.value = f / 2;
+  g.gain.setValueAtTime(0.05, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+  o.connect(g); g.connect(mg); o.start(t0); o.stop(t0 + 0.52);
+}
+function ruido(t0, d, vol, fc) {                  // golpecito de ruido filtrado: caja y sonaja
+  const n = Math.max(1, Math.floor(ac.sampleRate * d)), b = ac.createBuffer(1, n, ac.sampleRate), a = b.getChannelData(0);
+  for (let i = 0; i < n; i++) a[i] = Math.random() * 2 - 1;
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = b; f.type = "bandpass"; f.frequency.value = fc; g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  s.connect(f); f.connect(g); g.connect(mg); s.start(t0);
+}
+function bomboF(t0, vol) {                        // bombo legüero con fuerza ajustable
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(42, t0 + 0.2);
+  g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+  o.connect(g); g.connect(mg); o.start(t0); o.stop(t0 + 0.32);
+}
+function zampona(f, t0, d) {                      // zampoña: tubo grave con soplido
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "triangle"; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.04, t0 + 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  o.connect(g); g.connect(mg); o.start(t0); o.stop(t0 + d + 0.02); ruido(t0, 0.07, 0.03, f * 3);
+}
+function programarPaso(t0, dur) {
+  const fr = FORMA[Math.floor(pasoMus / 16) % FORMA.length], paso = pasoMus % 16, compas = paso < 8 ? 0 : 1, p8 = paso % 8;
+  const acorde = ACORDES[ARMONIA[fr][compas]];
+  const n = FRASES[fr][paso];
+  if (n >= 0) {                                    // cuánto dura la nota: hasta la siguiente nota nueva
+    let k = 1; while (paso + k < 16 && FRASES[fr][paso + k] === -2) k++;
+    flauta(ESC[n], t0, k * dur * 0.95);
+  }
+  charango(acorde[ARPEGIO[p8]] * 2, t0);
+  if (stage.classList.contains("viaje")) {          // en el camino al mercado: marcha con bombo, caja, sonaja y zampoña
+    if (p8 % 2 === 0) bomboF(t0, p8 % 4 === 0 ? 0.2 : 0.12);
+    if (p8 === 3 || p8 === 7) ruido(t0, 0.09, 0.09, 1800);
+    ruido(t0, 0.04, 0.022, 6000);
+    if (n >= 0) { let k = 1; while (paso + k < 16 && FRASES[fr][paso + k] === -2) k++; zampona(ESC[n] / 2, t0, k * dur * 0.9); }
+  }
+  if (p8 === 0 || p8 === 4) { bombo(t0); if (p8 === 0) bajo(acorde[0], t0); }
+  pasoMus++;
+}
+function ciclo() {
+  if (!musica || !ac || document.visibilityState === "hidden") return;
+  const dur = 60 / (stage.classList.contains("viaje") ? 104 : esDia ? 88 : 68) / 2;           // corchea: de día más alegre, al atardecer más lento
+  if (tMus < ac.currentTime) tMus = ac.currentTime + 0.05;
+  while (tMus < ac.currentTime + 0.4) { programarPaso(tMus, dur); tMus += dur; }
+}
+function iniciarMusica() {
+  if (!musica || tempMus) return;
+  try {
+    audio(); if (ac.state === "suspended" && !pausado) ac.resume();
+    if (!mg) { mg = ac.createGain(); mg.gain.value = 0.55; mg.connect(ac.destination); }
+    tMus = ac.currentTime + 0.1; tempMus = setInterval(ciclo, 120);
+  } catch (e) { /* sin audio: el juego sigue */ }
+}
+function pararMusica() { clearInterval(tempMus); tempMus = null; }
+addEventListener("pointerdown", iniciarMusica);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") { if (ac && ac.state === "running") ac.suspend(); }
+  else if (ac && ac.state === "suspended" && !pausado) ac.resume();
+});
+document.getElementById("btnMusica").addEventListener("click", () => {
+  musica = !musica; if (musica) iniciarMusica(); else pararMusica();
+  mostrar(); guardar();
+});
+
+/* ===== Mensajes, capítulos y abuela ===== */
+const elDialogo = document.getElementById("dialogo"); let timerDialogo;
+function decir(txt, ms = 6000) {
+  elDialogo.textContent = txt; elDialogo.classList.add("ver");
+  clearTimeout(timerDialogo); timerDialogo = setTimeout(() => elDialogo.classList.remove("ver"), ms);
+}
+let capMostrado = 0;
+function revisarCapitulo(avisar) {
+  const c = capitulo();
+  if (c > capMostrado) { if (avisar && capMostrado > 0) { decir(t("dialogos")[c - 1], 7000); sfx.capitulo(); setTimeout(() => verNombreCap(5000), 0); } capMostrado = c; }
+}
+
+/* ===== Cosecha ===== */
+function ganar(v, id = "maiz") { puntos += v; total += v; run += v; stock[id] = (stock[id] || 0) + v; }
+function cosechar(i, auto) {
+  if (i >= abiertas) { elMsg.textContent = t("compra"); return; }
+  if (prog[i] < 1) { elMsg.textContent = t("creciendo"); return; }
+  const v = CULT[cult[i]].valor * mult(cult[i]);
+  ganar(v, CULT[cult[i]].id); prog[i] = 0; cult[i] = sembrar; revisarCapitulo(true); mostrar();
+  if (auto) { sfx.cuy(); return; }
+  elMsg.textContent = t("cosechado"); sfx.cosecha();
+  pose("cosechando", 500);
+  setTimeout(() => { pose("contenta", 900); abuela.classList.add("salto"); setTimeout(() => abuela.classList.remove("salto"), 200); }, 500);
+}
+
+/* ===== Interfaz: botones, capítulos y cultivos ===== */
+function llenar(b, tit, desc, precio) { b.querySelector(".t").textContent = tit; b.querySelector(".d").textContent = desc; b.querySelector(".precio").textContent = precio; }
+const semillasPorGanar = () => Math.floor(Math.sqrt(run / 500));
+function mostrar() {
+  elPuntos.textContent = fmt(puntos);
+  document.getElementById("monedas").textContent = fmt(monedas);
+  document.getElementById("monTxt").style.display = (monedas > 0 || ventas > 0 || compradosN() > 0) ? "" : "none";
+  actualizarSaco();
+  document.getElementById("tMejoras").textContent = t("mejoras");
+  document.getElementById("btnIdioma").textContent = idioma.toUpperCase();
+  document.getElementById("btnSonido").textContent = sonido ? "🔊" : "🔇";
+  document.getElementById("btnMusica").textContent = musica ? "🎶" : "🔕";
+  textosGranja(); if (vistaActual() === "mapa") pintarMapa();
+  const _t = (id, k) => { document.getElementById(id).textContent = t(k); };
+  _t("ajTitulo", "ajustes"); _t("ajSonido", "ajSonido"); _t("ajMusica", "ajMusica"); _t("ajIdioma", "ajIdioma"); _t("ajLuz", "ajLuz"); _t("ajCerrar", "cerrar");
+  _t("paTitulo", "pausaT"); _t("paContinuar", "continuar"); _t("paAjustes", "ajustes"); _t("paInicio", "irInicio"); _t("pSub", "portadaSub"); _t("pAjustes", "ajustes");
+  document.getElementById("pAjustes").textContent = "⚙️ " + t("ajustes"); document.getElementById("paAjustes").textContent = "⚙️ " + t("ajustes");
+  document.getElementById("pJugar").textContent = habiaAvance ? t("continuar") : t("jugar");
+  document.getElementById("btnPausa").disabled = stage.classList.contains("viaje");
+  document.title = t("titulo"); document.documentElement.lang = idioma;
+  // capítulo
+  const c = capitulo(), ini = CAPS[c - 1], fin = CAPS[c];
+  const pct = fin ? Math.min(99, Math.floor((total - ini) / (fin - ini) * 100)) : null;   // % hacia el siguiente capítulo
+  document.getElementById("capTxt").textContent = (capNombreVisible ? t("cap", c, t("capNombres")[c - 1]) : capCorto(c)) + (pct !== null ? `  ·  ${pct}%` : "") + (semillas ? `  ·  🌱 ${semillas}` : "");
+  // botones de mejoras
+  const parcMax = abiertas >= CONFIG.plantasX.length;
+  llenar(btnParcela, t("parcelaT", abiertas, CONFIG.plantasX.length), parcMax ? t("parcelaFin") : t("parcelaD"), parcMax ? t("max") : `${fmt(costoParcela())} 🌽`);
+  btnParcela.disabled = parcMax || puntos < costoParcela();
+  const cuyMax = cuyes.length >= CONFIG.maxComprables;
+  llenar(btnCuy, t("cuyT", Math.min(cuyes.length, CONFIG.maxComprables)), cuyMax ? t("cuyFin") : t("cuyD"), cuyMax ? t("max") : `${fmt(costoCuy())} 🌽`);
+  btnCuy.disabled = puntos < costoCuy() || cuyMax;
+  llenar(btnAbono, t("abonoT", nivelAbono + 1), t("abonoD", num2(1 + 0.25 * (nivelAbono + 1))), `${fmt(costoAbono())} 🌽`);
+  btnAbono.disabled = puntos < costoAbono();
+  const sp = semillasPorGanar();
+  btnSiembra.style.display = sp >= 1 ? "flex" : "none";
+  llenar(btnSiembra, t("siembraT", sp), t("siembraD"), "🌱");
+  // selector de cultivo
+  const cu = document.getElementById("cultivos");
+  if (!cu.dataset.listo || cu.dataset.idioma !== idioma + c + sembrar) {
+    cu.dataset.listo = 1; cu.dataset.idioma = idioma + c + sembrar;
+    const sel = CULT[sembrar];
+    cu.innerHTML = `<span>${t("sembrar")}:</span>` + CULT.map((k, i) => `<button class="chip${i === sembrar ? " sel" : ""}" data-i="${i}" ${c < k.cap ? "disabled" : ""} title="${t("cultivo")[k.id]}">${k.emoji}</button>`).join("") +
+      `<span class="info">${sel.emoji} ${t("cultivo")[sel.id]} · ${sel.seg} s · +${sel.valor} 🌽` + (CULT.some(k => c < k.cap) ? ` · ${t("bloqueado")} ${Math.min(...CULT.filter(k => c < k.cap).map(k => k.cap))}` : "") + `</span>`;
+    cu.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { sembrar = +b.dataset.i; cu.dataset.listo = ""; mostrar(); }));
+  }
+}
+const actualizarBoton = mostrar;   // nombre anterior, por compatibilidad
+
+btnParcela.addEventListener("click", () => {
+  if (abiertas >= CONFIG.plantasX.length || puntos < costoParcela()) return;
+  puntos -= costoParcela(); prog[abiertas] = 0; cult[abiertas] = sembrar; divs[abiertas].classList.remove("bloqueada"); abiertas++;
+  elMsg.textContent = t("abierta"); sfx.compra(); mostrar();
+});
+btnAbono.addEventListener("click", () => {
+  if (puntos < costoAbono()) return;
+  puntos -= costoAbono(); nivelAbono++; elMsg.textContent = t("abonoMsg", num2(velocidad())); sfx.compra(); mostrar();
+});
+btnSiembra.addEventListener("click", () => {
+  const sp = semillasPorGanar(); if (sp < 1) return;
+  if (!confirm(t("confirmar", sp))) return;
+  semillas += sp; run = 0; vendidos = 0; puntos = CONFIG.economia.inicioPuntos; nivelAbono = 0; abiertas = CONFIG.inicial; sembrar = 0;
+  cuyes.splice(0).forEach(c => c.d.remove()); stock = { maiz: 0, papa: 0, quinua: 0, habas: 0 }; enfriaPareja = 0;   // las monedas y el territorio se conservan
+  CONFIG.plantasX.forEach((_, i) => { prog[i] = i < CONFIG.inicial ? i * 0.3 : 0; cult[i] = 0; divs[i].classList.toggle("bloqueada", i >= abiertas); });
+  elMsg.textContent = t("siembraHecha", semillas); sfx.capitulo(); guardar(); mostrar();
+});
+document.getElementById("btnSonido").addEventListener("click", () => { sonido = !sonido; if (sonido) sfx.compra(); mostrar(); guardar(); });
+document.getElementById("btnIdioma").addEventListener("click", () => { idioma = idioma === "es" ? "en" : "es"; document.getElementById("cultivos").dataset.listo = ""; mostrar(); guardar(); });
+
+let ultimo = performance.now();
+function bucle(tm) {
+  const dt = pausado ? 0 : Math.max(0, Math.min(0.25, (tm - ultimo) / 1000)); ultimo = tm;
+  prog.forEach((p, i) => {
+    if (i >= abiertas) { barras[i].style.width = "0%"; return; }
+    prog[i] = Math.max(0, Math.min(1, p + dt * velocidad() / CULT[cult[i]].seg));
+    const e = etapaDe(prog[i]), arch = CULT[cult[i]].etapas[e];
+    if (!imgs[i].src.endsWith(arch)) imgs[i].src = CONFIG.ruta + arch;
+    divs[i].classList.toggle("lista", prog[i] >= 1);
+    barras[i].style.width = (prog[i] * 100) + "%";
+  });
+  moverAbuela(dt);
+  animarCuyes(dt); hambreCuyes(dt); revisarPareja(dt); pintarGranja(dt);
+  tPrecio += dt; if (tPrecio >= CONFIG.mercado.cadaSeg) { tPrecio = 0; moverPrecios(); if (vistaActual() === "mapa") pintarMapa(); }
+  requestAnimationFrame(bucle);
+}
+
+/* ===== Ayudantes: el cuy cosecha solo ===== */
+const cuyes = [];
+const costoCuy = () => Math.floor(CONFIG.economia.cuyBase * Math.pow(CONFIG.economia.cuyMult, Math.min(cuyes.length, CONFIG.maxComprables)));
+const adultos = () => cuyes.filter(c => c.edad >= 1).length;
+function crearCuy(bebe) {
+  const d = document.createElement("div"); d.className = "en-suelo cuy";
+  const im = document.createElement("img"); im.src = CONFIG.ruta + "ayudantes/cuy_1.svg";
+  d.appendChild(im); document.getElementById("plantas").appendChild(d);
+  cuyes.push({ d, im, x: 340 + cuyes.length * 40, obj: null, espera: 0, t: 0, dir: 1, h: 1, g: 0, avisado: false, come: 0, edad: bebe ? 0 : 1 });
+  d.addEventListener("pointerdown", e => { e.stopPropagation(); abrirGranja(); });
+}
+btnCuy.addEventListener("click", () => {
+  if (puntos < costoCuy() || cuyes.length >= CONFIG.maxComprables) return;
+  puntos -= costoCuy(); crearCuy(); elMsg.textContent = t("cuyLlego"); sfx.compra(); mostrar();
+});
+function cosechaAyudante(i, x) {
+  const v = CULT[cult[i]].valor * mult(cult[i]);
+  cosechar(i, true);
+  const m = document.createElement("div"); m.className = "mas"; m.textContent = "+" + (v % 1 ? v.toFixed(1) : v);
+  m.style.left = x + "px"; m.style.top = "1050px"; document.getElementById("stage").appendChild(m);
+  setTimeout(() => m.remove(), 900);
+}
+function animarCuyes(dt) {
+  cuyes.forEach(c => {
+    let camina = false;
+    if (c.h <= 0 || c.edad < 1) { c.obj = null; }      // sin comer, o siendo bebé, no ayuda
+    else if (c.espera > 0) c.espera -= dt;
+    else {
+      if (c.obj == null) {
+        const libre = prog.findIndex((p, i) => i < abiertas && p >= 1 && !cuyes.some(o => o !== c && o.obj === i));
+        if (libre >= 0) c.obj = libre;
+      }
+      if (c.obj != null) {
+        const tx = CONFIG.plantasX[c.obj] - 60, dx = tx - c.x;
+        if (Math.abs(dx) < 6) { if (prog[c.obj] >= 1) cosechaAyudante(c.obj, tx); c.obj = null; c.espera = 0.5; }
+        else { c.x += Math.sign(dx) * 190 * dt; c.dir = Math.sign(dx); camina = true; }
+      }
+    }
+    c.t += dt;
+    c.im.src = CONFIG.ruta + imagenCuy(c, camina);
+    c.d.classList.toggle("flaco", c.h < CONFIG.hambre.aviso); c.d.classList.toggle("bebe", c.edad < 1);
+    c.d.style.left = c.x + "px";
+    c.im.style.transform = c.dir < 0 ? "scaleX(-1)" : "";
+  });
+}
+
+Object.assign(TXT.es, {
+  mapaT:"Territorio", comprar:p=>`Comprar · ${fmt(p)} 💰`, terreno:{V:"Valle",L:"Ladera",A:"Altiplano",R:"Ribera"}, chagraTuya:"Tu chagra 🏡",
+  loteTuyo:"Ya es tuyo ✔", loteLejos:"Primero compra un terreno vecino", loteComprado:"¡Nuevo terreno! 🗺️", faltanMon:p=>`Faltan monedas: cuesta ${fmt(p)} 💰`,
+  loteBono:(b,c)=>`+${b}% a la cosecha de ${c}`, loteGana:(m,h,min)=>`≈ +${m} 🌽/min · +${h} 💰/h · se paga en ~${min} min`, loteSinCult:c=>`Siembra ${c} para aprovecharlo`,
+  precios:"Precio por unidad hoy", sinVender:"Sin vender", sacosVacios:"nada aún", cuenta:(n,m)=>`🗺️ ${n}/${m}`,
+  reciboT:"🧺 Mercado del domingo", reciboTotal:"Total", reciboOk:"Volver a la chagra", reciboPrecio:(u,p)=>`${u} × ${p}`,
+  vendido:(n,v)=>`¡Mercado! +${v} 💰`,
+  parejaAviso:"💕 Dos cuyes se quieren mucho: abre la granja", parejaPregunta:"❤️ Estos dos cuyes se quieren mucho. ¿Quieres que tengan un cuy bebé?",
+  parejaSi:"Sí, ¡que nazca!", parejaNo:"Ahora no", nacio:"¡Nació un cuy bebé! 🐹💕", nacioAbuela:"¡Ay, qué ternura, mi cielo!", bebeCrecio:"Tu cuy bebé ya creció: ahora ayuda a cosechar", granjaLlena:"La granja está llena" });
+Object.assign(TXT.en, {
+  mapaT:"Territory", comprar:p=>`Buy · ${fmt(p)} 💰`, terreno:{V:"Valley",L:"Hillside",A:"Highland",R:"Riverbank"}, chagraTuya:"Your farm 🏡",
+  loteTuyo:"Already yours ✔", loteLejos:"Buy a neighboring plot first", loteComprado:"New land! 🗺️", faltanMon:p=>`Not enough coins: it costs ${fmt(p)} 💰`,
+  loteBono:(b,c)=>`+${b}% to ${c} harvest`, loteGana:(m,h,min)=>`≈ +${m} 🌽/min · +${h} 💰/h · pays back in ~${min} min`, loteSinCult:c=>`Plant ${c} to make use of it`,
+  precios:"Price per unit today", sinVender:"Unsold", sacosVacios:"nothing yet", cuenta:(n,m)=>`🗺️ ${n}/${m}`,
+  reciboT:"🧺 Sunday market", reciboTotal:"Total", reciboOk:"Back to the farm", reciboPrecio:(u,p)=>`${u} × ${p}`,
+  vendido:(n,v)=>`Market! +${v} 💰`,
+  parejaAviso:"💕 Two guinea pigs love each other: open the farm", parejaPregunta:"❤️ These two guinea pigs love each other. Do you want them to have a baby?",
+  parejaSi:"Yes, let it be born!", parejaNo:"Not now", nacio:"A baby guinea pig was born! 🐹💕", nacioAbuela:"Aww, how sweet, dear!", bebeCrecio:"Your baby guinea pig grew up: now it helps harvest", granjaLlena:"The farm is full" });
+
+/* ===== La granja y el hambre de los cuyes =====
+   Los cuyes gastan comida solo mientras el juego está abierto (si lo cierras, no se mueren).
+   Con hambre se ponen flacos y tristes (aviso); en 0 dejan de ayudar; si siguen en 0 mucho rato, se mueren. */
+Object.assign(TXT.es, { volver:"⬅ Volver", darTodos:(n,c)=>`🌽 Dar maíz a todos (${c} 🌽)`, granjaVacia:"No tienes cuyes. Compra uno en Mejoras 🐹",
+  lleno:"Este cuy está lleno", sinMaiz:c=>`Faltan choclos: la comida cuesta ${c} 🌽`, comio:"¡Ñam ñam! 🌽", todosLlenos:"Todos están llenos",
+  cuyFlaco:"Un cuy tiene hambre 🥺 ¡dale maíz!", cuyMurio:"Se murió un cuy 😢 Por no darle maíz. Compra otro y cuídalo", granjaT:"Granja" });
+Object.assign(TXT.en, { volver:"⬅ Back", darTodos:(n,c)=>`🌽 Feed everyone (${c} 🌽)`, granjaVacia:"You have no guinea pigs. Buy one in Upgrades 🐹",
+  lleno:"This one is full", sinMaiz:c=>`Not enough corn: food costs ${c} 🌽`, comio:"Yum yum! 🌽", todosLlenos:"Everyone is full",
+  cuyFlaco:"A guinea pig is hungry 🥺 feed it!", cuyMurio:"A guinea pig died 😢 It wasn't fed. Buy another and take care of it", granjaT:"Farm" });
+
+const HB = CONFIG.hambre;
+function imagenCuy(c, camina) {
+  if (c.h < HB.aviso && CONFIG.cuyFlaco) return CONFIG.cuyFlaco;
+  if (c.edad < 1 && CONFIG.cuyBebe) return CONFIG.cuyBebe;
+  return "ayudantes/cuy_" + (camina && Math.floor(c.t * 8) % 2 ? 2 : 1) + ".svg";
+}
+function hambreCuyes(dt) {
+  for (let i = cuyes.length - 1; i >= 0; i--) {
+    const c = cuyes[i];
+    c.h = Math.max(0, c.h - dt / HB.dura);
+    if (c.h < HB.aviso && !c.avisado) { c.avisado = true; elMsg.textContent = t("cuyFlaco"); tono(330, .25, "sine", .05); tono(262, .3, "sine", .05, .2); }
+    if (c.h >= HB.aviso) c.avisado = false;
+    if (c.h <= 0) {
+      c.g += dt;
+      if (c.g >= HB.gracia) {            // se murió
+        c.d.remove(); cuyes.splice(i, 1); c.muerto = true;
+        elMsg.textContent = t("cuyMurio"); decir(t("cuyMurio"), 6000);
+        [294, 262, 220].forEach((f, k) => tono(f, .4, "sine", .06, k * .25)); mostrar(); guardar();
+      }
+    } else c.g = 0;
+  }
+}
+function alimentar(c, silencio) {
+  if (c.h >= 0.95) { if (!silencio) elMsg.textContent = t("lleno"); return false; }
+  if (puntos < HB.costo) { elMsg.textContent = t("sinMaiz", HB.costo); return false; }
+  puntos -= HB.costo; c.h = Math.min(1, c.h + HB.racion); c.g = 0; c.come = 1; c.avisado = c.h < HB.aviso;
+  if (!silencio) elMsg.textContent = t("comio");
+  sfx.cuy(); tono(520, .06, "triangle", .05, .06); mostrar(); guardar(); return true;
+}
+const vistaActual = () => stage.classList.contains("granja") ? "granja" : stage.classList.contains("mapa") ? "mapa" : stage.classList.contains("camino") ? "camino" : null;
+function irVista(nombre) {
+  if (enTransicion || dentro) return;
+  enTransicion = true; fade.style.opacity = 1;
+  setTimeout(() => {
+    ["granja", "mapa", "camino"].forEach(v => stage.classList.toggle(v, v === nombre)); if (nombre === "mapa") centrarMapa();
+    if (nombre === "camino") cmIniciar(); else cmDetener();
+    document.getElementById("parejaModal").classList.remove("ver");
+    fade.style.opacity = 0; mostrar(); setTimeout(() => { enTransicion = false; }, 350);
+  }, 380);
+}
+const abrirGranja = () => irVista("granja"), cerrarGranja = () => irVista(null);
+document.getElementById("btnGranja").addEventListener("click", () => irVista(vistaActual() === "granja" ? null : "granja"));
+document.getElementById("btnMapa").addEventListener("click", () => irVista(vistaActual() === "mapa" ? null : "mapa"));
+document.getElementById("btnVolver").addEventListener("click", cerrarGranja);
+document.getElementById("btnVolverM").addEventListener("click", cerrarGranja);
+document.getElementById("btnTodos").addEventListener("click", () => {
+  let alguno = false; cuyes.forEach(c => { if (c.h < 0.95 && puntos >= HB.costo && alimentar(c, true)) alguno = true; });
+  elMsg.textContent = alguno ? t("comio") : (cuyes.some(c => c.h < 0.95) ? t("sinMaiz", HB.costo) : t("todosLlenos"));
+});
+function textosGranja() {
+  document.getElementById("btnVolver").textContent = t("volver");
+  const falta = cuyes.reduce((a, c) => a + (c.h < 0.95 ? 1 : 0), 0);
+  document.getElementById("btnTodos").textContent = t("darTodos", falta, falta * HB.costo);
+  document.getElementById("btnTodos").disabled = !falta || puntos < HB.costo;
+  const v = document.getElementById("granjaVacia"); v.textContent = t("granjaVacia"); v.style.display = cuyes.length ? "none" : "block";
+}
+const cuyesG = [];   // dibujos de cada cuy dentro de la granja (se ajustan solos a los cuyes vivos)
+function pintarGranja(dt) {
+  if (vistaActual() !== "granja") return;
+  const gr = document.getElementById("granja");
+  gr.classList.toggle("dosFilas", cuyes.length > 4);
+  while (cuyesG.length > cuyes.length) cuyesG.pop().d.remove();
+  while (cuyesG.length < cuyes.length) {
+    const i = cuyesG.length, d = document.createElement("div"); d.className = "en-suelo cuyG" + (CONFIG.granjaFila[i] ? "" : " atras");
+    d.innerHTML = '<div class="hb"><i></i></div><img alt="">';
+    d.style.left = (CONFIG.granjaX[i] - 60) + "px";
+    d.addEventListener("pointerdown", e => { e.stopPropagation(); if (cuyes[i]) alimentar(cuyes[i]); });
+    gr.appendChild(d); cuyesG.push({ d, barra: d.querySelector("i"), im: d.querySelector("img") });
+  }
+  cuyes.forEach((c, i) => {
+    const g = cuyesG[i]; c.come = Math.max(0, c.come - dt);
+    g.barra.style.width = (c.h * 100) + "%";
+    g.d.classList.toggle("flaco", c.h < HB.aviso); g.d.classList.toggle("bebe", c.edad < 1); g.d.classList.toggle("muere", c.h <= 0); g.d.classList.toggle("come", c.come > 0);
+    const a = CONFIG.ruta + imagenCuy(c, false); if (!g.im.src.endsWith(a.split("/").slice(-1)[0])) g.im.src = a;
+  });
+  const co = document.getElementById("corazon");
+  if (parejaIdx && !document.getElementById("parejaModal").classList.contains("ver")) {
+    co.style.display = "block"; co.style.left = ((CONFIG.granjaX[parejaIdx[0]] + CONFIG.granjaX[parejaIdx[1]]) / 2 - 80) + "px"; co.style.top = "930px";
+  } else co.style.display = "none";
+  textosGranja();
+}
+
+/* ===== Parejas: el corazón y el cuy bebé ===== */
+const CP = CONFIG.pareja;
+let enfriaPareja = 0, parejaIdx = null, avisoPareja = false;
+function revisarPareja(dt) {
+  enfriaPareja = Math.max(0, enfriaPareja - dt);
+  cuyes.forEach(c => {
+    if (c.edad < 1) { c.edad = Math.min(1, c.edad + dt / CP.crece); if (c.edad >= 1) { elMsg.textContent = t("bebeCrecio"); sfx.compra(); mostrar(); } }
+  });
+  let par = null;
+  if (enfriaPareja <= 0 && cuyes.length < CONFIG.granjaX.length) {
+    const ok = []; cuyes.forEach((c, i) => { if (c.edad >= 1 && c.h >= CP.hambreMin) ok.push(i); });
+    if (ok.length >= 2) par = [ok[0], ok[1]];
+  }
+  parejaIdx = par;
+  if (par && !avisoPareja) { avisoPareja = true; elMsg.textContent = t("parejaAviso"); [659, 784, 988].forEach((f, k) => tono(f, .18, "sine", .05, k * .12)); }
+  if (!par) avisoPareja = false;
+  const bg = document.getElementById("btnGranja"), txt = par ? "🐹❤️" : "🐹"; if (bg.textContent !== txt) bg.textContent = txt;
+}
+document.getElementById("corazon").addEventListener("pointerdown", e => {
+  e.stopPropagation(); if (!parejaIdx) return;
+  document.getElementById("parejaTxt").textContent = t("parejaPregunta");
+  document.getElementById("btnParejaSi").textContent = t("parejaSi"); document.getElementById("btnParejaNo").textContent = t("parejaNo");
+  document.getElementById("parejaModal").classList.add("ver"); document.getElementById("corazon").style.display = "none";
+});
+document.getElementById("btnParejaSi").addEventListener("click", () => {
+  document.getElementById("parejaModal").classList.remove("ver");
+  if (cuyes.length >= CONFIG.granjaX.length) { elMsg.textContent = t("granjaLlena"); return; }
+  crearCuy(true); enfriaPareja = CP.enfria; parejaIdx = null; avisoPareja = false;
+  elMsg.textContent = t("nacio"); [523, 659, 784, 1047, 1319].forEach((f, k) => tono(f, .2, "triangle", .06, k * .09));
+  mostrar(); guardar();
+});
+document.getElementById("btnParejaNo").addEventListener("click", () => { document.getElementById("parejaModal").classList.remove("ver"); enfriaPareja = CP.ahoraNo; parejaIdx = null; avisoPareja = false; });
+
+/* ===== El camino: la abuelita camina a la derecha, ve tierra arada y encuentra a la vecina ===== */
+const CM_LARGO = 5200, CM_VEL = 340, CM_VECINA = CM_LARGO + 600;            // longitud del paseo, velocidad (px/s) y dónde está la vecina
+const CM_CAPAS = [["cmMonL", "assets/ambiente/montanas_lejanas.svg", 0.12], ["cmMonC", "assets/ambiente/montanas_cercanas.svg", 0.3], ["cmSuelo", "assets/camino/arado.svg", 1]];
+const CM_ITEMS = [["assets/camino/espantapajaros.svg", 1000, 1255, 100], ["assets/camino/espantapajaros.svg", 2600, 1255, 100], ["assets/camino/espantapajaros.svg", 4100, 1255, 100], ["assets/camino/vecina.svg", CM_VECINA, 910, 280]];
+const cmCapaEls = CM_CAPAS.map(([id, src, f]) => {
+  const el = document.getElementById(id);
+  for (let i = 0; i < 4; i++) { const im = document.createElement("img"); im.src = src; im.alt = ""; im.style.left = (i * 1080) + "px"; if (i % 2) im.style.transform = "scaleX(-1)"; el.appendChild(im); }   // las copias se espejan: sin costuras
+  return { el, f };
+});
+const cmMundo = document.getElementById("cmMundo"), cmImgAbuela = document.getElementById("cmImgAbuela"), cmAbuelaEl = document.getElementById("cmAbuela"), cmAyuda = document.getElementById("cmAyuda");
+const cmItemEls = CM_ITEMS.map(([src, x, top, w]) => { const im = document.createElement("img"); im.src = src; im.alt = ""; im.className = "cmItem"; im.style.top = top + "px"; im.style.width = w + "px"; cmMundo.appendChild(im); return { im, x }; });
+let cmAtras = 0, cmX = 0, cmDir = 0, cmT = 0, cmActivo = false, cmUlt = 0, cmSaludo = false;
+function cmDibujar() {
+  cmCapaEls.forEach(({ el, f }) => { el.style.transform = `translateX(${-((cmX * f) % 2160)}px)`; });
+  cmItemEls.forEach(({ im, x }) => { im.style.transform = `translateX(${x - cmX}px)`; });
+  const rebote = cmDir ? Math.abs(Math.sin(cmT * 9)) * 16 : 0;
+  cmImgAbuela.style.transform = `translateY(${-rebote}px) scaleX(${cmDir < 0 ? -1 : 1}) rotate(${cmDir ? Math.sin(cmT * 9) * 1.5 : 0}deg)`;
+}
+function cmBucle(tm) {
+  if (!cmActivo) return;
+  const dt = pausado ? 0 : Math.max(0, Math.min(0.1, (tm - cmUlt) / 1000)); cmUlt = tm;
+  if (cmDir && !trAbierto) { cmX = Math.max(0, Math.min(CM_LARGO, cmX + cmDir * CM_VEL * dt)); cmT += dt; if (Math.floor(cmT * 4.5) !== Math.floor((cmT - dt) * 4.5)) tono(95, .05, "sine", .03); }   // paso a paso
+  if (cmDir < 0 && cmX <= 0 && !trAbierto) { cmAtras += dt; if (cmAtras > 0.5 && !enTransicion) { cmAtras = 0; irVista(null); } } else cmAtras = 0;   // seguir hacia la izquierda en el inicio = volver a la chagra
+  if (cmX >= CM_LARGO - 1 && !cmSaludo) { cmSaludo = true; cmDir = 0; decir(t("vecinaHola"), 5000); setTimeout(abrirTrueque, 900); }
+  if (cmX < CM_LARGO - 300) cmSaludo = false;
+  if (cmX > 400) cmAyuda.style.opacity = 0;
+  cmDibujar(); requestAnimationFrame(cmBucle);
+}
+function cmIniciar() {
+  cmActivo = true; cmDir = 0; cmX = 0; cmSaludo = false; cmAyuda.style.opacity = 1; cmUlt = performance.now();
+  cmAyuda.textContent = t("cmAyuda");
+  cmDibujar(); requestAnimationFrame(cmBucle);
+}
+function cmDetener() { cmActivo = false; cmDir = 0; document.getElementById("trueque").classList.remove("ver"); trAbierto = false; }
+const camino = document.getElementById("camino");
+camino.addEventListener("pointerdown", e => { if (e.target.closest("button, #trueque")) return; const r = stage.getBoundingClientRect(); cmDir = (e.clientX - r.left) / r.width > 0.5 ? 1 : -1; });
+addEventListener("pointerup", () => { cmDir = 0; }); addEventListener("pointercancel", () => { cmDir = 0; });
+addEventListener("keydown", e => {
+  if (!cmActivo) { if (e.key === "ArrowRight" && puedeExplorar()) irVista("camino"); return; }      // desde la escena principal: → para explorar
+  if (e.key === "ArrowRight") cmDir = 1; else if (e.key === "ArrowLeft") cmDir = -1; else if (e.key === "Escape") irVista(null);
+});
+// Desde la escena principal: deslizar el dedo (o el mouse) hacia la izquierda para explorar el camino
+const puedeExplorar = () => !pausado && vistaActual() === null && !dentro && !enTransicion && !stage.classList.contains("viaje");
+let swX = null, swY = 0, swT = 0;
+stage.addEventListener("pointerdown", e => { swX = e.clientX; swY = e.clientY; swT = performance.now(); });
+stage.addEventListener("pointerup", e => {
+  if (swX === null) return;
+  const dx = e.clientX - swX, dy = e.clientY - swY, dt = performance.now() - swT; swX = null;
+  if (puedeExplorar() && dx < -70 && Math.abs(dy) < 120 && dt < 800) { try { localStorage.setItem("chagrita_tip_camino", "1"); } catch (e2) {} irVista("camino"); }
+});
+// Una sola pista, la primera vez, para que se sepa que se puede explorar
+setTimeout(() => { let visto = false; try { visto = !!localStorage.getItem("chagrita_tip_camino"); } catch (e) {} if (!visto && puedeExplorar()) { elMsg.textContent = t("explorarTip"); try { localStorage.setItem("chagrita_tip_camino", "1"); } catch (e) {} } }, 25000);
+addEventListener("keyup", e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") cmDir = 0; });
+
+/* ===== Trueque con la vecina Rosa: cambias cosecha sin vender por cultivos que valen más ===== */
+const TRQ = [ { da: ["maiz", 40], rec: ["papa", 15] }, { da: ["papa", 20], rec: ["quinua", 11] }, { da: ["quinua", 10], rec: ["habas", 6] } ];   // cada trato da ~+15% a +20% de valor
+const TRQ_MAX = 3, TRQ_ESPERA = 180000;       // veces por trato y tiempo (ms) hasta que Rosa vuelve a tener
+let trqUsos = [0, 0, 0], trqT0 = Date.now(), trAbierto = false;
+const trqEstado = () => ({ u: trqUsos.slice(), t: trqT0 });
+function trqCargar(o) { if (o && Array.isArray(o.u)) { trqUsos = TRQ.map((_, i) => Math.max(0, Math.min(TRQ_MAX, Math.floor(Number(o.u[i]) || 0)))); trqT0 = Number.isFinite(o.t) ? o.t : Date.now(); } }
+const cultPorId = id => CULT.find(k => k.id === id);
+function pintarTrueque() {
+  if (Date.now() - trqT0 > TRQ_ESPERA) { trqUsos = [0, 0, 0]; trqT0 = Date.now(); }
+  document.getElementById("trTitulo").textContent = t("trTitulo"); document.getElementById("trInfo").textContent = t("trInfo"); document.getElementById("trCerrar").textContent = t("trCerrar");
+  const falta = Math.max(0, Math.ceil((TRQ_ESPERA - (Date.now() - trqT0)) / 1000));
+  document.getElementById("trOfertas").innerHTML = TRQ.map((o, i) => {
+    const a = cultPorId(o.da[0]), b = cultPorId(o.rec[0]), tiene = Math.floor(stock[a.id] / a.valor), agot = trqUsos[i] >= TRQ_MAX, ok = tiene >= o.da[1] && !agot;
+    return `<div class="trOferta"><div class="tx">${a.emoji} ${o.da[1]} ➜ ${b.emoji} ${o.rec[1]}<small>${agot ? t("trAgotado", falta) : t("trTiene", a.emoji + " " + fmt(tiene)) + " · " + (TRQ_MAX - trqUsos[i]) + "/" + TRQ_MAX}</small></div><button data-i="${i}" ${ok ? "" : "disabled"}>${agot ? t("trAgot") : t("trCambiar")}</button></div>`;
+  }).join("");
+  document.querySelectorAll("#trOfertas button").forEach(bt => bt.addEventListener("click", () => hacerTrueque(+bt.dataset.i)));
+}
+function hacerTrueque(i) {
+  const o = TRQ[i], a = cultPorId(o.da[0]), b = cultPorId(o.rec[0]);
+  if (trqUsos[i] >= TRQ_MAX || stock[a.id] / a.valor < o.da[1]) { elMsg.textContent = t("trFalta"); return; }
+  stock[a.id] -= o.da[1] * a.valor; stock[b.id] = (stock[b.id] || 0) + o.rec[1] * b.valor; trqUsos[i]++;
+  elMsg.textContent = t("trHecho"); sfx.compra(); mostrar(); guardar(); pintarTrueque();
+}
+function abrirTrueque() { if (!cmActivo) return; trAbierto = true; cmDir = 0; pintarTrueque(); document.getElementById("trueque").classList.add("ver"); }
+document.getElementById("trCerrar").addEventListener("click", () => { document.getElementById("trueque").classList.remove("ver"); trAbierto = false; });
+
+/* ===== El territorio: mapa de lotes ===== */
+const EMO_TER = { V: "🌽", L: "🥔", A: "🌾", R: "🫘" };
+let loteSel = -1;
+const mapaGrid = document.getElementById("mapaGrid"), loteDivs = [];
+for (let i = 0; i < TER.cols * TER.filas; i++) {
+  const d = document.createElement("div"); d.className = "lote";
+  d.addEventListener("click", e => { e.stopPropagation(); if (arrastrado) return; loteSel = i; pintarMapa(); });
+  mapaGrid.appendChild(d); loteDivs.push(d);
+}
+// El mapa se desliza arrastrando con el dedo o el mouse, o con ◀ ▶
+const mapaVista = document.getElementById("mapaVista");
+let arrastrado = false, mx0 = 0, sl0 = 0, mapaDown = false;
+mapaVista.addEventListener("pointerdown", e => { e.stopPropagation(); mapaDown = true; arrastrado = false; mx0 = e.clientX; sl0 = mapaVista.scrollLeft; });
+addEventListener("pointermove", e => {
+  if (!mapaDown) return;
+  const esc = stage.getBoundingClientRect().width / 1080, dx = (e.clientX - mx0) / esc;
+  if (Math.abs(dx) > 10) arrastrado = true;
+  if (arrastrado) mapaVista.scrollLeft = sl0 - dx;
+});
+const finMapa = () => { mapaDown = false; setTimeout(() => { arrastrado = false; }, 0); };
+addEventListener("pointerup", finMapa); addEventListener("pointercancel", finMapa);
+const moverMapa = d => mapaVista.scrollTo({ left: mapaVista.scrollLeft + d, behavior: "smooth" });
+document.getElementById("btnMapaIzq").addEventListener("click", () => moverMapa(-500));
+document.getElementById("btnMapaDer").addEventListener("click", () => moverMapa(500));
+function centrarMapa() { mapaVista.scrollLeft = Math.max(0, (TER.centro % TER.cols) * 150 + 72 - 500); }
+function mejorVecino() {   // el lote vecino más barato: es el que se muestra al abrir el mapa
+  let mejor = -1; loteDivs.forEach((_, i) => { if (!lotes.has(i) && esVecino(i) && (mejor < 0 || precioLote(i) < precioLote(mejor))) mejor = i; }); return mejor;
+}
+function pintarMapa() {
+  if (loteSel < 0) loteSel = mejorVecino();
+  loteDivs.forEach((d, i) => {
+    const c = codigo(i), own = lotes.has(i), vec = !own && esVecino(i);
+    d.className = "lote t" + (c === "." ? "C" : c) + (own ? " own" : "") + (vec ? " vec" : "") + (i === loteSel ? " sel" : "");
+    const cand = TER.candado ? `<img src="${CONFIG.ruta + TER.candado}" alt="">` : "🔒";
+    d.innerHTML = c === "." ? '<span class="le">🏡</span>' : own ? `<span class="le">${EMO_TER[c]}</span><span class="lp">✔ +${Math.round(TER.bono[c] * 100)}%</span>` : vec ? `<span class="le">${EMO_TER[c]}</span><span class="lp">${fmt(precioLote(i))} 💰</span>` : `<span class="le cand">${cand}</span><span class="lp">${EMO_TER[c]} ${fmt(precioLote(i))}</span>`;
+    d.classList.toggle("lock", !own && !vec && c !== ".");
+  });
+  if (TER.fondo && !mapaGrid.classList.contains("conFondo")) { mapaGrid.style.backgroundImage = `url(${CONFIG.ruta + TER.fondo})`; mapaGrid.classList.add("conFondo"); }
+  document.getElementById("btnVolverM").textContent = t("volver");
+  document.getElementById("mapaCuenta").textContent = t("cuenta", compradosN(), TER.cols * TER.filas - 1) + "  ·  💰 " + fmt(monedas);
+  const info = document.getElementById("loteInfo"), btn = document.getElementById("btnComprar"), i = loteSel, c = i >= 0 ? codigo(i) : null;
+  if (i < 0) { info.innerHTML = ""; btn.style.display = "none"; }
+  else if (c === ".") { info.innerHTML = `<b>${t("chagraTuya")}</b>`; btn.style.display = "none"; }
+  else {
+    const k = CULT[TER.cultivo[c]], nom = t("cultivo")[k.id], pr = precioLote(i), own = lotes.has(i), vec = esVecino(i);
+    let l2;
+    if (own) l2 = t("loteTuyo");
+    else if (!vec) l2 = t("loteLejos");
+    else {
+      const dS = ingresoSeg(TER.cultivo[c], TER.bono[c]) - ingresoSeg(), pm = dS * 3600 * k.precio * precioVar[k.id] / k.valor;
+      l2 = t("loteBono", Math.round(TER.bono[c] * 100), nom) + "<br>" + (dS > 0 ? t("loteGana", num1(dS * 60), fmt(pm), Math.max(1, Math.round(pr / pm * 60))) : t("loteSinCult", nom));
+    }
+    info.innerHTML = `<b>${EMO_TER[c]} ${t("terreno")[c]}${own ? "" : " · " + fmt(pr) + " 💰"}</b>${l2}`;
+    btn.style.display = own ? "none" : ""; btn.textContent = t("comprar", pr); btn.disabled = !vec || monedas < pr;
+  }
+  const flecha = k => precioVar[k.id] > precioAnt[k.id] ? "▲" : precioVar[k.id] < precioAnt[k.id] ? "▼" : "";
+  const sin = CULT.filter(k => stock[k.id] / k.valor >= 1).map(k => `${k.emoji} ${fmt(stock[k.id] / k.valor)}`).join(" · ") || t("sacosVacios");
+  document.getElementById("precios").innerHTML = `${t("precios")}: ` + CULT.map(k => `${k.emoji} ${num1(precioHoy(k))}${flecha(k)}`).join(" · ") + `<br>${t("sinVender")}: ${sin}`;
+}
+document.getElementById("btnComprar").addEventListener("click", () => {
+  const i = loteSel, pr = i >= 0 ? precioLote(i) : 0;
+  if (i < 0 || lotes.has(i) || !esVecino(i) || codigo(i) === ".") return;
+  if (monedas < pr) { elMsg.textContent = t("faltanMon", pr); return; }
+  monedas -= pr; lotes.add(i); loteSel = mejorVecino();
+  elMsg.textContent = t("loteComprado"); sfx.compra(); mostrar(); guardar();
+});
+
+/* ===== La yapa: regalo sorpresa ===== */
+const ingresoSeg = (xci, xb) => prog.reduce((a, _, i) => i < abiertas ? a + CULT[cult[i]].valor * multX(cult[i], xci, xb) * velocidad() / CULT[cult[i]].seg : a, 0);
+function lanzarYapa() {
+  if (pausado) return programarYapa();
+  if (document.getElementById("yapa") || document.visibilityState === "hidden") return programarYapa();
+  const y = document.createElement("div"); y.id = "yapa"; y.textContent = "🎁";
+  y.style.left = (120 + Math.random() * 700) + "px"; y.style.top = (900 + Math.random() * 260) + "px";
+  y.addEventListener("pointerdown", () => {
+    const g = Math.max(10, Math.round(ingresoSeg() * 45)); ganar(g); y.remove();
+    elMsg.textContent = t("yapa", fmt(g)); decir(t("yapaAbuela"), 3500); sfx.yapa(); revisarCapitulo(true); mostrar();
+  });
+  document.getElementById("stage").appendChild(y);
+  setTimeout(() => { y.remove(); programarYapa(); }, 10000);
+}
+function programarYapa() { setTimeout(lanzarYapa, 40000 + Math.random() * 40000); }
+
+/* ===== Día / atardecer ===== */
+let esDia = true;
+function aplicarLuz(dia) {
+  esDia = dia;
+  document.getElementById("imgCielo").src = CONFIG.ruta + (esDia ? CONFIG.cielos.dia : CONFIG.cielos.atardecer);
+  stage.classList.toggle("atardecer", !esDia);
+}
+document.getElementById("btnLuz").addEventListener("click", () => { aplicarLuz(!esDia); guardar(); });
+
+/* ===== Progreso fuera de línea (al volver o al reabrir el juego) ===== */
+const OFFLINE_MAX = 2 * 3600;     // máximo 2 horas de ausencia cuentan
+const OFFLINE_EFIC = 0.5;         // lo cosechado fuera de línea vale la mitad
+const SEG_POR_COSECHA = 4;        // cada cuy cosecha 1 planta cada 4 s
+function aplicarFueraDeLinea(seg) {
+  seg = Math.min(OFFLINE_MAX, seg);
+  if (!(seg > 5)) return "";
+  let cupo = Math.floor(adultos() * seg / SEG_POR_COSECHA), ganado = 0; const por = {};
+  for (let i = 0; i < abiertas; i++) {
+    const total2 = prog[i] + seg * velocidad() / CULT[cult[i]].seg, ciclos = Math.floor(total2), toma = Math.min(ciclos, cupo);
+    cupo -= toma; por[CULT[cult[i]].id] = (por[CULT[cult[i]].id] || 0) + toma * CULT[cult[i]].valor * mult(cult[i]);
+    prog[i] = toma < ciclos ? 1 : total2 - ciclos;               // sin cuy que la coseche, queda lista
+  }
+  Object.entries(por).forEach(([id, v]) => { const g = Math.floor(v * OFFLINE_EFIC); ganado += g; ganar(g, id); });
+  if (ganado > 0) return t("fuera", fmt(ganado));
+  return seg > 60 ? t("fueraPlantas") : "";
+}
+let msgFuera = "";
+
+/* ===== Guardado del avance (en el celular, con localStorage) ===== */
+const CLAVE = "chagrita_avance_v1";
+function guardar() {
+  try {
+    localStorage.setItem(CLAVE, JSON.stringify({
+      v: 1, trq: trqEstado(), puntos, nivelAbono, abiertas, cuyes: cuyes.length, esDia, total, run, vendidos, semillas, sembrar, sonido, musica, idioma, hambres: cuyes.map(c => [+c.h.toFixed(3), +c.g.toFixed(1), +c.edad.toFixed(3)]), enfria: +enfriaPareja.toFixed(1),
+      monedas, ventas, stock, precioVar, precioAnt, lotes: [...lotes], lotesCols: TER.cols,
+      cult: cult.slice(), prog: prog.map(p => +p.toFixed(4)),
+      t: Date.now(),
+    }));
+  } catch (e) { /* sin almacenamiento (modo privado, etc.): el juego sigue sin guardar */ }
+}
+function cargar() {
+  let d;
+  try { d = JSON.parse(localStorage.getItem(CLAVE)); } catch (e) { return false; }
+  if (!d || d.v !== 1) return false;
+  const num = (x, min, max, def) => Number.isFinite(x) ? Math.min(max, Math.max(min, x)) : def;   // tolera datos dañados
+  trqCargar(d.trq);
+  puntos = num(d.puntos, 0, 1e15, 0); total = num(d.total, 0, 1e15, 0); run = num(d.run, 0, 1e15, 0); vendidos = Math.min(Math.floor(num(d.vendidos, 0, 1e9, 0)), Math.floor(run / CONFIG.sacos.capacidad));
+  semillas = Math.floor(num(d.semillas, 0, 1e6, 0)); sembrar = Math.floor(num(d.sembrar, 0, CULT.length - 1, 0));
+  sonido = d.sonido !== false; musica = d.musica !== false; if (d.idioma === "es" || d.idioma === "en") idioma = d.idioma;
+  nivelAbono = Math.floor(num(d.nivelAbono, 0, 1000, 0));
+  // las partidas guardadas antes de las parcelas tenían 4 plantas abiertas: se respetan
+  const abiertasOld = d.abiertas === undefined ? Math.max(CONFIG.inicial, 4) : d.abiertas;
+  abiertas = Math.floor(num(abiertasOld, CONFIG.inicial, CONFIG.plantasX.length, CONFIG.inicial));
+  if (d.total === undefined) total = Math.max(run, puntos);    // partidas anteriores a los capítulos
+  divs.forEach((dv, i) => dv.classList.toggle("bloqueada", i >= abiertas));
+  if (Array.isArray(d.prog)) prog.forEach((_, i) => { prog[i] = num(d.prog[i], 0, 1, prog[i]); });
+  if (Array.isArray(d.cult)) cult.forEach((_, i) => { cult[i] = Math.floor(num(d.cult[i], 0, CULT.length - 1, 0)); });
+  const nc = Math.floor(num(d.cuyes, 0, CONFIG.granjaX.length, 0));
+  while (cuyes.length < nc) crearCuy();
+  if (Array.isArray(d.hambres)) cuyes.forEach((c, i) => { const h = d.hambres[i] || []; c.h = num(h[0], 0, 1, 1); c.g = num(h[1], 0, CONFIG.hambre.gracia, 0); c.avisado = c.h < CONFIG.hambre.aviso; c.edad = num(h[2], 0, 1, 1); });
+  enfriaPareja = num(d.enfria, 0, 3600, 0);
+  monedas = num(d.monedas, 0, 1e15, 0); ventas = Math.floor(num(d.ventas, 0, 1e9, 0));
+  CULT.forEach(k => {
+    stock[k.id] = d.stock ? num(d.stock[k.id], 0, 1e15, 0) : (k.id === "maiz" ? Math.max(0, run - vendidos * CONFIG.sacos.capacidad) : 0);   // partidas anteriores: todo era maíz
+    if (d.precioVar) { precioVar[k.id] = num(d.precioVar[k.id], 0.7, 1.4, 1); precioAnt[k.id] = d.precioAnt ? num(d.precioAnt[k.id], 0.7, 1.4, 1) : precioVar[k.id]; }
+  });
+  if (Array.isArray(d.lotes)) {
+    const oc = d.lotesCols || 5;     // el mapa antes tenía 5 columnas: se pasan los lotes a su misma posición en el mapa ancho
+    d.lotes.forEach(i => { if (!Number.isInteger(i) || i < 0) return; const j = Math.floor(i / oc) * TER.cols + (i % oc); if (j < TER.cols * TER.filas && i % oc < TER.cols) lotes.add(j); });
+  }
+  aplicarLuz(d.esDia !== false);
+  msgFuera = aplicarFueraDeLinea((Date.now() - num(d.t, 0, Date.now(), Date.now())) / 1000);
+  return true;
+}
+setInterval(guardar, 2000);
+addEventListener("pagehide", guardar);
+let ocultoDesde = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") { ocultoDesde = Date.now(); guardar(); }
+  else if (ocultoDesde) {
+    const m = pausado ? "" : aplicarFueraDeLinea((Date.now() - ocultoDesde) / 1000); ocultoDesde = 0; ultimo = performance.now();
+    if (m) elMsg.textContent = m; revisarCapitulo(true); mostrar();
+  }
+});
+
+/* ===== El burrito y el mercado ===== */
+const MER = CONFIG.mercado;
+const burro = document.getElementById("burro"), imgBurro = document.getElementById("imgBurro");
+const burroViaje = document.getElementById("burroViaje"), imgBurroViaje = document.getElementById("imgBurroViaje"), viajeFondo = document.getElementById("viajeFondo");
+const viaje = document.getElementById("viaje");
+const archBurro = n => MER.burros[n >= 3 ? 2 : n >= 1 ? 1 : 0];            // más sacos, más carga
+function actualizarBurro() {
+  const n = sacosLlenos(), a = archBurro(n);
+  if (!imgBurro.src.endsWith(a)) imgBurro.src = CONFIG.ruta + a;
+  burro.classList.toggle("listo", n >= 1);
+}
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+async function irAlMercado() {
+  if (enTransicion) return;
+  const n = sacosLlenos();
+  if (n < 1) { elMsg.textContent = t("burroVacio"); return; }
+  enTransicion = true; teclas.izq = teclas.der = false; objetivo = null; imgAbuela.classList.remove("camina");
+  elDialogo.classList.remove("ver");
+  try {
+    const carga = archBurro(n);
+    // 1. sale por el camino
+    fade.style.opacity = 1; await esperar(380);
+    const venta = venderSacos(n); actualizarSaco();                        // los sacos salen de la casa y las monedas se anotan ya (si cierras el juego en el camino, no se pierden)
+    stage.classList.add("viaje"); viajeFondo.src = CONFIG.ruta + MER.camino; viaje.style.background = "#84573B";   // color de la tierra al pie de cada fondo
+    imgBurroViaje.src = CONFIG.ruta + carga;
+    burroViaje.style.transition = "none"; burroViaje.style.left = "-450px"; void burroViaje.offsetWidth;
+    fade.style.opacity = 0; await esperar(400);
+    imgBurroViaje.classList.add("camina"); tono(262, .1, "triangle", .05);
+    burroViaje.style.transition = "left 3.6s linear"; burroViaje.style.left = "1100px"; await esperar(3700);
+    // 2. llega a la plaza
+    fade.style.opacity = 1; await esperar(380);
+    viajeFondo.src = CONFIG.ruta + MER.plaza; viaje.style.background = "#8D5F41";
+    burroViaje.style.transition = "none"; burroViaje.style.left = "-450px"; void burroViaje.offsetWidth;
+    fade.style.opacity = 0; await esperar(400);
+    burroViaje.style.transition = "left 2.2s ease-out"; burroViaje.style.left = "330px"; await esperar(2300);
+    imgBurroViaje.classList.remove("camina"); await esperar(400);
+    // 3. vende: recibo con cantidad × precio de cada cultivo
+    imgBurroViaje.src = CONFIG.ruta + MER.burros[0]; sfx.yapa();
+    const m = document.createElement("div"); m.className = "mas"; m.textContent = "+" + fmt(venta.total) + " 💰";
+    m.style.left = "400px"; m.style.top = "980px"; m.style.fontSize = "84px"; stage.appendChild(m); setTimeout(() => m.remove(), 1000);
+    elMsg.textContent = t("vendido", n, fmt(venta.total)); mostrar();
+    await esperar(900);
+    await mostrarRecibo(venta);
+  } finally {
+    // 4. vuelve a la chagra
+    fade.style.opacity = 1; await esperar(380);
+    document.getElementById("recibo").style.display = "none"; stage.classList.remove("viaje"); burroViaje.style.transition = "none"; burroViaje.style.left = "-450px";
+    revisarCapitulo(true); actualizarSaco(); mostrar(); guardar();
+    fade.style.opacity = 0; await esperar(350);
+    enTransicion = false;
+  }
+}
+burro.addEventListener("pointerdown", irAlMercado);
+// Vender n sacos: cada cultivo aporta su parte de los sacos (en proporción a lo que cosechaste) y se paga a su precio del día
+function venderSacos(n) {
+  const S = n * SAC.capacidad, tot = CULT.reduce((a, k) => a + stock[k.id], 0) || 1, parte = Math.min(1, S / tot);
+  const filas = CULT.map(k => {
+    const val = stock[k.id] * parte, unidades = val / k.valor, precio = precioHoy(k);
+    return { k, val, unidades, precio, monto: Math.round(unidades * precio) };
+  }).filter(f => f.unidades >= 0.5);
+  filas.forEach(f => { stock[f.k.id] = Math.max(0, stock[f.k.id] - f.val); });
+  const total = filas.reduce((a, f) => a + f.monto, 0);
+  vendidos += n; monedas += total; ventas++; guardar();
+  return { filas, total, n };
+}
+function mostrarRecibo(v) {
+  const el = document.getElementById("recibo");
+  el.innerHTML = `<h2>${t("reciboT")}</h2>` + v.filas.map(f => `<div class="rf"><span>${f.k.emoji} ${t("cultivo")[f.k.id]}</span><span>${t("reciboPrecio", fmt(Math.round(f.unidades)), num1(f.precio))}</span><span>${fmt(f.monto)} 💰</span></div>`).join("") +
+    `<div class="rt"><span>${t("reciboTotal")}</span><span>${fmt(v.total)} 💰</span></div><button id="btnReciboOk">${t("reciboOk")}</button>`;
+  el.style.display = "block";
+  return new Promise(res => { const fin = () => { el.style.display = "none"; res(); }; document.getElementById("btnReciboOk").addEventListener("click", fin); setTimeout(fin, 20000); });
+}
+
+/* ===== Caminar, la puerta y el saco ===== */
+const C = CONFIG.caminar;
+const fade = document.getElementById("fade");
+let abX = C.inicio, objetivo = null, dentro = false, enTransicion = false, puertaLibre = true, avisoSaco = false;
+const teclas = { izq: false, der: false };
+
+const SAC = CONFIG.sacos;
+const sacosEl = SAC.huecos.map(h => {
+  const d = document.createElement("div"); d.className = "en-suelo saco" + (h.atras ? " atras" : "");
+  d.style.left = (h.x - 150) + "px"; d.style.display = "none"; d.innerHTML = '<img alt="">';
+  document.getElementById("sacos").appendChild(d); return d;
+});
+const nivelDe = frac => { let n = 0; SAC.cortes.forEach((c, i) => { if (frac >= c) n = i; }); return n; };
+const sacosHechos = () => Math.floor(run / SAC.capacidad);
+const sacosLlenos = () => Math.max(0, sacosHechos() - vendidos);   // los sacos vendidos ya no están
+function actualizarSaco() {
+  const llenos = sacosLlenos(), visibles = Math.min(sacosEl.length, llenos + 1);   // cuando uno se llena, aparece otro vacío
+  sacosEl.forEach((d, i) => {
+    d.style.display = i < visibles ? "" : "none";
+    if (i >= visibles) return;
+    const frac = i < llenos ? 1 : (run - sacosHechos() * SAC.capacidad) / SAC.capacidad;
+    const arch = SAC.archivos[nivelDe(frac)], img = d.firstChild;
+    if (!img.src.endsWith(arch)) img.src = CONFIG.ruta + arch;
+  });
+  actualizarBurro();
+}
+function colocarAbuela() {
+  abuela.style.left = (abX - 140) + "px";
+  // el globo de diálogo sigue a la abuelita
+  const L = Math.max(20, Math.min(420, abX - 230));
+  elDialogo.style.left = L + "px";
+  elDialogo.style.setProperty("--cola", Math.max(30, Math.min(560, abX - L - 26)) + "px");
+}
+function cruzarPuerta(haciaDentro) {
+  enTransicion = true; teclas.izq = teclas.der = false; objetivo = null;
+  tono(196, .12, "triangle", .07); tono(147, .16, "triangle", .07, .1);
+  fade.style.opacity = 1;
+  setTimeout(() => {
+    dentro = haciaDentro; stage.classList.toggle("dentro", dentro);
+    abX = C.salida; puertaLibre = false; avisoSaco = false;
+    actualizarSaco(); colocarAbuela(); imgAbuela.classList.remove("camina");
+    fade.style.opacity = 0;
+    setTimeout(() => { enTransicion = false; }, 350);
+  }, 380);
+}
+function moverAbuela(dt) {
+  if (enTransicion || vistaActual()) return;
+  let dir = 0;
+  if (teclas.izq || teclas.der) { dir = (teclas.der ? 1 : 0) - (teclas.izq ? 1 : 0); objetivo = null; }
+  else if (objetivo !== null) {
+    const d = objetivo - abX;
+    if (Math.abs(d) <= C.vel * dt) { abX = objetivo; objetivo = null; } else dir = Math.sign(d);
+  }
+  if (dir) abX += dir * C.vel * dt;
+  abX = Math.max(C.minX, Math.min(C.maxX, abX));
+  imgAbuela.classList.toggle("camina", dir !== 0);
+  colocarAbuela();
+  if (!puertaLibre && abX > 300) puertaLibre = true;          // para no volver a cruzar la puerta sin querer
+  const puerta = dentro ? C.puertaDentro : C.puertaFuera;
+  if (puertaLibre && abX <= puerta + 20) { cruzarPuerta(!dentro); return; }
+  if (dentro && !avisoSaco && Math.abs(abX - C.saco) < 110) {  // llegó al saco
+    avisoSaco = true; decir(t("saco", fmt(Math.floor(run)), sacosLlenos()), 4500); pose("contenta", 900); sfx.compra();
+  }
+}
+addEventListener("keydown", e => {
+  const k = e.key.toLowerCase();
+  if (k === "arrowleft" || k === "a") { teclas.izq = true; e.preventDefault(); }
+  if (k === "arrowright" || k === "d") { teclas.der = true; e.preventDefault(); }
+});
+addEventListener("keyup", e => {
+  puertaLibre = true;                       // al soltar la tecla ya puede volver a cruzar la puerta
+  const k = e.key.toLowerCase();
+  if (k === "arrowleft" || k === "a") teclas.izq = false;
+  if (k === "arrowright" || k === "d") teclas.der = false;
+});
+addEventListener("blur", () => { teclas.izq = teclas.der = false; });
+// Con el dedo o el mouse: tocar o arrastrar en el campo y la abuelita camina hacia ese punto (sin botones en pantalla)
+let arrastrando = false;
+function xEscena(e) { const r = stage.getBoundingClientRect(); return (e.clientX - r.left) * 1080 / r.width; }
+stage.addEventListener("pointerdown", e => {
+  if (vistaActual() || e.target.closest(".planta, .cuy, #panel, button, #yapa, #burro")) return;
+  arrastrando = true; objetivo = xEscena(e); puertaLibre = true;
+});
+stage.addEventListener("pointermove", e => { if (arrastrando) objetivo = xEscena(e); });
+addEventListener("pointerup", () => { arrastrando = false; });
+addEventListener("pointercancel", () => { arrastrando = false; });
+colocarAbuela();
+
+/* ===== Menús: portada, pausa, ajustes y panel plegable ===== */
+const $ = id => document.getElementById(id);
+const velo = id => $(id).classList;
+function pausar(v, mudo = true) {                 // v = true: congela el juego (mudo = también silencia el audio)
+  pausado = v; ultimo = performance.now(); cmUlt = performance.now();
+  if (mudo && ac) { if (v && ac.state === "running") ac.suspend(); else if (!v && ac.state === "suspended") ac.resume(); }
+}
+let msgInicial = "", primeraVez = true;
+function jugar() {
+  $("portada").style.display = "none"; pausar(false); iniciarMusica();
+  if (msgInicial) { elMsg.textContent = msgInicial; msgInicial = ""; }
+  if (primeraVez && !habiaAvance) setTimeout(() => decir(t("dialogos")[0], 7000), 800);
+  primeraVez = false; mostrar();
+}
+function irAlInicio() { guardar(); velo("pausa").remove("ver"); $("portada").style.display = ""; pausar(true, false); mostrar(); }
+let pausadoAntes = false;
+function abrirAjustes() { pausadoAntes = pausado; pausado = true; velo("ajustes").add("ver"); }
+function cerrarAjustes() { velo("ajustes").remove("ver"); if (!pausadoAntes) { pausado = false; ultimo = performance.now(); cmUlt = performance.now(); } }
+$("pJugar").addEventListener("click", jugar);
+$("pAjustes").addEventListener("click", abrirAjustes); $("paAjustes").addEventListener("click", abrirAjustes); $("btnAjustes").addEventListener("click", abrirAjustes);
+$("ajCerrar").addEventListener("click", cerrarAjustes);
+$("btnPausa").addEventListener("click", () => { if (pausado || stage.classList.contains("viaje")) return; pausar(true); velo("pausa").add("ver"); });
+$("paContinuar").addEventListener("click", () => { velo("pausa").remove("ver"); pausar(false); });
+$("paInicio").addEventListener("click", irAlInicio);
+addEventListener("keydown", e => {
+  if (e.key !== "Escape" || cmActivo) return;
+  if (velo("ajustes").contains("ver")) cerrarAjustes();
+  else if (velo("pausa").contains("ver")) { velo("pausa").remove("ver"); pausar(false); }
+  else if ($("portada").style.display !== "none") return;
+  else if (!pausado && !stage.classList.contains("viaje") && !vistaActual()) { pausar(true); velo("pausa").add("ver"); }
+});
+// Panel plegable: toca la manija, o desliza hacia abajo para plegar y hacia arriba para desplegar
+const elPanel = $("panel");
+function plegarPanel(v) {
+  elPanel.classList.toggle("plegado", v); $("panelToggle").setAttribute("aria-expanded", String(!v));
+  try { localStorage.setItem("chagrita_panel", v ? "1" : "0"); } catch (e) {}
+}
+let pgY = null;
+$("panelToggle").addEventListener("pointerdown", e => { pgY = e.clientY; });
+addEventListener("pointerup", e => {
+  if (pgY === null) return; const dy = e.clientY - pgY; pgY = null;
+  if (dy > 28) plegarPanel(true); else if (dy < -28) plegarPanel(false); else plegarPanel(!elPanel.classList.contains("plegado"));
+});
+try { if (localStorage.getItem("chagrita_panel") === "1") plegarPanel(true); } catch (e) {}
+
+/* ===== Avisos de arriba: aparecen y se van solos ===== */
+let timerMsg; const elMsgV = document.getElementById("msg");
+new MutationObserver(() => {
+  if (!elMsgV.textContent.trim()) return;
+  elMsgV.classList.add("ver"); clearTimeout(timerMsg); timerMsg = setTimeout(() => elMsgV.classList.remove("ver"), 4500);
+}).observe(elMsgV, { childList: true, characterData: true, subtree: true });
+document.getElementById("capTxt").addEventListener("click", () => verNombreCap());
+
+/* ===== Arranque (al final, cuando todo ya existe) ===== */
+habiaAvance = cargar();
+revisarCapitulo(false); mostrar();
+requestAnimationFrame(bucle); programarYapa();
+msgInicial = msgFuera || (habiaAvance ? t("espera") : t("inicio", fmt(puntos)));
+mostrar();
+</script>
+</body>
+</html>

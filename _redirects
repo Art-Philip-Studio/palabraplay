@@ -2,3 +2,13 @@
 /privacy  /privacy.html  200
 /terms    /terms.html    200
 /contact  /contact.html  200
+/lexo      /  301
+/lexo/*    /  301
+/que-es-wordle       /  301
+/que-es-wordle.html  /  301
+/juegos-para-ejercitar-la-mente.html  /  301
+/snakeplay/*  /  301
+/hilario/*  /  301
+/words-girasol/*  /  301
+/cuy-chevere/*  /  301
+/chagrita/*  /chagra/  301

@@ -3,18 +3,17 @@
 // - Cachea archivos propios para abrir rápido y funcionar sin internet
 // - NO toca anuncios, chat de soporte ni otros dominios
 
-const CACHE_NAME = 'palabraplay-cache-v2';
+const CACHE_NAME = 'palabraplay-cache-v16';
 
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/script.js',
-  '/pwa.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/offline.html'
+  './',
+  'index.html',
+  'styles.css',
+  'pwa.js',
+  'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,8 +27,15 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
+      Promise.all(names.filter((n) => n !== CACHE_NAME && !n.startsWith('pp-games-')).map((n) => caches.delete(n)))
     )
+  );
+  // Limpia de la caché "sin internet" los juegos que ya no existen
+  event.waitUntil(
+    caches.open('pp-games-v1').then((c) => c.keys().then((reqs) => Promise.all(
+      reqs.filter((r) => /^\/(snakeplay|hilario|words-girasol|cuy-chevere|chagrita)\//.test(new URL(r.url).pathname) || new URL(r.url).hostname === 'upload.wikimedia.org')
+          .map((r) => c.delete(r))
+    ))).catch(() => {})
   );
   self.clients.claim();
 });
@@ -50,7 +56,7 @@ self.addEventListener('fetch', (event) => {
           if (res.ok) { const copy = res.clone(); caches.open(CACHE_NAME).then((c) => c.put(req, copy)); }
           return res;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match('/offline.html')))
+        .catch(() => caches.match(req).then((r) => r || caches.match('offline.html')))
     );
     return;
   }

@@ -516,7 +516,7 @@ body {
     font-size: 1.5rem;
 }
 
-.wordle-icon { background: var(--accent-green); color: var(--bg-primary); }
+.palabras-icon { background: var(--accent-green); color: var(--bg-primary); }
 .ahorcado-icon { background: var(--accent-magenta); }
 .sopa-icon { background: var(--accent-purple); }
 
@@ -541,27 +541,27 @@ body {
 }
 
 /* ============================================
-   WORDLE STYLES
+   ESTILOS DE PALABRAS
    ============================================ */
-.wordle-container {
+.palabras-container {
     max-width: 500px;
     margin: 0 auto;
 }
 
-.wordle-grid {
+.palabras-grid {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     gap: 10px;
     margin-bottom: 30px;
 }
 
-.wordle-row {
+.palabras-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 10px;
 }
 
-.wordle-tile {
+.palabras-tile {
     aspect-ratio: 1;
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-sm);
@@ -575,26 +575,26 @@ body {
     background: transparent;
 }
 
-.wordle-tile.filled {
+.palabras-tile.filled {
     border-color: rgba(255, 255, 255, 0.5);
     animation: pop 0.1s ease;
 }
 
-.wordle-tile.correct {
+.palabras-tile.correct {
     background: var(--accent-green);
     border-color: var(--accent-green);
     color: var(--bg-primary);
     animation: flip 0.5s ease;
 }
 
-.wordle-tile.present {
+.palabras-tile.present {
     background: var(--accent-yellow);
     border-color: var(--accent-yellow);
     color: var(--bg-primary);
     animation: flip 0.5s ease;
 }
 
-.wordle-tile.absent {
+.palabras-tile.absent {
     background: var(--text-muted);
     border-color: var(--text-muted);
     color: white;
@@ -613,7 +613,7 @@ body {
     100% { transform: rotateX(0); }
 }
 
-.wordle-keyboard {
+.palabras-keyboard {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -653,17 +653,17 @@ body {
 .key.present { background: var(--accent-yellow); color: var(--bg-primary); }
 .key.absent { background: var(--text-muted); }
 
-.wordle-message {
+.palabras-message {
     text-align: center;
     margin: 20px 0;
     font-weight: 600;
     min-height: 30px;
 }
 
-.wordle-message.success { color: var(--accent-green); }
-.wordle-message.error { color: var(--accent-red); }
+.palabras-message.success { color: var(--accent-green); }
+.palabras-message.error { color: var(--accent-red); }
 
-.wordle-controls {
+.palabras-controls {
     display: flex;
     gap: 15px;
     justify-content: center;
@@ -2127,7 +2127,7 @@ select {
         flex-direction: column;
     }
 
-    .wordle-tile {
+    .palabras-tile {
         font-size: 1.5rem;
     }
 

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 1080 620">
+<rect width="1080" height="620" fill="#8A5A3C"/>
+<rect width="1080" height="46" fill="#6B8F4E"/><path d="M0 46 Q135 62 270 46 T540 46 T810 46 T1080 46 L1080 30 L0 30Z" fill="#6B8F4E"/>
+<path d="M0 70 Q135 64 270 70 T540 70 T810 70 T1080 70 L1080 100 Q945 106 810 100 T540 100 T270 100 T0 100Z" fill="#A06C48"/>
+<path d="M0 90 Q135 84 270 90 T540 90 T810 90 T1080 90 L1080 112 L0 112Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="361" cy="78" rx="5" ry="3" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M434 86 q-4 -10 0 -16 q4 6 0 16z" fill="#6B8F4E"/>
+<path d="M79 77 q-4 -10 0 -16 q4 6 0 16z" fill="#6B8F4E"/>
+<ellipse cx="870" cy="84" rx="5" ry="3" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M126 81 q-4 -10 0 -16 q4 6 0 16z" fill="#6B8F4E"/>
+<path d="M0 116 Q135 110 270 116 T540 116 T810 116 T1080 116 L1080 154 Q945 160 810 154 T540 154 T270 154 T0 154Z" fill="#A06C48"/>
+<path d="M0 144 Q135 138 270 144 T540 144 T810 144 T1080 144 L1080 168 L0 168Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="626" cy="123" rx="6" ry="3" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M961 138 q-4 -12 0 -19 q4 7 0 19z" fill="#6B8F4E"/>
+<path d="M249 123 q-4 -12 0 -19 q4 7 0 19z" fill="#6B8F4E"/>
+<ellipse cx="118" cy="135" rx="6" ry="3" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M458 124 q-4 -12 0 -19 q4 7 0 19z" fill="#6B8F4E"/>
+<path d="M276 124 q-4 -12 0 -19 q4 7 0 19z" fill="#6B8F4E"/>
+<path d="M0 172 Q135 166 270 172 T540 172 T810 172 T1080 172 L1080 218 Q945 224 810 218 T540 218 T270 218 T0 218Z" fill="#A06C48"/>
+<path d="M0 208 Q135 202 270 208 T540 208 T810 208 T1080 208 L1080 234 L0 234Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="594" cy="191" rx="7" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M90 204 q-4 -14 0 -22 q4 8 0 22z" fill="#6B8F4E"/>
+<path d="M609 181 q-4 -14 0 -22 q4 8 0 22z" fill="#6B8F4E"/>
+<ellipse cx="1000" cy="185" rx="7" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M675 198 q-4 -14 0 -22 q4 8 0 22z" fill="#6B8F4E"/>
+<path d="M626 179 q-4 -14 0 -22 q4 8 0 22z" fill="#6B8F4E"/>
+<ellipse cx="620" cy="196" rx="7" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M0 238 Q135 232 270 238 T540 238 T810 238 T1080 238 L1080 294 Q945 300 810 294 T540 294 T270 294 T0 294Z" fill="#A06C48"/>
+<path d="M0 284 Q135 278 270 284 T540 284 T810 284 T1080 284 L1080 312 L0 312Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="436" cy="247" rx="8" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M1029 258 q-4 -16 0 -25 q4 9 0 25z" fill="#6B8F4E"/>
+<path d="M77 279 q-4 -16 0 -25 q4 9 0 25z" fill="#6B8F4E"/>
+<ellipse cx="909" cy="252" rx="8" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M326 270 q-4 -16 0 -25 q4 9 0 25z" fill="#6B8F4E"/>
+<path d="M177 278 q-4 -16 0 -25 q4 9 0 25z" fill="#6B8F4E"/>
+<ellipse cx="150" cy="280" rx="8" ry="4" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M345 279 q-4 -16 0 -25 q4 9 0 25z" fill="#6B8F4E"/>
+<path d="M0 316 Q135 310 270 316 T540 316 T810 316 T1080 316 L1080 382 Q945 388 810 382 T540 382 T270 382 T0 382Z" fill="#A06C48"/>
+<path d="M0 372 Q135 366 270 372 T540 372 T810 372 T1080 372 L1080 402 L0 402Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="865" cy="365" rx="9" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M215 328 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<path d="M625 358 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<ellipse cx="684" cy="334" rx="9" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M411 328 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<path d="M590 367 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<ellipse cx="94" cy="358" rx="9" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M91 361 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<path d="M240 353 q-4 -18 0 -28 q4 10 0 28z" fill="#6B8F4E"/>
+<path d="M0 406 Q135 400 270 406 T540 406 T810 406 T1080 406 L1080 484 Q945 490 810 484 T540 484 T270 484 T0 484Z" fill="#A06C48"/>
+<path d="M0 474 Q135 468 270 474 T540 474 T810 474 T1080 474 L1080 506 L0 506Z" fill="#6f4630" fill-opacity="0.55"/>
+<ellipse cx="726" cy="446" rx="10" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M467 461 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<path d="M351 441 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<ellipse cx="629" cy="471" rx="10" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M494 435 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<path d="M336 427 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<ellipse cx="843" cy="423" rx="10" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<path d="M745 461 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<path d="M279 417 q-4 -20 0 -31 q4 11 0 31z" fill="#6B8F4E"/>
+<ellipse cx="618" cy="431" rx="10" ry="5" fill="#F2E6C9" fill-opacity="0.75"/>
+<rect y="510" width="1080" height="110" fill="#6f4630" fill-opacity="0.35"/></svg>
